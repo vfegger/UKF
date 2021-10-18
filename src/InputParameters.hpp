@@ -1,6 +1,7 @@
 #ifndef INPUT_PARAMETERS
 #define INPUT_PARAMETERS
-#include <iostream>
+
+#include <string>
 
 class InputParameters
 {
