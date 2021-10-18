@@ -4,8 +4,8 @@
 InputData::InputData(double* data_input, unsigned length_input)
 {
     length = length_input;
-    if(length > 0u){
-        data_input = NULL;
+    if(length == 0u){
+        data = NULL;
         return;
     }
     data_input = new double[length];
@@ -18,6 +18,11 @@ InputData::~InputData()
     if(data != NULL){
         delete[] data;
         data = NULL;
+        std::cout << "Data is NULL\n";
     }
     return;
+}
+
+void InputData::print(){
+    std::cout << "Test Class - Input Data\n";
 }

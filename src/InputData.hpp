@@ -6,4 +6,5 @@ private:
 public:
     InputData(double* data, unsigned length);
     ~InputData();
+    void print();
 };

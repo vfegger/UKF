@@ -27,26 +27,36 @@ CC_FLAGS=-c
 RM=rm -rf
 
 # MakeFile Functions
-all: objFolder $(PROJ_NAME)
+all: $(OBJ_NAME) $(PROJ_NAME) clean_obj
 
 $(PROJ_NAME): $(OBJ)
-	@ echo 
+	@ echo 'Linking' $(PROJ_NAME) 'using the command' $(CC) 'with' $^ 
 	@ $(CC) $^ -o $(BUILD_DIR)/$@.exe
+	@ echo ' '
 
 $(OBJ_DIR)/%.o: $(SOURCE_DIR)/%.cpp $(SOURCE_DIR)/%.hpp
-	$(CC) $< $(CC_FLAGS) -o $@ 
+	@ echo 'Compiling' $< 'into' $@ 'with' $(SOURCE_DIR)/%.hpp
+	@ $(CC) $< $(CC_FLAGS) -o $@ 
+	@ echo ' '
 
 $(OBJ_DIR)/main.o: $(SOURCE_DIR)/main.cpp $(H_SOURCE)
-	$(CC) $< $(CC_FLAGS) -o $@
+	@ echo 'Compiling' $(SOURCE_DIR)/main.cpp 'into' $(OBJ_DIR)/main.o 'with' $(H_SOURCE)
+	@ $(CC) $< $(CC_FLAGS) -o $@
+	@ echo ' '
 
 run: $(BUILD_DIR)/$(PROJ_NAME).exe
+	@ echo 'Running ' $(PROJ_NAME) ':'
 	$(BUILD_DIR)/$(PROJ_NAME).exe
+	@ echo ' '
 
-objFolder:
+$(OBJ_NAME):
 	@ mkdir -p $(OBJ_DIR)
 
-clean:
-	@ $(RM) $(OBJ_DIR)/*.* $(BUILD_DIR)/$(PROJ_NAME).exe *~
+clean: $(OBJ_NAME)
+	@ $(RM) $(OBJ_DIR)/*.* $(BUILD_DIR)/$(PROJ_NAME).exe $(OBJ_DIR)/*~ $(BUILD_DIR)/*~
+	@ rmdir $(OBJ_NAME)
+clean_obj:
+	@ $(RM) $(OBJ_DIR)/*.* $(OBJ_DIR)/*~
 	@ rmdir $(OBJ_NAME)
 
-.PHONY: all clean_obj
+.PHONY: all run clean
