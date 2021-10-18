@@ -9,13 +9,13 @@ SOURCE_DIR=./src
 OBJ_DIR=./$(OBJ_NAME)
 
 # Source .c
-C_SOURCE=$(wildcard $(SOURCE_DIR)/*.cpp)
+CPP_SOURCE=$(wildcard $(SOURCE_DIR)/*.cpp)
 
 # Header .h
 H_SOURCE=$(wildcard $(SOURCE_DIR)/*.hpp)
 
 # Object .o
-OBJ=$(subst .cpp,.o,$(subst $(SOURCE_DIR),$(OBJ_DIR),$(C_SOURCE)))
+OBJ=$(subst .cpp,.o,$(subst $(SOURCE_DIR),$(OBJ_DIR),$(CPP_SOURCE)))
 
 # Compiler
 CC=g++
