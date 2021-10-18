@@ -1,5 +1,5 @@
-#ifndef INPUT_DATA
-#define INPUT_DATA
+#ifndef INPUT_DATA_HEADER
+#define INPUT_DATA_HEADER
 
 #include <string>
 
