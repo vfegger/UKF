@@ -10,6 +10,7 @@ private:
     int* parameters;
     unsigned length;
 public:
+    InputParameters();
     InputParameters(std::string name, double* data, unsigned length);
     ~InputParameters();
     void print();

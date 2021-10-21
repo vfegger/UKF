@@ -1,5 +1,13 @@
 #include "InputParameters.hpp"
 #include <iostream>
+#include <new>
+
+InputParameters::InputParameters(){
+    name = "";
+    length = 0u;
+    parameters = NULL;
+    return;
+}
 
 InputParameters::InputParameters(std::string name_input, double* parameters_input, unsigned length_input){
     name = name_input;
@@ -9,7 +17,12 @@ InputParameters::InputParameters(std::string name_input, double* parameters_inpu
         std::cout << "Null pointer\n";
         return;
     }
-    parameters = new int[length];
+    parameters = new(std::nothrow) int[length];
+    if(parameters == NULL){
+        std::cout << name << ":\n";
+        std::cout << "\tError in allocation of memory of size :" << length*sizeof(double) << "\n";
+        return;
+    }
     for(unsigned i = 0u; i < length; i++){
         parameters[i] = parameters_input[i];
     }

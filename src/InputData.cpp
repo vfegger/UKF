@@ -1,6 +1,14 @@
 #include "InputData.hpp"
 #include <string>
 #include <iostream>
+#include <new>
+
+InputData::InputData(){
+    name = "";
+    length = 0u;
+    data = NULL;
+    return;
+}
 
 InputData::InputData(std::string name_input, double* data_input, unsigned length_input){
     name = name_input;
@@ -10,7 +18,12 @@ InputData::InputData(std::string name_input, double* data_input, unsigned length
         std::cout << "Null pointer\n";
         return;
     }
-    data = new double[length];
+    data = new(std::nothrow) double[length];
+    if(data == NULL){
+        std::cout << name << ":\n";
+        std::cout << "\tError in allocation of memory of size :" << length*sizeof(double) << "\n";
+        return;
+    }
     for(unsigned i = 0u; i < length; i++){
         data[i] = data_input[i];
     }
