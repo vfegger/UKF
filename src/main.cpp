@@ -2,16 +2,16 @@
 #include "InputData.hpp"
 
 int main(){
-    InputData* input = new InputData("Test", NULL, 0);
-    input->print();
+    std::cout << "\nStart Execution\n\n";
+    
     double* data = new double[2];
     data[0] = 1.0;
     data[1] = 2.5;
-    delete input;
-    input = new InputData("TestWithData", data, 2u);
-    delete[] data;
+    InputData* input = new InputData("Test", data, 2u);
     input->print();
     delete input;
-    std::cout << "\nFinished Execution\n";
+    delete[] data;
+
+    std::cout << "\nEnd Execution\n";
     return 0;
 }
