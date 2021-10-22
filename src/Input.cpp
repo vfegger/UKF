@@ -1,6 +1,6 @@
 #include "Input.hpp"
-#include "InputData.hpp"
-#include "InputParameters.hpp"
+#include "Data.hpp"
+#include "Parameters.hpp"
 #include <new>
 
 Input::Input(Data* inputData_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input)

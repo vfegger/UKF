@@ -1,5 +1,6 @@
 #include <iostream>
-#include "InputData.hpp"
+#include "Input.hpp"
+#include "Output.hpp"
 
 int main(){
     std::cout << "\nStart Execution\n\n";

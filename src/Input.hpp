@@ -1,8 +1,8 @@
 #ifndef INPUT_HEADER
 #define INPUT_HEADER
 
-#include "InputData.hpp"
-#include "InputParameters.hpp"
+#include "Data.hpp"
+#include "Parameters.hpp"
 
 class Input
 {

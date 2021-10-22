@@ -1,5 +1,5 @@
-#ifndef INPUT_PARAMETERS_HEADER
-#define INPUT_PARAMETERS_HEADER
+#ifndef PARAMETERS_HEADER
+#define PARAMETERS_HEADER
 
 #include <string>
 
