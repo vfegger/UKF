@@ -1,10 +1,14 @@
 #ifndef OUTPUT_HEADER
 #define OUTPUT_HEADER
 
+#include "Data.hpp"
+#include "Parameters.hpp"
+
 class Output
 {
 private:
-    void* data;
+    Parameters* parameters;
+    Data* data;
 public:
     Output();
     ~Output();
