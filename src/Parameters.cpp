@@ -1,51 +1,50 @@
-#include "InputData.hpp"
-#include <string>
+#include "Parameters.hpp"
 #include <iostream>
 #include <new>
 
-InputData::InputData(){
+Parameters::Parameters(){
     name = "";
     length = 0u;
-    data = NULL;
+    parameters = NULL;
     return;
 }
 
-InputData::InputData(std::string name_input, double* data_input, unsigned length_input){
+Parameters::Parameters(std::string name_input, double* parameters_input, unsigned length_input){
     name = name_input;
     length = length_input;
     if(length == 0u){
-        data = NULL;
+        parameters = NULL;
         std::cout << "Null pointer\n";
         return;
     }
-    data = new(std::nothrow) double[length];
-    if(data == NULL){
+    parameters = new(std::nothrow) int[length];
+    if(parameters == NULL){
         std::cout << name << ":\n";
         std::cout << "\tError in allocation of memory of size :" << length*sizeof(double) << "\n";
         return;
     }
     for(unsigned i = 0u; i < length; i++){
-        data[i] = data_input[i];
+        parameters[i] = parameters_input[i];
     }
     return;
 }
 
-InputData::~InputData(){
+Parameters::~Parameters(){
     length = 0u;
-    if(data != NULL){
-        delete[] data;
+    if(parameters != NULL){
+        delete[] parameters;
     }
     return;
 }
 
-void InputData::print(){
-    std::cout << name << "\n\t";
-    if(data == NULL){
+void Parameters::print(){
+    std::cout << "Test Class - Input Data\n";
+    if(parameters == NULL){
         std::cout << "Data is empty. Trying to access it will generate an error.\n";
         return;
     }
     for(unsigned i = 0; i < length; i++){
-        std::cout << data[i] << "\t";
+        std::cout << parameters[i] << "\t";
     }
     std::cout << "\n";
     return;

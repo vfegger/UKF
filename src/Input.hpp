@@ -9,13 +9,13 @@ class Input
 private:
     unsigned inputDataLength;
     unsigned inputParametersLength;
-    InputParameters* inputParameters;
-    InputData* inputData;
+    Parameters* inputParameters;
+    Data* inputData;
 public:
-    Input(InputData* inputData_input, unsigned inputDataLength_input, InputParameters* inputParameters_input, unsigned inputParametersLength_input);
+    Input(Data* inputData_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input);
     ~Input();
-    virtual void Evolution(InputData* inputData_input, InputParameters* inputParameters_input) = 0;
-    virtual void Observation(InputData* inputData_input, InputParameters* inputParameters_input) = 0;
+    virtual void Evolution(Data* inputData_input, Parameters* inputParameters_input) = 0;
+    virtual void Observation(Data* inputData_input, Parameters* inputParameters_input) = 0;
 
 };
 

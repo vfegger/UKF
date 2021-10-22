@@ -3,16 +3,16 @@
 
 #include <string>
 
-class InputParameters
+class Parameters
 {
 private:
     std::string name;
     int* parameters;
     unsigned length;
 public:
-    InputParameters();
-    InputParameters(std::string name, double* data, unsigned length);
-    ~InputParameters();
+    Parameters();
+    Parameters(std::string name, double* data, unsigned length);
+    ~Parameters();
     void print();
 };
 #endif

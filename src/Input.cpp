@@ -3,12 +3,12 @@
 #include "InputParameters.hpp"
 #include <new>
 
-Input::Input(InputData* inputData_input, unsigned inputDataLength_input, InputParameters* inputParameters_input, unsigned inputParametersLength_input)
+Input::Input(Data* inputData_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input)
 {
     inputParametersLength = inputParametersLength_input;
     inputDataLength = inputDataLength_input;
-    inputParameters = new(std::nothrow) InputParameters[inputParametersLength];
-    inputData = new(std::nothrow) InputData[inputDataLength];
+    inputParameters = new(std::nothrow) Parameters[inputParametersLength];
+    inputData = new(std::nothrow) Data[inputDataLength];
     for(unsigned i = 0u; i < inputParametersLength; i++){
         inputParameters[i] = inputParameters_input[i];
     }

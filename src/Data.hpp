@@ -3,16 +3,16 @@
 
 #include <string>
 
-class InputData
+class Data
 {
 private:
     std::string name;
     double* data;
     unsigned length;
 public:
-    InputData();
-    InputData(std::string name, double* data, unsigned length);
-    ~InputData();
+    Data();
+    Data(std::string name, double* data, unsigned length);
+    ~Data();
     void print();
 };
 #endif

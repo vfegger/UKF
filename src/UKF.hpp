@@ -8,8 +8,8 @@ class UKF
 {
 private:
     Input* input;
-    void EvolutionFunction(InputParameters* parms, InputData* data);
-    void ObservationFunction(InputParameters* parms, InputData* data);
+    void EvolutionFunction(Parameters* parms, Data* data);
+    void ObservationFunction(Parameters* parms, Data* data);
     Output* output;
 public:
     UKF();
