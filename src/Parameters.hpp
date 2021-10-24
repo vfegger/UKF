@@ -13,6 +13,7 @@ public:
     Parameters();
     Parameters(std::string name, double* data, unsigned length);
     ~Parameters();
+    unsigned GetLength();
     void print();
 };
 #endif

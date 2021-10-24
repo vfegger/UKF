@@ -37,6 +37,10 @@ Parameters::~Parameters(){
     return;
 }
 
+unsigned Parameters::GetLength(){
+    return length;
+}
+
 void Parameters::print(){
     std::cout << "Test Class - Input Data\n";
     if(parameters == NULL){

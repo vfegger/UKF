@@ -2,6 +2,27 @@
 #include "Input.hpp"
 #include "Output.hpp"
 
+class InputTest : public Input
+{
+private:
+    
+public:
+    InputTest(Data* inputData_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input) : 
+        Input(inputData_input, inputDataLength_input, inputParameters_input, inputParametersLength_input) {
+            
+    }
+    ~InputTest(){
+
+    }
+    void Evolution(Data* inputData_input, Parameters* inputParameters_input) override {
+        
+    }
+    void Observation(Data* inputData_input, Parameters* inputParameters_input, Data* observationData_output) override {
+
+    }
+};
+
+
 int main(){
     std::cout << "\nStart Execution\n\n";
 
@@ -10,7 +31,8 @@ int main(){
     data[1] = 2.5;
     Data* input = new Data("Test", data, 2u);
     input->print();
-    delete input;
+    InputTest* test = new InputTest(input, 1u, NULL, 0u);
+    delete test;
     delete[] data;
 
     std::cout << "\nEnd Execution\n";
