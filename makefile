@@ -1,10 +1,11 @@
 # Project
 PROJ_NAME=test
 
+BUILD_NAME=build
 OBJ_NAME=obj
 
 #Dir
-BUILD_DIR=./build
+BUILD_DIR=./$(BUILD_NAME)
 SOURCE_DIR=./src
 OBJ_DIR=./$(OBJ_NAME)
 
@@ -27,7 +28,7 @@ CC_FLAGS=-c
 RM=rm -rf
 
 # MakeFile Functions
-all: $(OBJ_NAME) $(PROJ_NAME) clean_obj
+all: $(BUILD_NAME) $(OBJ_NAME) $(PROJ_NAME) clean_obj
 
 $(PROJ_NAME): $(OBJ)
 	@ echo 'Linking' $(PROJ_NAME) 'using the command' $(CC) 'with' $^ 
@@ -52,9 +53,13 @@ run: $(BUILD_DIR)/$(PROJ_NAME).exe
 $(OBJ_NAME):
 	@ mkdir -p $(OBJ_DIR)
 
+$(BUILD_NAME):
+	@ mkdir -p $(BUILD_DIR)
+
 clean: $(OBJ_NAME)
 	@ $(RM) $(OBJ_DIR)/*.* $(BUILD_DIR)/$(PROJ_NAME).exe $(OBJ_DIR)/*~ $(BUILD_DIR)/*~
 	@ rmdir $(OBJ_NAME)
+	@ rmdir $(BUILD_NAME)
 clean_obj:
 	@ $(RM) $(OBJ_DIR)/*.* $(OBJ_DIR)/*~
 	@ rmdir $(OBJ_NAME)

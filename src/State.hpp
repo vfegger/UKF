@@ -3,7 +3,6 @@
 
 #include "Data.hpp"
 
-
 class State
 {
 private:
