@@ -63,6 +63,10 @@ unsigned Data::GetLength(){
     return length;
 }
 
+std::string Data::GetName(){
+    return name;
+}
+
 double& Data::operator[](unsigned index){
     return data[index];
 }

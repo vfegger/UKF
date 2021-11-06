@@ -15,6 +15,7 @@ public:
     Data(Data& data_input);
     ~Data();
     unsigned GetLength();
+    std::string GetName();
     double& operator[](unsigned index);
     const double& operator[](unsigned index) const;
     void print();

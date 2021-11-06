@@ -8,8 +8,8 @@
 class Input
 {
 private:
-    unsigned inputDataLength;
     unsigned inputParametersLength;
+    unsigned inputDataLength;
     Parameters* inputParameters;
     Data* inputData;
     Data* inputDataCovariance;

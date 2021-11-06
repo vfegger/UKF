@@ -14,6 +14,9 @@ public:
     Parameters(std::string name, double* data, unsigned length);
     ~Parameters();
     unsigned GetLength();
+    std::string GetName();
+    int& operator[](unsigned index);
+    const int& operator[](unsigned index) const;
     void print();
 };
 #endif

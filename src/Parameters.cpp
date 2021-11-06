@@ -41,6 +41,18 @@ unsigned Parameters::GetLength(){
     return length;
 }
 
+std::string Parameters::GetName(){
+    return name;
+}
+
+int& Parameters::operator[](unsigned index){
+    return parameters[index];
+}
+
+const int& Parameters::operator[](unsigned index) const {
+    return parameters[index];
+}
+
 void Parameters::print(){
     std::cout << "Test Class - Input Data\n";
     if(parameters == NULL){
