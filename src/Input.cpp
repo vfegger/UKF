@@ -12,7 +12,7 @@ Input::Input(){
     inputDataCovariance = NULL;
 }
 
-void Input::Initialize(Data* inputData_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input){
+void Input::Initialize(Data* inputData_input, Data* inputDataCovariance_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input){
     inputParametersLength = inputParametersLength_input;
     inputDataLength = inputDataLength_input;
     inputParameters = new(std::nothrow) Parameters[inputParametersLength];
@@ -23,6 +23,9 @@ void Input::Initialize(Data* inputData_input, unsigned inputDataLength_input, Pa
     }
     for(unsigned i = 0u; i < inputDataLength; i++){
         inputData[i] = inputData_input[i];
+    }
+    for(unsigned i = 0u; i < inputDataLength; i++){
+        inputDataCovariance[i] = inputDataCovariance_input[i];
     }
 }
 
