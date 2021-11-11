@@ -4,8 +4,15 @@
 #include <new>
 #include <iostream>
 
-Input::Input(Data* inputData_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input)
-{
+Input::Input(){
+    inputParametersLength = 0u;
+    inputDataLength = 0u;
+    inputParameters = NULL;
+    inputData = NULL;
+    inputDataCovariance = NULL;
+}
+
+void Input::Initialize(Data* inputData_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input){
     inputParametersLength = inputParametersLength_input;
     inputDataLength = inputDataLength_input;
     inputParameters = new(std::nothrow) Parameters[inputParametersLength];

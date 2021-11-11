@@ -14,8 +14,9 @@ private:
     Data* inputData;
     Data* inputDataCovariance;
 public:
-    Input(Data* inputData_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input);
+    Input();
     virtual ~Input();
+    void Initialize(Data* inputData_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input);
     virtual void GetState(State &state_output);
     virtual void GetCovariance(double* &covariance_output);
     virtual void GetParameters(Parameters* &parameters_output);
