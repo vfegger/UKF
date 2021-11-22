@@ -2,41 +2,31 @@
 #include <new>
 #include <iostream>
 
-State::State(Data* data_input, unsigned length_input){
+State::State(Data* data_input, Data* dataCovariance_input, unsigned length_input){
     length_data = length_input;
-    data = new(std::nothrow) Data[length_input];
-    if(data == NULL && length_input != 0u){
+    point = new(std::nothrow) Point(data_input,length_data);
+    if(point == NULL){
         std::cout << "State is NULL with length = " << length_input << "\n";
     }
-    unsigned acc = 0u;
-    for(unsigned i = 0u; i < length; i++){
-        acc += length_data;
-        data[i] = Data(data_input[i]);
+    pointCovariance = new(std::nothrow) PointCovariance(data_input,dataCovariance_input,length_data);
+    if(pointCovariance == NULL){
+        std::cout << "State Covariance is NULL with length = " << length_input << "\n";
     }
-    length = acc;
 }
 
 State::~State(){
-    delete[] state;
-    delete[] data;
+    delete[] pointCovariance;
+    delete[] point;
 }
 
-void State::UpdateArrayFromData()
-{
-    for(unsigned i = 0, j = 0u; i < length_data; i++){
-        unsigned auxLength = data[i].GetLength();
-        for(unsigned k = 0; k < auxLength; k++,j++){
-            state[j] = data[i][k];
-        }
-    }
+unsigned State::GetStateLength(){
+    return point->GetLengthState();
 }
 
-void State::UpdateDataFromArray()
-{
-    for(unsigned i = 0, j = 0u; i < length_data; i++){
-        unsigned auxLength = data[i].GetLength();
-        for(unsigned k = 0; k < auxLength; k++,j++){
-            data[i][k] = state[j];
-        }
-    }
+Point* State::GetPoint(){
+    return point;
+}
+
+PointCovariance* State::GetPointCovariance(){
+    return pointCovariance;
 }

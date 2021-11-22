@@ -2,19 +2,20 @@
 #define STATE_HEADER
 
 #include "Data.hpp"
+#include "Point.hpp"
+#include "PointCovariance.hpp"
 
 class State
 {
 private:
-    Data* data;
-    double* state;
+    Point* point;
+    PointCovariance* pointCovariance;
     unsigned length_data;
-    unsigned length;
 public:
-    State(Data* data_input, unsigned length_input);
+    State(Data* data_input, Data* dataCovariance_input, unsigned length_input);
     ~State();
-    void UpdateArrayFromData();
-    void UpdateDataFromArray();
+    unsigned GetStateLength();
+    Point* GetPoint();
+    PointCovariance* GetPointCovariance();
 };
-
 #endif

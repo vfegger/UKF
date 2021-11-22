@@ -15,5 +15,6 @@ public:
     void Initialize(Input* input);
     void Solve();
     void Export(Output* output);
+    virtual void SigmaPointsGenerator(State* state, Point* sigmaPoints);
 };
 #endif
