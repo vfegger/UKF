@@ -18,7 +18,7 @@ Output::~Output(){
     }
 }
 
-void Output::Export(std::string &out, std::string &ext, std::string &delimiter, bool concatOutput = false){
+void Output::Export(std::string &out, std::string &ext, std::string &delimiter, bool concatOutput){
     if (concatOutput){
         for(unsigned i = 0u; i < outputParametersLength; i++){
             std::string fileName(out+parameters[i].GetName()+ext);

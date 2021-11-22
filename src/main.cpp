@@ -7,9 +7,9 @@ class InputTest : public Input
 private:
     
 public:
-    InputTest(Data* inputData_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input) : 
-        Input(inputData_input, inputDataLength_input, inputParameters_input, inputParametersLength_input) {
-            
+    InputTest(Data* inputData_input, Data* inputDataCovariance_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input) : 
+        Input() {
+            Initialize(inputData_input, inputDataCovariance_input, inputDataLength_input, inputParameters_input, inputParametersLength_input);
     }
     ~InputTest(){
 
@@ -31,7 +31,7 @@ int main(){
     data[1] = 2.5;
     Data* input = new Data("Test", data, 2u);
     input->print();
-    InputTest* test = new InputTest(input, 1u, NULL, 0u);
+    InputTest* test = new InputTest(input, NULL, 1u, NULL, 0u);
     delete test;
     delete[] data;
 

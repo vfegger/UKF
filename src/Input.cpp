@@ -45,7 +45,7 @@ Input::~Input()
 }
 
 void Input::GetState(State &state_output){
-    state_output = State(inputData, inputDataLength);
+    state_output = State(inputData, inputDataCovariance, inputDataLength);
 }
 
 void Input::GetCovariance(double* &covariance_output){
