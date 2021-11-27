@@ -44,8 +44,12 @@ Input::~Input()
     }
 }
 
-void Input::GetState(State &state_output){
-    state_output = State(inputData, inputDataCovariance, inputDataLength);
+void Input::GetState(State* state_output){
+    state_output = new State(inputData, inputDataCovariance, inputDataLength);
+}
+
+State* Input::GetState(){
+    return new State(inputData, inputDataCovariance, inputDataLength);
 }
 
 void Input::GetCovariance(double* &covariance_output){
@@ -71,6 +75,34 @@ void Input::GetCovariance(double* &covariance_output){
     }
 }
 
+double* Input::GetCovariance(){
+    long unsigned acc = 0u;
+    for(unsigned i = 0; i < inputDataLength; i++){
+        acc += inputData[i].GetLength();
+    }
+    double* covariance_output = new(std::nothrow) double[acc*acc];
+    for(unsigned i = 0; i < inputDataLength; i++){
+        unsigned stateLength = inputData[i].GetLength();
+        unsigned covarLength = inputDataCovariance[i].GetLength();
+        if(covarLength == stateLength){
+            for(unsigned j = 0u; j < covarLength; j++){
+                covariance_output[j * acc + j] = inputDataCovariance[i][j];
+            }
+        } else {
+            for(unsigned j = 0u; j < stateLength; j++){
+                for(unsigned k = 0u; j < stateLength; j++){
+                    covariance_output[j * acc + k] = inputDataCovariance[i][j* stateLength + k];
+                }
+            }
+        }
+    }
+    return covariance_output;
+}
+
 void Input::GetParameters(Parameters* &parameters_output){
     parameters_output = inputParameters;
+}
+
+Parameters* Input::GetParameters(){
+    return inputParameters;
 }
