@@ -1,5 +1,6 @@
 #include "UKF.hpp"
 #include <new>
+#include "MathCustom.hpp"
 
 UKF::UKF(){
 
@@ -19,8 +20,11 @@ void UKF::SigmaPointsGenerator(State* state, Point* &sigmaPoints, unsigned &sigm
     Point* mean = state->GetPoint();
     PointCovariance* covariance = state->GetPointCovariance();
     sigmaPoints = new(std::nothrow) Point[sigmaLength];
-    //TODO: Cholesky Decomp.
-    double* chol = covariance->GetStateCovariance();
+    double* chol = new double[stateLength*stateLength]; 
+    for(unsigned i = 0; i < stateLength * stateLength; i++){
+        chol[i] = 0;
+    }
+    CholeskyDecomposition(covariance->GetStateCovariance(), chol, stateLength, stateLength);
     //TODO: Optimize
     sigmaPoints[0] = Point(mean);
     for(unsigned i = 0u; i < stateLength; i++){
@@ -37,6 +41,7 @@ void UKF::SigmaPointsGenerator(State* state, Point* &sigmaPoints, unsigned &sigm
             aux[j] -= chol[i*stateLength+j];  
         }
     }
+    delete[] chol;
     return;
 }
 
@@ -48,6 +53,9 @@ void UKF::Solve(){
     unsigned lengthState = state->GetStateLength();
     unsigned lengthObservation = measure->GetStateLength();
     unsigned sigmaLength = 0u;
+    unsigned auxMemorySize = (lengthState > lengthObservation) ? lengthState: lengthObservation;
+    double* auxMemory = new double[auxMemorySize*auxMemorySize];
+
     // Generate Sigma Points of the state
     Point* sigmaPoints;
     Point* sigmaPointsObservation;
@@ -61,8 +69,8 @@ void UKF::Solve(){
     // Get Mean of sigma points of the state
     double* meanState = state->GetPoint()->GetState();
     for(unsigned i = 0; i < lengthState; i++){
-            meanState[i] = 0;
-        }
+        meanState[i] = 0;
+    }
     for(unsigned k = 0; k < sigmaLength; k++){
         double* aux = sigmaPoints[k].GetState();
         for(unsigned i = 0; i < lengthState; i++){
@@ -92,15 +100,17 @@ void UKF::Solve(){
     }
     // Get Mean of observation of all sigma Points
     double* meanObservation = measure->GetPoint()->GetState();
+    double* realObservation = measure->GetRealPoint()->GetState();
     for(unsigned i = 0; i < lengthObservation; i++){
-            meanObservation[i] = 0;
-        }
+        meanObservation[i] = 0;
+    }
     for(unsigned k = 0; k < sigmaLength; k++){
         double* aux = sigmaPointsObservation[k].GetState();
         for(unsigned i = 0; i < lengthObservation; i++){
             meanObservation[i] += aux[i];
         }
     }
+    measure->GetRealPoint()->UpdateArrayFromData();
     // Calculate covariance of observation of the state
     double* covarianceObservation = measure->GetPointCovariance()->GetStateCovariance();
     for(unsigned i = 0u; i < lengthObservation; i++){
@@ -128,12 +138,25 @@ void UKF::Solve(){
         }
     }
     // Calculate the Kalman Gain
+    // TODO: Optimize by right hand solver;
     double* kalmanGain = new double[lengthState*lengthObservation];
-    //kalmanGain = Multiply(crossCovariance,inverse(covarianceObservation))
+    Multiply(crossCovariance,
+        InverseByChol(covarianceObservation,lengthObservation),
+        kalmanGain,lengthState,lengthObservation,lengthObservation);
 
     // Update state and Covariance
-    // meanState += Multiply(kalmanGain,Subtract(meanObservation,realObservation));
-    // covarianceState += Multiply(kalmanGain,covarianceObservation,transpose(kalmanGain));
+    AddVector(meanState,
+        Multiply(kalmanGain,
+            SubVector(
+                meanObservation,realObservation,lengthObservation),
+            auxMemory,lengthState, 1u, lengthObservation),
+        lengthState);
+    AddVector(covarianceState,
+        Multiply(kalmanGain,
+            MultiplyTransposed(
+                covarianceObservation,kalmanGain,auxMemory,lengthObservation,lengthState,lengthObservation),
+            auxMemory, lengthState,lengthState, lengthObservation),
+        lengthState*lengthState);
 }
 
 void UKF::Export(Output* output_out){

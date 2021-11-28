@@ -5,6 +5,7 @@
 #include "Measure.hpp"
 #include "Input.hpp"
 #include "Output.hpp"
+#include "MathCustom.hpp"
 
 class UKF
 {

@@ -2,8 +2,12 @@
 #include <new>
 #include <iostream>
 
-Measure::Measure(Data* data_input, Data* dataCovariance_input, unsigned length_input){
+Measure::Measure(Data* dataReal_input, Data* data_input, Data* dataCovariance_input, unsigned length_input){
     length_data = length_input;
+    realPoint = new(std::nothrow) Point(dataReal_input,length_data);
+    if(realPoint == NULL){
+        std::cout << "State is NULL with length = " << length_input << "\n";
+    }
     point = new(std::nothrow) Point(data_input,length_data);
     if(point == NULL){
         std::cout << "State is NULL with length = " << length_input << "\n";
@@ -17,6 +21,7 @@ Measure::Measure(Data* data_input, Data* dataCovariance_input, unsigned length_i
 Measure::~Measure(){
     delete[] pointCovariance;
     delete[] point;
+    delete[] realPoint;
 }
 
 unsigned Measure::GetStateLength(){
@@ -25,6 +30,10 @@ unsigned Measure::GetStateLength(){
 
 Point* Measure::GetPoint(){
     return point;
+}
+
+Point* Measure::GetRealPoint(){
+    return realPoint;
 }
 
 PointCovariance* Measure::GetPointCovariance(){
