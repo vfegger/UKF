@@ -1,6 +1,8 @@
 #ifndef UKF_HEADER
 #define UKF_HEADER
 
+#include "State.hpp"
+#include "Measure.hpp"
 #include "Input.hpp"
 #include "Output.hpp"
 
