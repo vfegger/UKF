@@ -141,7 +141,7 @@ void UKF::Solve(){
     // TODO: Optimize by right hand solver;
     double* kalmanGain = new double[lengthState*lengthObservation];
     Multiply(crossCovariance,
-        InverseByChol(covarianceObservation,lengthObservation),
+        PseudoInverse(covarianceObservation,lengthObservation),
         kalmanGain,lengthState,lengthObservation,lengthObservation);
 
     // Update state and Covariance
