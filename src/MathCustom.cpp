@@ -74,3 +74,65 @@ double* CholeskyDecomposition(double* a_in, double* b_out, unsigned height, unsi
     }
     return b_out;
 }
+
+double* Identity(double* a_inout, unsigned height, unsigned width){
+    for(unsigned i = 0u; i < width; i++){
+        for(unsigned j = 0u; j < height; j++){
+            a_inout[i*height+j] = (i == j) ? 1.0 : 0.0;
+        }
+    }
+    return a_inout;
+}
+
+double* Transpose(double* a_in, double* b_out, unsigned height, unsigned width){
+    for(unsigned i = 0u; i < width; i++){
+        for(unsigned j = 0u; j < height; j++){
+            b_out[j*width+i] = a_in[i*height+j];
+        }
+    }
+    return b_out;
+}
+
+double* ForwardSubstituition(double* a_in, double* x_inout, double* b_in, unsigned height, unsigned width, unsigned width_RHS){
+    for(unsigned k = 0u; k < width_RHS; k++){
+        for(unsigned i = 0u; i < height; i++){
+            double acc = b_in[k*height+i];
+            for(unsigned j = 0; j < i; j++){
+                acc -= a_in[j*height+i]*x_inout[k*height+j];
+            }
+            x_inout[k*height+i] = acc/a_in[i*height+i];
+        }
+    }
+    return x_inout;
+}
+
+double* BackwardSubstituition(double* a_in, double* x_inout, double* b_in, unsigned height, unsigned width, unsigned width_RHS){
+    unsigned ii;
+    for(unsigned k = 0u; k < width_RHS; k++){
+        for(unsigned i = 0u; i < height; i++){
+            ii = height - i - 1u;
+            double acc = b_in[k*height+ii];
+            for(unsigned j = ii; j < width; j++){
+                acc -= a_in[j*height+i]*x_inout[k*height+j];
+            }
+            x_inout[k*height+i] = acc/a_in[i*height+i];
+        }
+    }
+    return x_inout;
+}
+
+double* PseudoInverse(double* a_in, double* b_out, unsigned height, unsigned width){
+    double* aux = new double[width*width];
+    double* aux1 = new double[width*width];
+    double* decomposition = new double[width*width];
+    double* decompositionT = new double[width*width];
+    CholeskyDecomposition(MultiplyTransposed(a_in,a_in,aux,width,width,height),decomposition,width,width);
+    Transpose(decomposition,decompositionT,width,width);
+    Identity(aux,width,width);
+    BackwardSubstituition(decomposition,aux1,aux,width,width,width);
+    ForwardSubstituition(decompositionT,aux,aux1,width,width,width);
+    MultiplyTransposed(aux,a_in,b_out,width,height,width);
+}
+
+double* Solver();
+double* RightSolver();

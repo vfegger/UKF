@@ -113,6 +113,7 @@ void UKF::Solve(){
     measure->GetRealPoint()->UpdateArrayFromData();
     // Calculate covariance of observation of the state
     double* covarianceObservation = measure->GetPointCovariance()->GetStateCovariance();
+    double* inverseCovarianceObservation = new double[lengthObservation*lengthObservation];
     for(unsigned i = 0u; i < lengthObservation; i++){
         for(unsigned j = 0u; j < lengthObservation; j++){
             covarianceObservation[i*lengthObservation+j] = 0.0;
@@ -141,8 +142,9 @@ void UKF::Solve(){
     // TODO: Optimize by right hand solver;
     double* kalmanGain = new double[lengthState*lengthObservation];
     Multiply(crossCovariance,
-        PseudoInverse(covarianceObservation,lengthObservation),
-        kalmanGain,lengthState,lengthObservation,lengthObservation);
+        PseudoInverse(covarianceObservation,inverseCovarianceObservation,lengthObservation,lengthObservation),
+        kalmanGain,lengthState,lengthObservation,lengthObservation
+    );
 
     // Update state and Covariance
     AddVector(meanState,
@@ -150,13 +152,17 @@ void UKF::Solve(){
             SubVector(
                 meanObservation,realObservation,lengthObservation),
             auxMemory,lengthState, 1u, lengthObservation),
-        lengthState);
+        lengthState
+    );
     AddVector(covarianceState,
         Multiply(kalmanGain,
             MultiplyTransposed(
                 covarianceObservation,kalmanGain,auxMemory,lengthObservation,lengthState,lengthObservation),
             auxMemory, lengthState,lengthState, lengthObservation),
-        lengthState*lengthState);
+        lengthState*lengthState
+    );
+    
+
 }
 
 void UKF::Export(Output* output_out){
