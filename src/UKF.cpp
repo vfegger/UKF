@@ -113,7 +113,6 @@ void UKF::Solve(){
     measure->GetRealPoint()->UpdateArrayFromData();
     // Calculate covariance of observation of the state
     double* covarianceObservation = measure->GetPointCovariance()->GetStateCovariance();
-    double* inverseCovarianceObservation = new double[lengthObservation*lengthObservation];
     for(unsigned i = 0u; i < lengthObservation; i++){
         for(unsigned j = 0u; j < lengthObservation; j++){
             covarianceObservation[i*lengthObservation+j] = 0.0;
@@ -142,7 +141,7 @@ void UKF::Solve(){
     // TODO: Optimize by right hand solver;
     double* kalmanGain = new double[lengthState*lengthObservation];
     Multiply(crossCovariance,
-        PseudoInverse(covarianceObservation,inverseCovarianceObservation,lengthObservation,lengthObservation),
+        PseudoInverse(covarianceObservation,auxMemory,lengthObservation,lengthObservation),
         kalmanGain,lengthState,lengthObservation,lengthObservation
     );
 
