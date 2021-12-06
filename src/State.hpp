@@ -10,6 +10,7 @@ class State
 private:
     Point* point;
     PointCovariance* pointCovariance;
+    PointCovariance* pointNoise;
     unsigned length_data;
 public:
     State(Data* data_input, Data* dataCovariance_input, unsigned length_input);

@@ -30,7 +30,7 @@ Data::Data(std::string name_input, double* data_input, unsigned length_input){
     return;
 }
 
-Data::Data(Data& data_input){
+Data::Data(const Data& data_input){
     name = data_input.name;
     length = data_input.length;
     if(length == 0u){
@@ -52,11 +52,31 @@ Data::Data(Data& data_input){
 
 Data::~Data(){
     length = 0u;
-    std::cout << name << " address: " << data << "freed\n";
+    std::cout << name << " address: " << data << " freed\n";
     if(data != NULL){
         delete[] data;
     }
     return;
+}
+
+Data& Data::operator=(const Data& data_input){
+    name = data_input.name;
+    length = data_input.length;
+    if(length == 0u){
+        data = NULL;
+        std::cout << "Null pointer\n";
+        return *this;
+    }
+    data = new(std::nothrow) double[length];
+    if(data == NULL){
+        std::cout << name << ":\n";
+        std::cout << "\tError in allocation of memory of size :" << length*sizeof(double) << "\n";
+        return *this;
+    }
+    for(unsigned i = 0u; i < length; i++){
+        data[i] = data_input.data[i];
+    }
+    return *this;
 }
 
 unsigned Data::GetLength(){

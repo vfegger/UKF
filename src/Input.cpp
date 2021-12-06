@@ -19,13 +19,13 @@ void Input::Initialize(Data* inputData_input, Data* inputDataCovariance_input, u
     inputData = new(std::nothrow) Data[inputDataLength];
     inputDataCovariance = new(std::nothrow) Data[inputDataLength];
     for(unsigned i = 0u; i < inputParametersLength; i++){
-        inputParameters[i] = inputParameters_input[i];
+        inputParameters[i] = Parameters(inputParameters_input[i]);
     }
     for(unsigned i = 0u; i < inputDataLength; i++){
-        inputData[i] = inputData_input[i];
+        inputData[i] = Data(inputData_input[i]);
     }
     for(unsigned i = 0u; i < inputDataLength; i++){
-        inputDataCovariance[i] = inputDataCovariance_input[i];
+        inputDataCovariance[i] = Data(inputDataCovariance_input[i]);
     }
 }
 

@@ -11,6 +11,7 @@ private:
     Point* point;
     Point* realPoint;
     PointCovariance* pointCovariance;
+    PointCovariance* pointNoise;
     unsigned length_data;
 public:
     Measure(Data* dataReal_input, Data* data_input, Data* dataCovariance_input, unsigned length_input);

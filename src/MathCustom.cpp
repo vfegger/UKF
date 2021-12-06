@@ -132,6 +132,7 @@ double* PseudoInverse(double* a_in, double* b_out, unsigned height, unsigned wid
     BackwardSubstituition(decomposition,aux1,aux,width,width,width);
     ForwardSubstituition(decompositionT,aux,aux1,width,width,width);
     MultiplyTransposed(aux,a_in,b_out,width,height,width);
+    return b_out;
 }
 
 double* Solver();

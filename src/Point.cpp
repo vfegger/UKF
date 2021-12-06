@@ -14,7 +14,7 @@ Point::Point(Data* data_input, unsigned length_input){
     unsigned acc = 0u;
     for(unsigned i = 0u; i < length_data; i++){
         acc += data_input[i].GetLength();
-        data[i] =  Data(data_input[i]);
+        data[i] = Data(data_input[i]);
     }
     length_state = acc;
     state = new(std::nothrow) double[length_state];
@@ -38,7 +38,7 @@ Point::Point(Point& point){
     length_state = point.length_state;
     data = new(std::nothrow) Data[length_data];
     for(unsigned i = 0u; i < length_data; i++){
-        data[i] =  Data(point.data[i]);
+        data[i] = Data(point.data[i]);
     }
     state = new(std::nothrow) double[length_state];
     for(unsigned i = 0u; i < length_data; i++){
