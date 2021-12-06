@@ -52,7 +52,7 @@ Data::Data(const Data& data_input){
 
 Data::~Data(){
     length = 0u;
-    std::cout << name << " address: " << data << " freed\n";
+    //std::cout << name << " address: " << data << " freed\n";
     if(data != NULL){
         delete[] data;
     }

@@ -1,11 +1,13 @@
+#define DEBUG_MODE 1
+
 #include <iostream>
 #include "Input.hpp"
 #include "Output.hpp"
+#include "UKF.hpp"
 
 class GravitationInput : public Input
 {
 private:
-public:
     double* position;
     double* velocity;
     double* acceleration;
@@ -15,7 +17,7 @@ public:
     double* accelerationCovar;
 
     double deltaTime;
-
+public:
     GravitationInput(double px, double py, double pz, double vx, double vy, double vz, double ax, double ay, double az){
         //State
         position = new double[3u];
@@ -65,9 +67,6 @@ public:
         inputData[0u] = Data("Position", position, 3u);
         inputData[1u] = Data("Velocity", velocity, 3u);
         inputData[2u] = Data("Acceleration", acceleration, 3u);
-        for(unsigned i = 0u; i < 3u; i++){
-            inputData[i].print();
-        }
         
         Data* inputDataCovar = new Data[3u];
         inputDataCovar[0u] = Data("PositionCovar", positionCovar, 3u);
@@ -109,20 +108,19 @@ int main(){
     
     test->LoadInput();
     unsigned L = 3u;
-    for(unsigned i = 0u; i < L; i++){
-        std::cout << test->position[i] << "\t";
-        std::cout << test->velocity[i] << "\t";
-        std::cout << test->acceleration[i] << "\t";
-        std::cout << test->positionCovar[i] << "\t";
-        std::cout << test->velocityCovar[i] << "\t";
-        std::cout << test->accelerationCovar[i] << "\n";
-    }
     Data* data = test->GetState()->GetPoint()->GetData();
     Data* dataCovar = test->GetState()->GetPointCovariance()->GetDataCovariance();
     for(unsigned i = 0u; i < L; i++){
         data[i].print();
         dataCovar[i].print();
     }
+
+    UKF* ukfMod = new UKF();
+
+    ukfMod->Initialize(test);
+
+    delete ukfMod;
+    delete test;
 
     std::cout << "\nEnd Execution\n";
     return 0;
