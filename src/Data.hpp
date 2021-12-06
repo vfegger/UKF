@@ -11,7 +11,7 @@ private:
     unsigned length;
 public:
     Data();
-    Data(std::string name, double* data, unsigned length);
+    Data(std::string name, double* data_input, unsigned length);
     Data(const Data& data_input);
     ~Data();
     Data& operator=(const Data& rhs);

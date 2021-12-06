@@ -11,8 +11,10 @@ private:
     unsigned length;
 public:
     Parameters();
-    Parameters(std::string name, double* data, unsigned length);
+    Parameters(std::string name, int* data, unsigned length);
+    Parameters(Parameters& parameters_input);
     ~Parameters();
+    Parameters& operator=(const Parameters& rhs);
     unsigned GetLength();
     std::string GetName();
     int& operator[](unsigned index);
