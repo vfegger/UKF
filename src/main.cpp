@@ -1,5 +1,3 @@
-#define DEBUG_MODE 1
-
 #include <iostream>
 #include "Input.hpp"
 #include "Output.hpp"
@@ -115,11 +113,13 @@ int main(){
         dataCovar[i].print();
     }
 
-    UKF* ukfMod = new UKF();
+    UKF* UKFMod = new UKF();
 
-    ukfMod->Initialize(test);
+    UKFMod->Initialize(test);
 
-    delete ukfMod;
+    UKFMod->Solve();
+
+    delete UKFMod;
     delete test;
 
     std::cout << "\nEnd Execution\n";
