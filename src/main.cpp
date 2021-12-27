@@ -71,7 +71,7 @@ public:
         inputDataCovar[1u] = Data("VelocityCovar", velocityCovar, 3u);
         inputDataCovar[2u] = Data("AccelerationCovar", accelerationCovar, 3u);
         
-        Initialize(inputData, inputDataCovar, 3u, NULL, 0);
+        Initialize(inputData, inputDataCovar, 3u, NULL, 0, NULL, 0);
     }
 
     void Evolution(Data* inputData_input, Parameters* inputParameters_input) override {
@@ -117,7 +117,7 @@ int main(){
 
     UKFMod->Initialize(test);
 
-    UKFMod->Solve();
+    //UKFMod->Solve();
 
     delete UKFMod;
     delete test;

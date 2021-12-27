@@ -2,6 +2,20 @@
 #include <new>
 #include <iostream>
 
+Measure::Measure(Data* dataReal_input, Data* dataNoise_input, unsigned length_input){
+    length_data = length_input;
+    realPoint = new(std::nothrow) Point(dataReal_input,length_data);
+    if(realPoint == NULL){
+        std::cout << "Real measure is NULL with length = " << length_input << "\n";
+    }
+    pointNoise = new(std::nothrow) PointCovariance(dataReal_input,dataNoise_input,length_data);
+    if(pointNoise == NULL){
+        std::cout << "Measure Noise is NULL with length = " << length_input << "\n";        
+    }
+    point = NULL;
+    pointCovariance = NULL;
+}
+
 Measure::Measure(Data* dataReal_input, Data* data_input, Data* dataCovariance_input, unsigned length_input){
     length_data = length_input;
     realPoint = new(std::nothrow) Point(dataReal_input,length_data);

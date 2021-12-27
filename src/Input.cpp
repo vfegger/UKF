@@ -12,12 +12,14 @@ Input::Input(){
     inputDataCovariance = NULL;
 }
 
-void Input::Initialize(Data* inputData_input, Data* inputDataCovariance_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input){
+void Input::Initialize(Data* inputData_input, Data* inputDataCovariance_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input, Data* measureData_input, unsigned measureDataLength_input){
     inputParametersLength = inputParametersLength_input;
     inputDataLength = inputDataLength_input;
+    measureDataLength = measureDataLength_input;
     inputParameters = new(std::nothrow) Parameters[inputParametersLength];
     inputData = new(std::nothrow) Data[inputDataLength];
     inputDataCovariance = new(std::nothrow) Data[inputDataLength];
+    measureData = new(std::nothrow) Data[inputDataLength];
     for(unsigned i = 0u; i < inputParametersLength; i++){
         inputParameters[i] = Parameters(inputParameters_input[i]);
     }
@@ -27,6 +29,7 @@ void Input::Initialize(Data* inputData_input, Data* inputDataCovariance_input, u
     for(unsigned i = 0u; i < inputDataLength; i++){
         inputDataCovariance[i] = Data(inputDataCovariance_input[i]);
     }
+    
 }
 
 Input::~Input()
@@ -105,4 +108,12 @@ void Input::GetParameters(Parameters* &parameters_output){
 
 Parameters* Input::GetParameters(){
     return inputParameters;
+}
+
+void Input::GetMeasure(Measure* &measure_output){
+    measure_output = new Measure(measureData,measureDataNoise,measureDataLength);
+}
+
+Measure* Input::GetMeasure(){
+    return new Measure(measureData,measureDataNoise,measureDataLength);
 }

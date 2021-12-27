@@ -14,6 +14,7 @@ private:
     PointCovariance* pointNoise;
     unsigned length_data;
 public:
+    Measure(Data* dataReal_input, Data* dataNoise_input, unsigned length_input);
     Measure(Data* dataReal_input, Data* data_input, Data* dataCovariance_input, unsigned length_input);
     ~Measure();
     unsigned GetStateLength();
