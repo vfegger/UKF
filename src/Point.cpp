@@ -28,7 +28,7 @@ Point::Point(Point* point){
         data[i] =  Data(point->data[i]);
     }
     state = new(std::nothrow) double[length_state];
-    for(unsigned i = 0u; i < length_data; i++){
+    for(unsigned i = 0u; i < length_state; i++){
         state[i] = point->state[i];
     }
 }
@@ -53,21 +53,25 @@ Point::~Point(){
 
 void Point::UpdateArrayFromData()
 {
-    for(unsigned i = 0, j = 0u; i < length_data; i++){
+    unsigned offset = 0u;
+    for(unsigned i = 0u; i < length_data; i++){
         unsigned auxLength = data[i].GetLength();
-        for(unsigned k = 0; k < auxLength; k++,j++){
-            state[j] = data[i][k];
+        for(unsigned k = 0; k < auxLength; k++){
+            state[k+offset] = data[i][k];
         }
+        offset += auxLength;
     }
 }
 
 void Point::UpdateDataFromArray()
 {
-    for(unsigned i = 0, j = 0u; i < length_data; i++){
+    unsigned offset = 0u;
+    for(unsigned i = 0; i < length_data; i++){
         unsigned auxLength = data[i].GetLength();
-        for(unsigned k = 0; k < auxLength; k++,j++){
-            data[i][k] = state[j];
+        for(unsigned k = 0; k < auxLength; k++){
+            data[i][k] = state[k+offset];
         }
+        offset += auxLength;
     }
 }
 

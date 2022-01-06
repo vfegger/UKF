@@ -22,7 +22,10 @@ OBJ=$(subst .cpp,.o,$(subst $(SOURCE_DIR),$(OBJ_DIR),$(CPP_SOURCE)))
 CC=g++
 CCP=nvcc
 
-CC_FLAGS=-c
+CC_C_FLAGS=-c
+CC_O_FLAGS=-o
+
+DEBUG_FLAGS=-g
 
 # Commands
 RM=rm -rf
@@ -30,19 +33,22 @@ RM=rm -rf
 # MakeFile Functions
 all: $(BUILD_NAME) $(OBJ_NAME) $(PROJ_NAME) clean_obj
 
+debug: CC_C_FLAGS += $(DEBUG_FLAGS)
+debug: all
+
 $(PROJ_NAME): $(OBJ)
 	@ echo 'Linking' $(PROJ_NAME) 'using the command' $(CC) 'with' $^ 
-	@ $(CC) $^ -o $(BUILD_DIR)/$@.exe
+	@ $(CC) $^ $(CC_O_FLAGS) $(BUILD_DIR)/$@.exe
 	@ echo ' '
 
 $(OBJ_DIR)/%.o: $(SOURCE_DIR)/%.cpp $(SOURCE_DIR)/%.hpp
 	@ echo 'Compiling' $< 'into' $@ 'with' $(SOURCE_DIR)/%.hpp
-	@ $(CC) $< $(CC_FLAGS) -o $@ 
+	@ $(CC) $< $(CC_C_FLAGS) -o $@ 
 	@ echo ' '
 
 $(OBJ_DIR)/main.o: $(SOURCE_DIR)/main.cpp $(H_SOURCE)
 	@ echo 'Compiling' $(SOURCE_DIR)/main.cpp 'into' $(OBJ_DIR)/main.o 'with' $(H_SOURCE)
-	@ $(CC) $< $(CC_FLAGS) -o $@
+	@ $(CC) $< $(CC_C_FLAGS) -o $@
 	@ echo ' '
 
 run: $(BUILD_DIR)/$(PROJ_NAME).exe

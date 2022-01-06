@@ -18,27 +18,29 @@ PointCovariance::PointCovariance(Data* data_input, Data* dataCovariance_input, u
         unsigned aux1 = data_input[i].GetLength();
         unsigned aux2 = dataCovariance_input[i].GetLength();
         compactForm[i] = aux1 == aux2;
-        acc += (compactForm[i]) ? aux2 * aux2: aux2;
+        acc += aux1;
         dataCovariance[i] =  Data(dataCovariance_input[i]);
     }
     length_state = acc;
-    stateCovariance = new(std::nothrow) double[length_state];
-    for(unsigned i = 0u; i < length_state; i++){
+    stateCovariance = new(std::nothrow) double[length_state*length_state];
+    for(unsigned i = 0u; i < length_state*length_state; i++){
         stateCovariance[i] = 0.0;
     }
+    unsigned offset = 0u;
     for(unsigned i = 0u; i < length_data; i++){
         unsigned aux = dataCovariance_input[i].GetLength();
         if(compactForm[i]){
             for(unsigned j = 0u; j < aux; j++){
-                stateCovariance[j*length_state+j] = dataCovariance_input[i][j];
+                stateCovariance[(j+offset)*length_state+(j+offset)] = dataCovariance_input[i][j];
             }
         } else {
             for(unsigned j = 0u; j < aux; j++){
                 for(unsigned k = 0u; k < aux; j++){
-                    stateCovariance[j*length_state+k] = dataCovariance_input[i][j*aux+k];
+                    stateCovariance[(j+offset)*length_state+(k+offset)] = dataCovariance_input[i][j*aux+k];
                 }
             }
         }
+        offset += aux;
     }
 }
 
@@ -50,19 +52,20 @@ PointCovariance::~PointCovariance(){
 
 void PointCovariance::UpdateArrayFromData()
 {
-    for(unsigned i = 0u; i < length_state; i++){
+    for(unsigned i = 0u; i < length_state*length_state; i++){
         stateCovariance[i] = 0.0;
     }
+    unsigned offset = 0u;
     for(unsigned i = 0u; i < length_data; i++){
         unsigned aux = dataCovariance[i].GetLength();
         if(compactForm[i]){
             for(unsigned j = 0u; j < aux; j++){
-                stateCovariance[j*length_state+j] = dataCovariance[i][j];
+                stateCovariance[(j+offset)*length_state+(j+offset)] = dataCovariance[i][j];
             }
         } else {
             for(unsigned j = 0u; j < aux; j++){
                 for(unsigned k = 0u; k < aux; j++){
-                    stateCovariance[j*length_state+k] = dataCovariance[i][j*aux+k];
+                    stateCovariance[(j+offset)*length_state+(k+offset)] = dataCovariance[i][j*aux+k];
                 }
             }
         }
@@ -71,16 +74,17 @@ void PointCovariance::UpdateArrayFromData()
 
 void PointCovariance::UpdateDataFromArray()
 {
+    unsigned offset = 0u;
     for(unsigned i = 0u; i < length_data; i++){
         unsigned aux = dataCovariance[i].GetLength();
         if(compactForm[i]){
             for(unsigned j = 0u; j < aux; j++){
-                dataCovariance[i][j] = stateCovariance[j*length_state+j];
+                dataCovariance[i][j] = stateCovariance[(j+offset)*length_state+(j+offset)];
             }
         } else {
             for(unsigned j = 0u; j < aux; j++){
                 for(unsigned k = 0u; k < aux; j++){
-                    dataCovariance[i][j*aux+k] = stateCovariance[j*length_state+k];
+                    dataCovariance[i][j*aux+k] = stateCovariance[(j+offset)*length_state+(k+offset)];
                 }
             }
         }

@@ -19,9 +19,9 @@ State::State(Data* data_input, Data* dataCovariance_input, unsigned length_input
 }
 
 State::~State(){
-    delete[] pointCovariance;
-    delete[] point;
-    delete[] pointNoise;
+    delete pointCovariance;
+    delete point;
+    delete pointNoise;
 }
 
 unsigned State::GetStateLength(){

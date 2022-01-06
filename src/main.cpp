@@ -72,6 +72,9 @@ public:
         inputDataCovar[2u] = Data("AccelerationCovar", accelerationCovar, 3u);
         
         Initialize(inputData, inputDataCovar, 3u, NULL, 0, NULL, 0);
+
+        delete[] inputDataCovar;
+        delete[] inputData;
     }
 
     void Evolution(Data* inputData_input, Parameters* inputParameters_input) override {
@@ -106,8 +109,9 @@ int main(){
     
     test->LoadInput();
     unsigned L = 3u;
-    Data* data = test->GetState()->GetPoint()->GetData();
-    Data* dataCovar = test->GetState()->GetPointCovariance()->GetDataCovariance();
+    State* state = test->GetState();
+    Data* data = state->GetPoint()->GetData();
+    Data* dataCovar = state->GetPointCovariance()->GetDataCovariance();
     for(unsigned i = 0u; i < L; i++){
         data[i].print();
         dataCovar[i].print();
@@ -120,6 +124,7 @@ int main(){
     //UKFMod->Solve();
 
     delete UKFMod;
+    delete state;
     delete test;
 
     std::cout << "\nEnd Execution\n";

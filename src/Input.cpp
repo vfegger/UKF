@@ -10,6 +10,7 @@ Input::Input(){
     inputParameters = NULL;
     inputData = NULL;
     inputDataCovariance = NULL;
+    measureData = NULL;
 }
 
 void Input::Initialize(Data* inputData_input, Data* inputDataCovariance_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input, Data* measureData_input, unsigned measureDataLength_input){
@@ -19,7 +20,7 @@ void Input::Initialize(Data* inputData_input, Data* inputDataCovariance_input, u
     inputParameters = new(std::nothrow) Parameters[inputParametersLength];
     inputData = new(std::nothrow) Data[inputDataLength];
     inputDataCovariance = new(std::nothrow) Data[inputDataLength];
-    measureData = new(std::nothrow) Data[inputDataLength];
+    measureData = new(std::nothrow) Data[measureDataLength];
     for(unsigned i = 0u; i < inputParametersLength; i++){
         inputParameters[i] = Parameters(inputParameters_input[i]);
     }
@@ -29,6 +30,9 @@ void Input::Initialize(Data* inputData_input, Data* inputDataCovariance_input, u
     for(unsigned i = 0u; i < inputDataLength; i++){
         inputDataCovariance[i] = Data(inputDataCovariance_input[i]);
     }
+    for(unsigned i = 0u; i < measureDataLength; i++){
+        measureData[i] = Data(measureData_input[i]);
+    }
     
 }
 
@@ -36,6 +40,7 @@ Input::~Input()
 {
     inputParametersLength = 0u;
     inputDataLength = 0u;
+    measureDataLength = 0u;
     if(inputDataCovariance != NULL){
         delete[] inputDataCovariance;
     }
@@ -44,6 +49,9 @@ Input::~Input()
     }
     if(inputParameters != NULL){
         delete[] inputParameters;
+    }
+    if(measureData != NULL){
+        delete[] measureData;
     }
 }
 
