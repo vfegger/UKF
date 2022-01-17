@@ -30,26 +30,39 @@ double* SubVector(double* a_inout, double* b_in, unsigned length){
 }
 
 double* Multiply(double* a_in, double* b_in, double* c_out, unsigned height_out, unsigned width_out, unsigned shared_in){
-    for(unsigned i = 0u; i < width_out; i++){
-        for(unsigned j = 0u; j < height_out; j++){
+    for(unsigned i = 0u; i < height_out; i++){
+        for(unsigned j = 0u; j < width_out; j++){
             double acc = 0.0;
             for(unsigned k = 0u; k < shared_in; k++){
-                acc += a_in[i*shared_in+k]*b_in[k*width_out+j];
+                acc += a_in[k*height_out+i]*b_in[j*shared_in+k];
             }
-             c_out[i*height_out+j] = acc;
+            c_out[j*height_out+i] = acc;
         }
     }
     return c_out;
 }
 
 double* MultiplyTransposed(double* a_in, double* b_in, double* c_out, unsigned height_out, unsigned width_out, unsigned shared_in){
-    for(unsigned i = 0u; i < width_out; i++){
-        for(unsigned j = 0u; j < height_out; j++){
+    for(unsigned i = 0u; i < height_out; i++){
+        for(unsigned j = 0u; j < width_out; j++){
+            double acc = 0.0;
+            for(unsigned k = 0u; k < shared_in; k++){
+                acc += a_in[k*height_out+i]*b_in[k*width_out+j];
+            }
+            c_out[j*height_out+i] = acc;
+        }
+    }
+    return c_out;
+}
+
+double* TransposedMultiply(double* a_in, double* b_in, double* c_out, unsigned height_out, unsigned width_out, unsigned shared_in){
+    for(unsigned i = 0u; i < height_out; i++){
+        for(unsigned j = 0u; j < width_out; j++){
             double acc = 0.0;
             for(unsigned k = 0u; k < shared_in; k++){
                 acc += a_in[i*shared_in+k]*b_in[j*shared_in+k];
             }
-             c_out[i*height_out+j] = acc;
+            c_out[j*height_out+i] = acc;
         }
     }
     return c_out;
@@ -63,7 +76,7 @@ double* CholeskyDecomposition(double* a_in, double* b_out, unsigned height, unsi
         for(unsigned j = 0u; j < k; j++){
             acc += b_out[j*height+k]*b_out[j*height+k];
         }
-        b_out[k*height+k] = sqrt(a_in[k*height+k]- acc);
+        b_out[k*height+k] = sqrt(a_in[k*height+k]-acc);
         for(unsigned i = k + 1u; i < height; i++){
             acc = 0.0;
             for(unsigned j = 0u; j < k; j++){
@@ -126,12 +139,23 @@ double* PseudoInverse(double* a_in, double* b_out, unsigned height, unsigned wid
     double* aux1 = new double[width*width];
     double* decomposition = new double[width*width];
     double* decompositionT = new double[width*width];
-    CholeskyDecomposition(MultiplyTransposed(a_in,a_in,aux,width,width,height),decomposition,width,width);
+    for(unsigned i = 0u; i < width*width; i++){
+        aux[i] = 0.0;
+        aux1[i] = 0.0;
+        decomposition[i] = 0.0;
+        decompositionT[i] = 0.0;
+    }
+    TransposedMultiply(a_in,a_in,aux,width,width,height);
+    CholeskyDecomposition(aux,decomposition,width,width);
     Transpose(decomposition,decompositionT,width,width);
     Identity(aux,width,width);
     BackwardSubstituition(decomposition,aux1,aux,width,width,width);
     ForwardSubstituition(decompositionT,aux,aux1,width,width,width);
     MultiplyTransposed(aux,a_in,b_out,width,height,width);
+    delete[] decompositionT;
+    delete[] decomposition;
+    delete[] aux1;
+    delete[] aux;
     return b_out;
 }
 

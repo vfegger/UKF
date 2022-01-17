@@ -12,8 +12,14 @@ Measure::Measure(Data* dataReal_input, Data* dataNoise_input, unsigned length_in
     if(pointNoise == NULL){
         std::cout << "Measure Noise is NULL with length = " << length_input << "\n";        
     }
-    point = NULL;
-    pointCovariance = NULL;
+    point = new(std::nothrow) Point(dataReal_input,length_data);
+    if(point == NULL){
+        std::cout << "Measure is NULL with length = " << length_input << "\n";
+    }   
+    pointCovariance = new(std::nothrow) PointCovariance(dataReal_input,dataNoise_input,length_data);
+    if(pointCovariance == NULL){
+        std::cout << "Measure Covariance is NULL with length = " << length_input << "\n";
+    }
 }
 
 Measure::Measure(Data* dataReal_input, Data* data_input, Data* dataCovariance_input, unsigned length_input){
@@ -37,14 +43,20 @@ Measure::Measure(Data* dataReal_input, Data* data_input, Data* dataCovariance_in
 }
 
 Measure::~Measure(){
-    delete[] pointCovariance;
-    delete[] point;
-    delete[] pointNoise;
-    delete[] realPoint;
+    delete pointCovariance;
+    delete point;
+    delete pointNoise;
+    delete realPoint;
 }
 
 unsigned Measure::GetStateLength(){
-    return point->GetLengthState();
+    if(point != NULL){
+        return point->GetLengthState();
+    }
+    if(realPoint != NULL) {
+        return realPoint->GetLengthState();
+    }
+    return 0u;
 }
 
 Point* Measure::GetPoint(){

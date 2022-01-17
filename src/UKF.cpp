@@ -26,16 +26,16 @@ void UKF::SigmaPointsGenerator(State* state, Point* &sigmaPoints, unsigned &sigm
     }
     CholeskyDecomposition(covariance->GetStateCovariance(), chol, stateLength, stateLength);
     //TODO: Optimize
-    sigmaPoints[0] = Point(mean);
+    for(unsigned i = 0u; i < sigmaLength; i++){
+        sigmaPoints[i] = Point(mean);
+    }
     for(unsigned i = 0u; i < stateLength; i++){
-        sigmaPoints[i+1u] = Point(mean);
         double* aux = sigmaPoints[i+1u].GetState();
         for(unsigned j = 0u; j < stateLength; j++){
             aux[j] += chol[i*stateLength+j];  
         }
     }
     for(unsigned i = 0u; i < stateLength; i++){
-        sigmaPoints[i+stateLength+1u] = Point(mean);
         double* aux = sigmaPoints[i+stateLength+1u].GetState();
         for(unsigned j = 0u; j < stateLength; j++){
             aux[j] -= chol[i*stateLength+j];  
@@ -48,7 +48,7 @@ void UKF::SigmaPointsGenerator(State* state, Point* &sigmaPoints, unsigned &sigm
 void UKF::Solve(){
     Parameters* parameters = input->GetParameters();
     State* state = input->GetState();
-    Measure* measure = NULL;
+    Measure* measure = input->GetMeasure();
     double* crossCovariance = NULL;
     unsigned lengthState = state->GetStateLength();
     unsigned lengthObservation = measure->GetStateLength();
@@ -92,6 +92,11 @@ void UKF::Solve(){
             }
         }
     }
+    // Point allocation
+    sigmaPointsObservation = new(std::nothrow) Point[sigmaLength];
+    for(unsigned i = 0u; i < sigmaLength; i++){
+        sigmaPointsObservation[i] = Point(measure->GetRealPoint());
+    }
     // Observe all Sigma Points of the state
     for(unsigned i = 0; i < sigmaLength; i++){
         sigmaPoints[i].UpdateDataFromArray();
@@ -133,7 +138,7 @@ void UKF::Solve(){
         double* auxObservation = sigmaPoints[k].GetState();
         for(unsigned i = 0u; i < lengthObservation; i++){
             for(unsigned j = 0; j < lengthState; j++){
-                crossCovariance[i*lengthObservation+j] += (auxState[i]-meanState[i])*(auxObservation[j]-meanObservation[j]);
+                crossCovariance[i*lengthState+j] += (auxState[j]-meanState[j])*(auxObservation[i]-meanObservation[i]);
             }
         }
     }
@@ -160,8 +165,14 @@ void UKF::Solve(){
             auxMemory, lengthState,lengthState, lengthObservation),
         lengthState*lengthState
     );
-    
 
+    delete[] kalmanGain;
+    delete[] crossCovariance;
+    delete[] sigmaPointsObservation;
+    delete[] sigmaPoints;
+    delete[] auxMemory;
+    delete measure;
+    delete state;
 }
 
 void UKF::Export(Output* output_out){

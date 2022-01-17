@@ -16,6 +16,7 @@ public:
     Point(Point* point);
     Point(Point& point);
     ~Point();
+    Point& operator=(const Point& point_input);
     void UpdateArrayFromData();
     void UpdateDataFromArray();
     unsigned GetLengthState();
