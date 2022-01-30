@@ -15,9 +15,8 @@ private:
 public:
     UKF();
     ~UKF();
-    void Initialize(Input* input);
+    void Initialize(Input* input, Output* output_in);
     void Solve();
-    void Export(Output* output);
     virtual void SigmaPointsGenerator(State* state, Point* &sigmaPoints, unsigned& sigmaLength);
 };
 #endif

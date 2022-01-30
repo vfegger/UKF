@@ -10,8 +10,9 @@ UKF::~UKF(){
 
 }
 
-void UKF::Initialize(Input* input_in){
+void UKF::Initialize(Input* input_in, Output* output_in){
     input = input_in;
+    output = output_in;
 }
 
 void UKF::SigmaPointsGenerator(State* state, Point* &sigmaPoints, unsigned &sigmaLength){
@@ -47,6 +48,7 @@ void UKF::SigmaPointsGenerator(State* state, Point* &sigmaPoints, unsigned &sigm
 
 void UKF::Solve(){
     Parameters* parameters = input->GetParameters();
+    unsigned parametersLength = input->GetParametersLength();
     State* state = input->GetState();
     Measure* measure = input->GetMeasure();
     double* crossCovariance = NULL;
@@ -171,10 +173,11 @@ void UKF::Solve(){
     delete[] sigmaPointsObservation;
     delete[] sigmaPoints;
     delete[] auxMemory;
+    output->SetOutput(
+        parameters,
+        state->GetPoint()->GetData(),state->GetPointCovariance()->GetDataCovariance(),
+        measure->GetPoint()->GetData(),measure->GetPointCovariance()->GetDataCovariance(),
+        parametersLength,state->GetPoint()->GetLengthData(), measure->GetPoint()->GetLengthData());
     delete measure;
     delete state;
-}
-
-void UKF::Export(Output* output_out){
-    output_out = output;
 }

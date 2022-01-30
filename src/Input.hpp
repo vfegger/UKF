@@ -28,6 +28,7 @@ public:
     virtual double* GetCovariance();
     virtual void GetParameters(Parameters* &parameters_output);
     virtual Parameters* GetParameters();
+    virtual unsigned GetParametersLength();
     virtual void GetMeasure(Measure* &measure_output);
     virtual Measure* GetMeasure();
     virtual void Evolution(Data* inputData_input, Parameters* inputParameters_input) = 0;

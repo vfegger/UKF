@@ -133,6 +133,10 @@ Parameters* Input::GetParameters(){
     return inputParameters;
 }
 
+unsigned Input::GetParametersLength(){
+    return inputParametersLength;
+}
+
 void Input::GetMeasure(Measure* &measure_output){
     measure_output = new Measure(measureData,measureDataNoise,measureDataLength);
 }

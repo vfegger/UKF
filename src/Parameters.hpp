@@ -5,20 +5,22 @@
 
 class Parameters
 {
-private:
+protected:
     std::string name;
-    int* parameters;
+    void* parameters;
     unsigned length;
+    unsigned sizeType;
 public:
     Parameters();
-    Parameters(std::string name, int* data, unsigned length);
+    Parameters(std::string name_input, void* parameters_input, unsigned length_input, unsigned sizeType_input);
     Parameters(Parameters& parameters_input);
     ~Parameters();
     Parameters& operator=(const Parameters& rhs);
     unsigned GetLength();
     std::string GetName();
-    int& operator[](unsigned index);
-    const int& operator[](unsigned index) const;
-    void print();
+    template<class T> void SetValue(T& value, unsigned index);
+    template<class T> const T& GetValue(unsigned index) const;
+    template<class T> void print();
 };
+
 #endif
