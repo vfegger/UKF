@@ -56,13 +56,18 @@ void Output::SetOutput(Parameters* parameters_in, Data* data_state_in, Data* dat
 
 void Output::ExportDivide(Parameters* parameters, unsigned length, std::string &out, std::string &ext, std::string &delimiter){
     for(unsigned i = 0u; i < length; i++){
+        unsigned sizeType = parameters[i].GetSizeType();
         std::string fileName(out+parameters[i].GetName()+ext);
         std::ofstream file(fileName);
         if (file.is_open()){
             std::cout << "Exporting file " << fileName << " ...\n";
             unsigned len = parameters[i].GetLength();
             for(unsigned j = 0; j < len; j++){
-                file << parameters[i][j] << delimiter;
+                if(sizeType == 1){
+                file << parameters[i].GetValue<T>(j) << delimiter;
+                } else if(sizeType == 4) {
+                    
+                }
             }
             file.close();
             std::cout << "\tCompleted exporting file " << fileName << "\n";
@@ -81,7 +86,7 @@ void Output::ExportConcat(Parameters* parameters, unsigned length, std::string &
         for(unsigned i = 0u; i < length; i++){
             unsigned len = parameters[i].GetLength();
             for(unsigned j = 0; j < len; j++){
-                file << parameters[i][j] << delimiter;
+                file << parameters[i].GetValue<T>(j) << delimiter;
             }
             file << "\n";
         }
