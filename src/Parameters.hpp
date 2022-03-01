@@ -73,7 +73,12 @@ public:
 
     Parameters();
     Parameters(Parameters_Int* pointer_int, unsigned int_length, Parameters_UInt* pointer_uint, unsigned uint_length, Parameters_FP* pointer_fp, unsigned fp_length);
+    Parameters(const Parameters& parameters_input);
     ~Parameters();
+
+    unsigned GetLengthInt();
+    unsigned GetLengthUInt();
+    unsigned GetLengthFP();
 };
 
 #endif

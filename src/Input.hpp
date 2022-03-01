@@ -9,7 +9,6 @@
 class Input
 {
 private:
-    unsigned inputParametersLength;
     unsigned inputDataLength;
     unsigned measureDataLength;
     Parameters* inputParameters;
@@ -21,14 +20,13 @@ private:
 public:
     Input();
     virtual ~Input();
-    void Initialize(Data* inputData_input, Data* inputDataCovariance_input, Data* inputDataNoise_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input, Data* measureData_input, Data* measureDataNoise_input, unsigned measureDataLength_input);
+    void Initialize(Data* inputData_input, Data* inputDataCovariance_input, Data* inputDataNoise_input, unsigned inputDataLength_input, Parameters* inputParameters_input, Data* measureData_input, Data* measureDataNoise_input, unsigned measureDataLength_input);
     virtual void GetState(State* state_output);
     virtual State* GetState();
     virtual void GetCovariance(double* &covariance_output);
     virtual double* GetCovariance();
     virtual void GetParameters(Parameters* &parameters_output);
     virtual Parameters* GetParameters();
-    virtual unsigned GetParametersLength();
     virtual void GetMeasure(Measure* &measure_output);
     virtual Measure* GetMeasure();
     virtual void Evolution(Data* inputData_input, Parameters* inputParameters_input) = 0;

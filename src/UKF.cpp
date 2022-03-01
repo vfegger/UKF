@@ -48,7 +48,6 @@ void UKF::SigmaPointsGenerator(State* state, Point* &sigmaPoints, unsigned &sigm
 
 void UKF::Solve(){
     Parameters* parameters = input->GetParameters();
-    unsigned parametersLength = input->GetParametersLength();
     State* state = input->GetState();
     Measure* measure = input->GetMeasure();
     double* crossCovariance = NULL;
@@ -177,7 +176,7 @@ void UKF::Solve(){
         parameters,
         state->GetPoint()->GetData(),state->GetPointCovariance()->GetDataCovariance(),
         measure->GetPoint()->GetData(),measure->GetPointCovariance()->GetDataCovariance(),
-        parametersLength,state->GetPoint()->GetLengthData(), measure->GetPoint()->GetLengthData());
+        state->GetPoint()->GetLengthData(), measure->GetPoint()->GetLengthData());
     delete measure;
     delete state;
 }

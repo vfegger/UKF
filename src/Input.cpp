@@ -5,7 +5,6 @@
 #include <iostream>
 
 Input::Input(){
-    inputParametersLength = 0u;
     inputDataLength = 0u;
     measureDataLength = 0u;
     inputParameters = NULL;
@@ -15,19 +14,19 @@ Input::Input(){
     measureDataNoise = NULL;
 }
 
-void Input::Initialize(Data* inputData_input, Data* inputDataCovariance_input, Data* inputDataNoise_input, unsigned inputDataLength_input, Parameters* inputParameters_input, unsigned inputParametersLength_input, Data* measureData_input, Data* measureDataNoise_input, unsigned measureDataLength_input){
-    inputParametersLength = inputParametersLength_input;
+void Input::Initialize(Data* inputData_input, Data* inputDataCovariance_input, Data* inputDataNoise_input, unsigned inputDataLength_input, Parameters* inputParameters_input, Data* measureData_input, Data* measureDataNoise_input, unsigned measureDataLength_input){
     inputDataLength = inputDataLength_input;
     measureDataLength = measureDataLength_input;
-    inputParameters = new(std::nothrow) Parameters[inputParametersLength];
+    if(inputParameters_input != NULL){
+        inputParameters = new(std::nothrow) Parameters(*inputParameters_input);
+    } else {
+        inputParameters = NULL;
+    }
     inputData = new(std::nothrow) Data[inputDataLength];
     inputDataCovariance = new(std::nothrow) Data[inputDataLength];
     inputDataNoise = new(std::nothrow) Data[inputDataLength];
     measureData = new(std::nothrow) Data[measureDataLength];
     measureDataNoise = new(std::nothrow) Data[measureDataLength];
-    for(unsigned i = 0u; i < inputParametersLength; i++){
-        inputParameters[i] = Parameters(inputParameters_input[i]);
-    }
     for(unsigned i = 0u; i < inputDataLength; i++){
         inputData[i] = Data(inputData_input[i]);
     }
@@ -47,7 +46,6 @@ void Input::Initialize(Data* inputData_input, Data* inputDataCovariance_input, D
 
 Input::~Input()
 {
-    inputParametersLength = 0u;
     inputDataLength = 0u;
     measureDataLength = 0u;
     if(inputDataCovariance != NULL){
@@ -131,10 +129,6 @@ void Input::GetParameters(Parameters* &parameters_output){
 
 Parameters* Input::GetParameters(){
     return inputParameters;
-}
-
-unsigned Input::GetParametersLength(){
-    return inputParametersLength;
 }
 
 void Input::GetMeasure(Measure* &measure_output){

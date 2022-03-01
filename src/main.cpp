@@ -103,7 +103,7 @@ public:
         measureDataNoise[1u] = Data("AccelerationMeasuredNoise", accelerationMeas, 3u);
 
 
-        Initialize(inputData, inputDataCovar, inputDataNoise, 3u, NULL, 0, measureData, measureDataNoise, 2u);
+        Initialize(inputData, inputDataCovar, inputDataNoise, 3u, NULL, measureData, measureDataNoise, 2u);
 
         delete[] inputDataCovar;
         delete[] inputData;
@@ -234,9 +234,12 @@ public:
         long long unsigned Sxy = subdivisions[0u] * subdivisions[1u];
         long long unsigned Sxyz = Sxy * subdivisions[2u];
 
-        Parameters* inputParameters = new Parameters[2u];
-        inputParameters[0u] = Parameters("Subdivisions", subdivisions,4u,sizeof(long long unsigned));
-        inputParameters[1u] = Parameters("Delta Values",delta,4u,sizeof(double));
+        Parameters_UInt* inputParameters_uint = new Parameters_UInt[1u];
+        Parameters_FP* inputParameters_fp = new Parameters_FP[1u];
+        inputParameters_uint[0u] = Parameters_UInt("Subdivisions", subdivisions,4u);
+        inputParameters_fp[0u] = Parameters_FP("Delta Values",delta,4u);
+
+        Parameters* inputParameters = new Parameters(NULL,0u,inputParameters_uint,1u,inputParameters_fp,1u);
 
         Data* inputData = new Data[2u];
         inputData[0u] = Data("Temperature",temperature,Sxyz);
@@ -253,14 +256,16 @@ public:
         Data* measureDataNoise = new Data[1u];
         measureDataNoise[0u] = Data("Measured Temperature Noise",temperatureNoise,Sxy);
 
-        Initialize(inputData,inputDataCovariance,inputDataNoise,2u,inputParameters,2u,measureData,measureDataNoise,1u);
+        Initialize(inputData,inputDataCovariance,inputDataNoise,2u,inputParameters,measureData,measureDataNoise,1u);
 
         delete[] measureDataNoise;
         delete[] measureData;
         delete[] inputDataNoise;
         delete[] inputDataCovariance;
         delete[] inputData;
-        delete[] inputParameters;
+        delete[] inputParameters_fp;
+        delete[] inputParameters_uint;
+        delete inputParameters;
     }
 
     double Differential(double temperature_in_pos, double temperature_in, double temperature_in_neg, double size){
@@ -272,15 +277,15 @@ public:
     }
 
     void Evolution(Data* inputData_input, Parameters* inputParameters_input) override {
-        unsigned Sx = inputParameters_input[0u].GetValue<long long unsigned>(0u);
-        unsigned Sy = inputParameters_input[0u].GetValue<long long unsigned>(1u);
-        unsigned Sz = inputParameters_input[0u].GetValue<long long unsigned>(2u);
+        unsigned Sx = inputParameters_input->UInt[0u][0u];
+        unsigned Sy = inputParameters_input->UInt[0u][1u];
+        unsigned Sz = inputParameters_input->UInt[0u][2u];
         unsigned Sxy = Sx*Sy;
         unsigned Sxyz = Sxy*Sz;
-        double dx = inputParameters_input[1u].GetValue<double>(0u);
-        double dy = inputParameters_input[1u].GetValue<double>(1u);
-        double dz = inputParameters_input[1u].GetValue<double>(2u);
-        double dt = inputParameters_input[1u].GetValue<double>(3u);
+        double dx = inputParameters_input->FP[0u][0u];
+        double dy = inputParameters_input->FP[0u][1u];
+        double dz = inputParameters_input->FP[0u][2u];
+        double dt = inputParameters_input->FP[0u][3u];
         double diffX, diffY, diffZ;
         double auxPos, aux, auxNeg;
         unsigned index;
@@ -305,8 +310,8 @@ public:
     }
 
     void Observation(Data* inputData_input, Parameters* inputParameters_input, Data* observationData_output) override {
-        unsigned Sx = inputParameters_input[0u].GetValue<long long unsigned>(0u);
-        unsigned Sy = inputParameters_input[0u].GetValue<long long unsigned>(1u);
+        unsigned Sx = inputParameters_input->FP[0u][0u];
+        unsigned Sy = inputParameters_input->FP[0u][1u];
         for(unsigned j = 0u; j < Sy; j++){
             for(unsigned i = 0u; i < Sx; i++){
                 observationData_output[0u][(j)*Sx+(i)] = inputData_input[0u][(j)*Sx+(i)];

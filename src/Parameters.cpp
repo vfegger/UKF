@@ -338,6 +338,33 @@ Parameters::Parameters(Parameters_Int* pointer_int, unsigned int_length, Paramet
     Int = new Parameters_Int[Int_Length];
     UInt = new Parameters_UInt[UInt_Length];
     FP = new Parameters_FP[FP_Length];
+    for(unsigned i = 0u; i < Int_Length; i++){
+        Int[i] = Parameters_Int(pointer_int[i]);
+    }
+    for(unsigned i = 0u; i < UInt_Length; i++){
+        UInt[i] = Parameters_UInt(pointer_uint[i]);
+    }
+    for(unsigned i = 0u; i < FP_Length; i++){
+        FP[i] = Parameters_FP(pointer_fp[i]);
+    }
+}
+
+Parameters::Parameters(const Parameters& parameters_input){
+    Int_Length = parameters_input.Int_Length;
+    UInt_Length = parameters_input.UInt_Length;
+    FP_Length = parameters_input.FP_Length;
+    Int = new Parameters_Int[Int_Length];
+    UInt = new Parameters_UInt[UInt_Length];
+    FP = new Parameters_FP[FP_Length];
+    for(unsigned i = 0u; i < Int_Length; i++){
+        Int[i] = Parameters_Int(parameters_input.Int[i]);
+    }
+    for(unsigned i = 0u; i < UInt_Length; i++){
+        UInt[i] = Parameters_UInt(parameters_input.UInt[i]);
+    }
+    for(unsigned i = 0u; i < FP_Length; i++){
+        FP[i] = Parameters_FP(parameters_input.FP[i]);
+    }
 }
 
 Parameters::~Parameters(){
@@ -347,4 +374,16 @@ Parameters::~Parameters(){
     delete[] Int;
     delete[] UInt;
     delete[] FP;
+}
+
+unsigned Parameters::GetLengthInt(){
+    return Int_Length;
+}
+
+unsigned Parameters::GetLengthUInt(){
+    return UInt_Length;
+}
+
+unsigned Parameters::GetLengthFP(){
+    return FP_Length;
 }
