@@ -1,5 +1,17 @@
 #include "../include/Data.hpp"
 
+Data::Data(){
+    lengthElements = 0;
+    names = NULL;
+    lengthArray = NULL;
+    offsetPointer = NULL;
+    pointer = NULL;
+    length = 0u;
+    isValid = false;
+    isMultiple = false;
+    indexMultiple = 0u;
+    count = 0u;
+}
 Data::Data(unsigned lengthElements_in){
     lengthElements = lengthElements_in;
     names = new(std::nothrow) std::string[lengthElements];

@@ -23,6 +23,7 @@ private:
 
     void DeletePointer();
 public:
+    Data();
     Data(unsigned lengthElements_in);
     Data(const Data& data_in);
     unsigned Add(std::string name_in, unsigned length_in);
