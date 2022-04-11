@@ -2,16 +2,32 @@
 
 namespace Math {
     void CholeskyDecomposition(double* matrix_out, double* matrix_in, unsigned lengthX_in, unsigned lengthY_in){
-
+        unsigned diagDim = (lengthX_in > lengthY_in) ? lengthX_in : lengthY_in;
+        for (unsigned k = 0u; k < diagDim; k++)
+        {
+            double acc = 0.0;
+            for(unsigned j = 0u; j < k; j++){
+                acc += matrix_out[j*lengthX_in+k]*matrix_out[j*lengthX_in+k];
+            }
+            matrix_out[k*lengthX_in+k] = sqrt(matrix_in[k*lengthX_in+k]-acc);
+            for(unsigned i = k + 1u; i < lengthX_in; i++){
+                acc = 0.0;
+                for(unsigned j = 0u; j < k; j++){
+                    acc += matrix_out[j*lengthX_in+k]*matrix_out[j*lengthX_in+i];
+                }
+                matrix_out[k*lengthX_in+i] = (1.0/matrix_out[k*lengthX_in+k])*(matrix_in[k*lengthX_in+i]-acc);
+            }
+        }
     }
     void AddInPlace(double* matrix_inout, double* matrix_in, unsigned length_in){
-
+        for(unsigned i = 0u; i < length_in){
+            matrix_inout[i] += matrix_in[i];
+        }
     }
     void SubInPlace(double* matrix_inout, double* matrix_in, unsigned length_in){
-
-    }
-    void InvertSubInPlace(double* matrix_inout, double* matrix_in, unsigned length_in){
-
+        for(unsigned i = 0u; i < length_in){
+            matrix_inout[i] -= matrix_in[i];
+        }
     }
     
     void MatrixMultiplicationNN(double* matrix_out,

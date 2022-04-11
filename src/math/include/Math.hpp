@@ -2,6 +2,7 @@
 #define MATH_HEADER
 
 #include "../../structure/include/Data.hpp"
+#include "math.h"
 
 namespace Math {
     enum MatrixStructure{
