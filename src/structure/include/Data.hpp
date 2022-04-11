@@ -17,9 +17,10 @@ private:
     std::string* names;
 
     bool isValid;
-    bool isMultiple;
-    unsigned indexMultiple;
     unsigned count;
+    
+    unsigned multipleIndex;
+    unsigned multipleLenght;
 
     void DeletePointer();
 public:
@@ -29,14 +30,13 @@ public:
     unsigned Add(std::string name_in, unsigned length_in);
     void Add(unsigned* indexes, std::string* names_in, unsigned* lengthArray_in, unsigned lengthElements_in);
     void Initialize();
-    static void InitializeMultiple(Data* dataArray_in, unsigned length_in);
+    static void InstantiateMultiple(Data*& dataArray_out, const Data& data_in, unsigned length_in, bool resetValues = false);
     void LoadData(unsigned index_in, double* array_in, unsigned length_in);
     void LoadData(unsigned* indexes_in, double** array_in, unsigned* lengthArray_in, unsigned lengthElements_in);
-    double* GetPointer();
-    unsigned GetLength();
-    bool GetValidation();
+    double* GetPointer() const;
+    unsigned GetLength() const;
+    bool GetValidation() const;
     double*& operator[](unsigned index);
-    static void DeleteMultiple(Data* dataArray_in, unsigned length_in);
     ~Data();
 };
 

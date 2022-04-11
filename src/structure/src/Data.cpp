@@ -7,10 +7,11 @@ Data::Data(){
     offsetPointer = NULL;
     pointer = NULL;
     length = 0u;
-    isValid = false;
-    isMultiple = false;
-    indexMultiple = 0u;
     count = 0u;
+    isValid = false;
+
+    multipleIndex = 0u;
+    multipleLenght = 0u;
 }
 Data::Data(unsigned lengthElements_in){
     lengthElements = lengthElements_in;
@@ -25,9 +26,10 @@ Data::Data(unsigned lengthElements_in){
     pointer = NULL;
     length = 0u;
     isValid = false;
-    isMultiple = false;
-    indexMultiple = 0u;
     count = 0u;
+
+    multipleIndex = 0u;
+    multipleLenght = 0u;
 }
 Data::Data(const Data& data_in){
     lengthElements = data_in.lengthElements;
@@ -43,8 +45,8 @@ Data::Data(const Data& data_in){
     length = 0u;
     count = data_in.count;
     isValid = data_in.isValid;
-    isMultiple = false;
-    indexMultiple = 0u;
+    multipleIndex = 0u;
+    multipleLenght = 0u;
     if(isValid){
         length = data_in.length;
         pointer = new(std::nothrow) double[length];
@@ -79,7 +81,9 @@ void Data::Add(unsigned* indexes, std::string* names_in, unsigned* lengthArray_i
     }
 }
 void Data::Initialize(){
-    DeletePointer();
+    if(pointer != NULL && multipleIndex == 0u) {
+        delete[] pointer;
+    }
     length = 0u;
     for(unsigned i = 0u; i < count; i++){
         length += lengthArray[i];
@@ -100,36 +104,60 @@ void Data::Initialize(){
     }
     isValid = true;
 }
-void Data::InitializeMultiple(Data* dataArray_in, unsigned length_in){
-    for(unsigned i = 0u; i < length_in; i++){
-        dataArray_in[i].DeletePointer();
-    }
-    unsigned length = 0u;
-    for(unsigned i = 0u; i < length_in; i++){
-        dataArray_in[i].length = 0u;
-        for(unsigned j = 0u; j < dataArray_in[i].count; j++){
-            dataArray_in[i].length += dataArray_in[i].lengthArray[j];
-        }
-        length += dataArray_in[i].length;
-    }
-    double* pointer = new(std::nothrow) double[length];
-    if(pointer == NULL){
-        std::cout << "Error: Initialization of Multiple Data wasn't successful.";
+void Data::InstantiateMultiple(Data*& dataArray_out, const Data& data_in, unsigned length_in, bool resetValues){
+    if(length_in == 0u){
+        std::cout << "Error: Invalid size. It is expected at least 1.";
         return;
     }
+    if(!data_in.GetValidation() && data_in.GetLength() == 0u){
+        std::cout << "Error: Invalid data for copy.";
+    }
+    if(dataArray_out != NULL){
+        delete[] dataArray_out;
+    }
+    dataArray_out = new(std::nothrow) Data[length_in];
+    for(unsigned i = 0u; i < length_in; i++){
+        dataArray_out[i].lengthArray = new unsigned[data_in.lengthElements];
+        dataArray_out[i].names = new std::string[data_in.lengthElements];
+        dataArray_out[i].offsetPointer = new double*[data_in.lengthElements];
+        for(unsigned j = 0u; j < data_in.lengthElements; j++){
+            dataArray_out[i].names[j] = data_in.names[j];
+            dataArray_out[i].lengthArray[j] = data_in.lengthArray[j];
+        }
+    }
+
+    unsigned length_aux = length_in * data_in.GetLength();
+    double* pointer = new double[length_aux];
     unsigned offset_aux = 0u;
     for(unsigned i = 0u; i < length_in; i++){
-        dataArray_in[i].pointer = pointer + offset_aux;
-        for(unsigned j = 0u; j < dataArray_in[i].count; j++){
-            dataArray_in[i].offsetPointer[j] = pointer + offset_aux;
-            offset_aux += dataArray_in[i].lengthArray[j];
+        dataArray_out[i].length = data_in.GetLength();
+        dataArray_out[i].pointer = pointer + offset_aux;
+        for(unsigned j = 0u; j < data_in.lengthElements; j++){
+            dataArray_out[i].offsetPointer[j] = pointer + offset_aux;
+            offset_aux += dataArray_out[i].lengthArray[j];
         }
-        dataArray_in[i].isValid = true;
-        dataArray_in[i].isMultiple = true;
-        dataArray_in[i].indexMultiple = i;
+    }
+
+    if(resetValues) {
+        for(unsigned i = 0u; i < length_in; i++){
+            for(unsigned j = 0u; j < data_in.GetLength(); j++){
+                dataArray_out[i].pointer[j] = 0.0;
+            }
+            dataArray_out[i].isValid = true;
+            dataArray_out[i].multipleIndex = i;
+            dataArray_out[i].multipleLenght = length_in;
+        }
+    } else {
+        for(unsigned i = 0u; i < length_in; i++){
+            for(unsigned j = 0u; j < data_in.GetLength(); j++){
+                dataArray_out[i].pointer[j] = data_in.pointer[j];
+            }
+            dataArray_out[i].isValid = true;
+            dataArray_out[i].multipleIndex = i;
+            dataArray_out[i].multipleLenght = length_in;
+        }
     }
 }
-
 void Data::LoadData(unsigned index_in, double* array_in, unsigned length_in){
     if(isValid == false){
         std::cout << "Error: Load while structure is not initialized.";
@@ -148,50 +176,43 @@ void Data::LoadData(unsigned* indexes_in, double** array_in, unsigned* lengthArr
         LoadData(indexes_in[i], array_in[i], lengthArray_in[i]);
     }
 }
-double* Data::GetPointer(){
+double* Data::GetPointer() const {
     if(isValid == false){
         std::cout << "Error: Pointer is not initialized.";
         return NULL;
     }
     return pointer;
 }
-unsigned Data::GetLength(){
+unsigned Data::GetLength() const {
     if(isValid == false){
         std::cout << "Error: Length of pointer is not initialized.";
         return 0u;
     }
     return length;
 }
-bool Data::GetValidation(){
+bool Data::GetValidation() const {
     return isValid;
 }
 double*& Data::operator[](unsigned index){
     return offsetPointer[index];
 }
-void Data::DeletePointer(){
-    if(pointer != NULL){
-        if(isMultiple){
-            if(indexMultiple == 0u){
-                delete[] pointer;
-            } else {
-                pointer = NULL;
-            }
-        } else {
-            delete[] pointer;
-        }
-    }
-    isValid = false;
-    isMultiple = false;
-    indexMultiple = 0u;
-}
-void Data::DeleteMultiple(Data* dataArray_in, unsigned length_in){
-    for(unsigned i = 0u; i < length_in; i++){
-        dataArray_in[i].DeletePointer();
-    }
-}
 Data::~Data(){
-    DeletePointer();
+    if(multipleIndex == 0u) {
+        delete[] pointer;
+    }
     delete[] offsetPointer;
     delete[] lengthArray;
     delete[] names;
+    
+    lengthElements = 0;
+    names = NULL;
+    lengthArray = NULL;
+    offsetPointer = NULL;
+    pointer = NULL;
+    length = 0u;
+    count = 0u;
+    isValid = false;
+
+    multipleIndex = 0u;
+    multipleLenght = 0u;
 }

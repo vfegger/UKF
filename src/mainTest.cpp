@@ -4,6 +4,20 @@
 #include "parser/include/Parser.hpp"
 #include "ukf/include/UKF.hpp"
 
+class UKFMemory_Test : public UKFMemory{
+public:
+    UKFMemory_Test(Data& a,Data&b,Data&c,Data&d,Data&e,Parameter&f) : UKFMemory(a,b,c,d,e,f){
+
+    }
+
+    void Evolution(Data& data_inout, Parameter& parameter_in) override {
+
+    }
+    void Observation(Data& data_in, Parameter& parameter_in, Data& data_out) override {
+
+    }
+};
+
 int main(){
     std::cout << "\nStart Execution\n\n";
     std::string path = "/mnt/d/Research/UKF/data/";
@@ -42,7 +56,11 @@ int main(){
         std::cout << "Values: " << values[j] << "\n";
     }
 
+    UKFMemory* ukfMemory = new UKFMemory_Test(a,a,a,a,a,c);
+
     UKF ukf;
+
+    delete ukfMemory;
 
     std::cout << "\nEnd Execution\n";
     return 0;
