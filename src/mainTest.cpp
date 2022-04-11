@@ -58,7 +58,7 @@ int main(){
 
     UKFMemory* ukfMemory = new UKFMemory_Test(a,a,a,a,a,c);
 
-    UKF ukf;
+    UKF ukf(ukfMemory);
 
     delete ukfMemory;
 

@@ -12,6 +12,7 @@ protected:
     UKFMemory* memory;
     
 public:
+    UKF(UKFMemory* memory_in);
     void Iterate();
 };
 

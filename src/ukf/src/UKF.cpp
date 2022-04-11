@@ -1,5 +1,9 @@
 #include "../include/UKF.hpp"
 
+
+UKF::UKF(UKFMemory* memory_in){
+    memory = memory_in;
+}
 //UKF Iteration
 void UKF::Iterate(){
     //Initialization of variables
