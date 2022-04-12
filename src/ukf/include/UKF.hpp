@@ -10,9 +10,11 @@ private:
 
 protected:
     UKFMemory* memory;
-    
+
+    double alpha, beta, kappa;
+    double lambda;
 public:
-    UKF(UKFMemory* memory_in);
+    UKF(UKFMemory* memory_in, double alpha, double beta, double kappa);
     void Iterate();
 };
 

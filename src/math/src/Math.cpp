@@ -192,4 +192,50 @@ namespace Math {
             }
         }
     }
+
+    void RHGaussSeidelIteration(double* X_out, double* A, double* B, unsigned lengthX_in, unsigned lengthY_in){
+        for(unsigned i = 0u; i < lengthX_in; i++){
+            for(unsigned j = 0u; j < lengthY_in; j++){
+                double acc = 0.0;
+                for(unsigned k = 0u; k < j; k++){
+                    acc += X_out[k*lengthX_in+i]*A[j*lengthY_in+k];
+                }                
+                for(unsigned k = j+1; k < lengthY_in; k++){
+                    acc += X_out[k*lengthX_in+i]*A[j*lengthY_in+k];
+                }
+                X_out[j*lengthX_in+i] = (1/A[j*lengthY_in+j])*(B[j*lengthX_in+i]-acc);
+            }
+        }
+    }
+
+    double dist(double* a, double* b, unsigned length_in){
+        double result = 0.0;
+        for(unsigned i = 0u; i < length_in; i++){
+            result += (a[i]-b[i])*(a[i]-b[i]);
+        }
+        return result;
+    }
+
+    void RHSolver(double* X_out, double* A, double* B, unsigned lengthX_in, unsigned lengthY_in, double tol){
+        for(unsigned j = 0u; j < lengthY_in; j++){
+            for(unsigned i = 0u; i < lengthX_in; i++){
+                X_out[j*lengthX_in+i] = B[j*lengthX_in+i];
+            }
+        }
+        double* X_aux = new double[lengthX_in*lengthY_in];
+        double tol2 = tol*tol;
+        double distance = tol2 + 1.0;
+        unsigned count = 0u;
+        while(distance > tol2 && count < lengthX_in){
+            for(unsigned j = 0u; j < lengthY_in; j++){
+                for(unsigned i = 0u; i < lengthX_in; i++){
+                    X_aux[j*lengthX_in+i] = X_out[j*lengthX_in+i];
+                }
+            }
+            RHGaussSeidelIteration(X_out, A, B, lengthX_in, lengthY_in);
+            distance = dist(X_out, X_aux,lengthX_in*lengthY_in);
+            count++;
+        }
+        delete[] X_aux;
+    }
 }

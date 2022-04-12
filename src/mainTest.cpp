@@ -65,7 +65,7 @@ int main(){
     } 
     UKFMemory* ukfMemory = new UKFMemory_Test(a,e,e,a,e,c);
 
-    UKF ukf(ukfMemory);
+    UKF ukf(ukfMemory, 0.001, 3.0, 0.0);
 
     ukf.Iterate();
 

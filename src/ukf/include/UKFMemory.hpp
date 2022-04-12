@@ -35,6 +35,8 @@ public:
     virtual void Evolution(Data& data_inout, Parameter& parameter_in) = 0;
     virtual void Observation(Data& data_in, Parameter& parameter_in, Data& data_out) = 0;
 
+    double* GetWeightMean();
+    double* GetWeightCovariance();
 };
 
 
