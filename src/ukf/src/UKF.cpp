@@ -78,14 +78,11 @@ void UKF::Iterate(){
     Math::MatrixMultiplication(observationCovariancePointer,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Natural, lengthObservation, sigmaPointsLength,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Transposed, lengthObservation, sigmaPointsLength);
-    std::cout << crossCovariancePointer << "\n";
     Math::MatrixMultiplication(crossCovariancePointer,
     sigmaPointsState->GetPointer(), Math::MatrixStructure::Natural, lengthState, sigmaPointsLength,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Transposed, lengthObservation, sigmaPointsLength);
     //  TODO: RHSolver to find K = Pxy*(Pyy^-1) <=> K * Pyy = Pxy
-    std::cout << inverseObservationCovariancePointer << "\n";
     std::cout << "Kalman Gain Calulation\n";
-    std::cout << kalmanGainPointer << "\n";
     Math::MatrixMultiplication(kalmanGainPointer,
     crossCovariancePointer, Math::MatrixStructure::Natural, lengthState, lengthObservation,
     inverseObservationCovariancePointer, Math::MatrixStructure::Transposed, lengthObservation, lengthObservation);
