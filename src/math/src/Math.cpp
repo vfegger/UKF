@@ -69,21 +69,21 @@ namespace Math {
         }
         unsigned lengthK = lengthLeftY_in;
         if(weight_in != NULL){
-            for(unsigned j = 0u; j < lengthRightY_in; j++){
+            for(unsigned j = 0u; j < lengthRightX_in; j++){
                 for(unsigned i = 0u; i < lengthLeftX_in; i++){
                     double acc = 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
-                        acc += matrixLeft_in[k*lengthLeftX_in+i] * matrixRight_in[k*lengthRightY_in+j] * weight_in[k];
+                        acc += matrixLeft_in[k*lengthLeftX_in+i] * matrixRight_in[k*lengthRightX_in+j] * weight_in[k];
                     }
                     matrix_out[j*lengthLeftX_in + i] = acc;
                 }
             }
         } else { 
-            for(unsigned j = 0u; j < lengthRightY_in; j++){
+            for(unsigned j = 0u; j < lengthRightX_in; j++){
                 for(unsigned i = 0u; i < lengthLeftX_in; i++){
                     double acc = 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
-                        acc += matrixLeft_in[k*lengthLeftX_in+i] * matrixRight_in[k*lengthRightY_in+j];
+                        acc += matrixLeft_in[k*lengthLeftX_in+i] * matrixRight_in[k*lengthRightX_in+j];
                     }
                     matrix_out[j*lengthLeftX_in + i] = acc;
                 }
@@ -103,7 +103,7 @@ namespace Math {
                 for(unsigned i = 0u; i < lengthLeftY_in; i++){
                     double acc = 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
-                        acc += matrixLeft_in[i*lengthLeftY_in+k] * matrixRight_in[j*lengthRightX_in+k] * weight_in[k];
+                        acc += matrixLeft_in[i*lengthLeftX_in+k] * matrixRight_in[j*lengthRightX_in+k] * weight_in[k];
                     }
                     matrix_out[j*lengthLeftY_in + i] = acc;
                 }
@@ -113,7 +113,7 @@ namespace Math {
                 for(unsigned i = 0u; i < lengthLeftY_in; i++){
                     double acc = 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
-                        acc += matrixLeft_in[i*lengthLeftY_in+k] * matrixRight_in[j*lengthRightX_in+k];
+                        acc += matrixLeft_in[i*lengthLeftX_in+k] * matrixRight_in[j*lengthRightX_in+k];
                     }
                     matrix_out[j*lengthLeftY_in + i] = acc;
                 }
@@ -133,7 +133,7 @@ namespace Math {
                 for(unsigned i = 0u; i < lengthLeftY_in; i++){
                     double acc = 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
-                        acc += matrixLeft_in[i*lengthLeftY_in+k] * matrixRight_in[k*lengthRightY_in+j] * weight_in[k];
+                        acc += matrixLeft_in[i*lengthLeftX_in+k] * matrixRight_in[k*lengthRightX_in+j] * weight_in[k];
                     }
                     matrix_out[j*lengthLeftY_in + i] = acc;
                 }
@@ -143,7 +143,7 @@ namespace Math {
                 for(unsigned i = 0u; i < lengthLeftY_in; i++){
                     double acc = 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
-                        acc += matrixLeft_in[i*lengthLeftY_in+k] * matrixRight_in[k*lengthRightY_in+j];
+                        acc += matrixLeft_in[i*lengthLeftX_in+k] * matrixRight_in[k*lengthRightX_in+j];
                     }
                     matrix_out[j*lengthLeftY_in + i] = acc;
                 }

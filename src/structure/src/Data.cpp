@@ -18,6 +18,9 @@ Data::Data(unsigned lengthElements_in){
     names = new(std::nothrow) std::string[lengthElements];
     lengthArray = new(std::nothrow) unsigned[lengthElements];
     offsetPointer = new(std::nothrow) double*[lengthElements];
+    if(offsetPointer == NULL || lengthArray == NULL || names == NULL){
+        std::cout << "Error: Data covariance could not alloc all needed memory.\n";
+    }
     for(unsigned i = 0; i < lengthElements; i++){
         names[i] = "";
         lengthArray[i] = 0u;
@@ -36,6 +39,9 @@ Data::Data(const Data& data_in){
     names = new(std::nothrow) std::string[lengthElements];
     lengthArray = new(std::nothrow) unsigned[lengthElements];
     offsetPointer = new(std::nothrow) double*[lengthElements];
+    if(offsetPointer == NULL || lengthArray == NULL || names == NULL){
+        std::cout << "Error: Data covariance could not alloc all needed memory.\n";
+    }
     for(unsigned i = 0; i < lengthElements; i++){
         names[i] = data_in.names[i];
         lengthArray[i] = data_in.lengthArray[i];
@@ -50,6 +56,10 @@ Data::Data(const Data& data_in){
     if(isValid){
         length = data_in.length;
         pointer = new(std::nothrow) double[length];
+        if(pointer == NULL){
+            std::cout << "Error: Initialization wasn't successful.\n";
+            return;
+        }
         for(unsigned i = 0u; i < length; i++){
             pointer[i] = data_in.pointer[i];
         }
@@ -63,7 +73,7 @@ Data::Data(const Data& data_in){
 unsigned Data::Add(std::string name_in, unsigned length_in){
     isValid = false;
     if(count >= lengthElements){
-        std::cout << "Error: Added element is over the limit.";
+        std::cout << "Error: Added element is over the limit.\n";
         return lengthElements;
     }
     names[count] = name_in;
@@ -90,7 +100,7 @@ void Data::Initialize(){
     }
     pointer = new(std::nothrow) double[length];
     if(pointer == NULL){
-        std::cout << "Error: Initialization wasn't successful.";
+        std::cout << "Error: Initialization wasn't successful.\n";
         return;
     }
     for(unsigned i = 0u; i < length; i++)
@@ -106,11 +116,11 @@ void Data::Initialize(){
 }
 void Data::InstantiateMultiple(Data*& dataArray_out, const Data& data_in, unsigned length_in, bool resetValues){
     if(length_in == 0u){
-        std::cout << "Error: Invalid size. It is expected at least 1.";
+        std::cout << "Error: Invalid size. It is expected at least 1.\n";
         return;
     }
     if(!data_in.GetValidation() && data_in.GetLength() == 0u){
-        std::cout << "Error: Invalid data for copy.";
+        std::cout << "Error: Invalid data for copy.\n";
     }
     if(dataArray_out != NULL){
         delete[] dataArray_out;
@@ -160,11 +170,11 @@ void Data::InstantiateMultiple(Data*& dataArray_out, const Data& data_in, unsign
 }
 void Data::LoadData(unsigned index_in, double* array_in, unsigned length_in){
     if(isValid == false){
-        std::cout << "Error: Load while structure is not initialized.";
+        std::cout << "Error: Load while structure is not initialized.\n";
         return;
     }
     if(index_in >= count){
-        std::cout << "Error: Index is out of range.";
+        std::cout << "Error: Index is out of range.\n";
         return;
     }
     for(unsigned i = 0; i < length_in; i++){
@@ -181,7 +191,7 @@ unsigned Data::GetCapacity() const {
 }
 double* Data::GetPointer() const {
     if(isValid == false){
-        std::cout << "Error: Pointer is not initialized.";
+        std::cout << "Error: Pointer is not initialized.\n";
         return NULL;
     }
     return pointer;
@@ -194,22 +204,22 @@ unsigned Data::GetCount() const {
 }
 unsigned Data::GetLength() const {
     if(isValid == false){
-        std::cout << "Error: Length of pointer is not initialized.";
+        std::cout << "Error: Length of pointer is not initialized.\n";
         return 0u;
     }
     return length;
 }
 unsigned Data::GetLength(unsigned index_in) const {
     if(index_in >= count){
-        std::cout << "Error: Invalid index access.";
+        std::cout << "Error: Invalid index access.\n";
         return 0u;
     }
     return lengthArray[index_in];
 }
 std::string Data::GetNames(unsigned index_in) const {
     if(index_in >= count){
-        std::cout << "Error: Invalid index access.";
-        return 0u;
+        std::cout << "Error: Invalid index access.\n";
+        return "";
     }
     return names[index_in];
 }

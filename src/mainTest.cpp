@@ -56,10 +56,18 @@ int main(){
     for(unsigned j = 0u; j < length; j++){
         std::cout << "Values: " << values[j] << "\n";
     }
+
+    std::cout << "Test: Data Covariance \n"; 
     DataCovariance e = DataCovariance(a);
+    std::cout << "Pointer: " << e.GetPointer() << "\n";
+    for(unsigned j = 0u; j < 9; j++){
+        std::cout << "Values: " << e[i][j] << "\n";
+    } 
     UKFMemory* ukfMemory = new UKFMemory_Test(a,e,e,a,e,c);
 
     UKF ukf(ukfMemory);
+
+    ukf.Iterate();
 
     delete ukfMemory;
 

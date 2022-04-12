@@ -15,10 +15,13 @@ DataCovariance::DataCovariance(unsigned lengthElements_in){
     pointer = NULL;
     length = 0u;
     lengthElements = lengthElements_in;
-    offsetPointer = new double*[lengthElements];
-    lengthArray = new unsigned[lengthElements];
-    offsetArray = new unsigned[lengthElements];
-    names = new std::string[lengthElements];
+    names = new(std::nothrow) std::string[lengthElements];
+    lengthArray = new(std::nothrow) unsigned[lengthElements];
+    offsetPointer = new(std::nothrow) double*[lengthElements];
+    offsetArray = new(std::nothrow) unsigned[lengthElements];
+    if(offsetPointer == NULL || lengthArray == NULL || offsetArray == NULL || names == NULL){
+        std::cout << "Error: Data covariance could not alloc all needed memory.\n";
+    }
     isValid = false;
     count = 0u;
 }
@@ -26,16 +29,26 @@ DataCovariance::DataCovariance(const Data& data_in){
     pointer = NULL;
     length = 0u;
     lengthElements = data_in.GetCapacity();
-    offsetPointer = new(std::nothrow) double*[lengthElements];
-    lengthArray = new(std::nothrow) unsigned[lengthElements];
-    offsetArray = new(std::nothrow) unsigned[lengthElements];
     names = new(std::nothrow) std::string[lengthElements];
+    lengthArray = new(std::nothrow) unsigned[lengthElements];
+    offsetPointer = new(std::nothrow) double*[lengthElements];
+    offsetArray = new(std::nothrow) unsigned[lengthElements];
+    if(offsetPointer == NULL || lengthArray == NULL || offsetArray == NULL || names == NULL){
+        std::cout << "Error: Data covariance could not alloc all needed memory.\n";
+    }
     count = data_in.GetCount();
     unsigned offset_aux = 0u;
-    for(unsigned i = 0u; i < lengthElements; i++){
+    for(unsigned i = 0u; i < count; i++){
         offsetPointer[i] = NULL;
         names[i] = data_in.GetNames(i);
         lengthArray[i] = data_in.GetLength(i);
+        offsetArray[i] = offset_aux;
+        offset_aux += lengthArray[i];
+    }
+    for(unsigned i = count; i < lengthElements; i++){
+        offsetPointer[i] = NULL;
+        names[i] = "";
+        lengthArray[i] = 0u;
         offsetArray[i] = offset_aux;
         offset_aux += lengthArray[i];
     }
@@ -43,6 +56,10 @@ DataCovariance::DataCovariance(const Data& data_in){
     if(isValid){
         length = data_in.GetLength();
         pointer = new(std::nothrow) double[length*length];
+        if(pointer == NULL){
+            std::cout << "Error: Initialization wasn't successful.\n";
+            return;
+        }
         for(unsigned i = 0u; i < count; i++){
             offsetPointer[i] = pointer + offsetArray[i] * (length + 1u);
         }
@@ -60,6 +77,9 @@ DataCovariance::DataCovariance(const DataCovariance& dataCovariance_in){
     lengthArray = new(std::nothrow) unsigned[lengthElements];
     offsetArray = new(std::nothrow) unsigned[lengthElements];
     names = new(std::nothrow) std::string[lengthElements];
+    if(offsetPointer == NULL || lengthArray == NULL || offsetArray == NULL || names == NULL){
+        std::cout << "Error: Data covariance could not alloc all needed memory.\n";
+    }
     count = dataCovariance_in.count;
     for(unsigned i = 0u; i < lengthElements; i++){
         offsetPointer[i] = NULL;
@@ -71,6 +91,10 @@ DataCovariance::DataCovariance(const DataCovariance& dataCovariance_in){
     if(isValid){
         length = dataCovariance_in.length;
         pointer = new(std::nothrow) double[length*length];
+        if(pointer == NULL){
+            std::cout << "Error: Initialization wasn't successful.\n";
+            return;
+        }
         for(unsigned i = 0u; i < count; i++){
             offsetPointer[i] = pointer + offsetArray[i] * (length + 1u);
         }
@@ -83,7 +107,7 @@ DataCovariance::DataCovariance(const DataCovariance& dataCovariance_in){
 unsigned DataCovariance::Add(std::string name_in, unsigned length_in){
     isValid = false;
     if(count >= lengthElements){
-        std::cout << "Error: Added element is over the limit.";
+        std::cout << "Error: Added element is over the limit.\n";
         return lengthElements;
     }
     names[count] = name_in;
@@ -111,7 +135,7 @@ void DataCovariance::Initialize(){
     }
     pointer = new(std::nothrow) double[length*length];
     if(pointer == NULL){
-        std::cout << "Error: Initialization wasn't successful.";
+        std::cout << "Error: Initialization wasn't successful.\n";
         return;
     }
     for(unsigned i = 0u; i < length; i++)
@@ -125,11 +149,11 @@ void DataCovariance::Initialize(){
 }
 void DataCovariance::LoadData(unsigned index_in, double* array_in, unsigned length_in, DataCovarianceMode mode_in){
     if(isValid == false){
-        std::cout << "Error: Load while structure is not initialized.";
+        std::cout << "Error: Load while structure is not initialized.\n";
         return;
     }
     if(index_in >= count){
-        std::cout << "Error: Index is out of range.";
+        std::cout << "Error: Index is out of range.\n";
         return;
     }
     switch (mode_in)
@@ -151,9 +175,9 @@ void DataCovariance::LoadData(unsigned index_in, double* array_in, unsigned leng
         }
         break;
     case DataCovarianceMode::Complete :
-        std::cout << "Warning: This mode overwrites the whole covariance matrix.";
+        std::cout << "Warning: This mode overwrites the whole covariance matrix.\n";
         if(length != length_in){
-            std::cout << "Error: The dimensions of the covariance matrix and the covariance matrix input do not match.";
+            std::cout << "Error: The dimensions of the covariance matrix and the covariance matrix input do not match.\n";
         }
         for(unsigned j = 0u; j < length_in; j++){
             for(unsigned i = 0u; i < length_in; i++){
@@ -162,7 +186,7 @@ void DataCovariance::LoadData(unsigned index_in, double* array_in, unsigned leng
         }
         break;
     default:
-        std::cout << "Error: Covariance mode is not implemented.";
+        std::cout << "Error: Covariance mode is not implemented.\n";
         break;
     }
 }
@@ -176,7 +200,7 @@ unsigned DataCovariance::GetCapacity() const {
 }
 double* DataCovariance::GetPointer() const {
     if(isValid == false){
-        std::cout << "Error: Pointer is not initialized.";
+        std::cout << "Error: Pointer is not initialized.\n";
         return NULL;
     }
     return pointer;
@@ -189,29 +213,29 @@ unsigned DataCovariance::GetCount() const {
 }
 unsigned DataCovariance::GetLength() const {
     if(isValid == false){
-        std::cout << "Error: Length of pointer is not initialized.";
+        std::cout << "Error: Length of pointer is not initialized.\n";
         return 0u;
     }
     return length;
 }
 unsigned DataCovariance::GetLength(unsigned index_in) const {
     if(index_in >= count){
-        std::cout << "Error: Invalid index access.";
+        std::cout << "Error: Invalid index access.\n";
         return 0u;
     }
     return lengthArray[index_in];
 }
 unsigned DataCovariance::GetOffset(unsigned index_in) const {
     if(index_in >= count){
-        std::cout << "Error: Invalid index access.";
+        std::cout << "Error: Invalid index access.\n";
         return 0u;
     }
     return offsetArray[index_in];
 }
 std::string DataCovariance::GetNames(unsigned index_in) const {
     if(index_in >= count){
-        std::cout << "Error: Invalid index access.";
-        return 0u;
+        std::cout << "Error: Invalid index access.\n";
+        return "";
     }
     return names[index_in];
 }
