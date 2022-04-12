@@ -11,20 +11,20 @@ void UKF::Iterate(){
 
     Data* state = memory->GetState();
     double* statePointer = state->GetPointer();
-    Data* stateCovariance = memory->GetStateCovariance();
-    double* stateCovariancePointer = state->GetPointer();
-    Data* stateNoise = memory->GetStateNoise();
-    double* stateNoisePointer = state->GetPointer();
+    DataCovariance* stateCovariance = memory->GetStateCovariance();
+    double* stateCovariancePointer = stateCovariance->GetPointer();
+    DataCovariance* stateNoise = memory->GetStateNoise();
+    double* stateNoisePointer = stateNoise->GetPointer();
 
     Data* measure = memory->GetMeasure();
-    double* measurePointer = state->GetPointer();
-    Data* measureNoise = memory->GetMeasureNoise();
-    double* measureNoisePointer = state->GetPointer();
+    double* measurePointer = measure->GetPointer();
+    DataCovariance* measureNoise = memory->GetMeasureNoise();
+    double* measureNoisePointer = measureNoise->GetPointer();
 
     Data* observation = new Data(*measure);
-    double* observationPointer = state->GetPointer();
-    Data* observationCovariance = new Data(*stateCovariance);
-    double* observationCovariancePointer = state->GetPointer();
+    double* observationPointer = observation->GetPointer();
+    DataCovariance* observationCovariance = new DataCovariance(*observation);
+    double* observationCovariancePointer = observationCovariance->GetPointer();
 
 
     unsigned lengthState = state->GetLength();
@@ -61,27 +61,24 @@ void UKF::Iterate(){
     Math::MatrixMultiplication(observationCovariancePointer,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Natural, lengthState, sigmaPointsLength,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Transposed, lengthState, sigmaPointsLength);
-    Data* crossCovariance = new Data(*stateCovariance);
-    double* crossCovariancePointer = crossCovariance->GetPointer();
+    double* crossCovariancePointer = new double[lengthState * lengthObservation];
     Math::MatrixMultiplication(crossCovariancePointer,
     sigmaPointsState->GetPointer(), Math::MatrixStructure::Natural, lengthState, sigmaPointsLength,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Transposed, lengthState, sigmaPointsLength);
     //  TODO: RHSolver to find K = Pxy*(Pyy^-1) <=> K * Pyy = Pxy
-    Data* inverseObservationCovariance = new Data(*observationCovariance);
-    double* inverseObservationCovariancePointer = inverseObservationCovariance->GetPointer();
+    double* inverseObservationCovariancePointer = new double[lengthObservation*lengthObservation];
     //  Kalman Gain Calulation
-    Data* kalmanGain = new Data(*crossCovariance);
-    double* kalmanGainPointer = kalmanGain->GetPointer();
+    double* kalmanGainPointer = new double[lengthState*lengthObservation];
     Math::MatrixMultiplication(kalmanGainPointer,
     crossCovariancePointer, Math::MatrixStructure::Natural, lengthState, sigmaPointsLength,
     inverseObservationCovariancePointer, Math::MatrixStructure::Transposed, lengthState, sigmaPointsLength);
     //  State Update
-    //      Mean
+    //      State
     Math::SubInPlace(measurePointer,observationPointer,lengthObservation);
     Math::MatrixMultiplication(observationPointer,
     kalmanGainPointer, Math::MatrixStructure::Natural, lengthState, lengthObservation,
-    measurePointer, Math::MatrixStructure::Natural, lengthObservation, 1);
-    //      Covariance
+    measurePointer, Math::MatrixStructure::Natural, lengthObservation, 1u);
+    //      State Covariance
     Math::MatrixMultiplication(crossCovariancePointer,
     kalmanGainPointer, Math::MatrixStructure::Natural, lengthState, lengthObservation,
     observationCovariancePointer, Math::MatrixStructure::Natural, lengthObservation, lengthObservation);
@@ -90,4 +87,7 @@ void UKF::Iterate(){
     kalmanGainPointer, Math::MatrixStructure::Transposed, lengthState, lengthObservation);
     Math::AddInPlace(stateCovariancePointer, observationCovariancePointer, lengthState*lengthState);
     
+    delete[] crossCovariancePointer;
+    delete[] kalmanGainPointer;
+    delete[] inverseObservationCovariancePointer;
 }

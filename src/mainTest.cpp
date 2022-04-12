@@ -1,12 +1,13 @@
 #include <iostream>
 #include "structure/include/Data.hpp"
+#include "structure/include/DataCovariance.hpp"
 #include "structure/include/Parameter.hpp"
 #include "parser/include/Parser.hpp"
 #include "ukf/include/UKF.hpp"
 
 class UKFMemory_Test : public UKFMemory{
 public:
-    UKFMemory_Test(Data& a,Data&b,Data&c,Data&d,Data&e,Parameter&f) : UKFMemory(a,b,c,d,e,f){
+    UKFMemory_Test(Data& a, DataCovariance&b, DataCovariance&c, Data&d, DataCovariance&e, Parameter&f) : UKFMemory(a,b,c,d,e,f){
 
     }
 
@@ -55,8 +56,8 @@ int main(){
     for(unsigned j = 0u; j < length; j++){
         std::cout << "Values: " << values[j] << "\n";
     }
-
-    UKFMemory* ukfMemory = new UKFMemory_Test(a,a,a,a,a,c);
+    DataCovariance e = DataCovariance(a);
+    UKFMemory* ukfMemory = new UKFMemory_Test(a,e,e,a,e,c);
 
     UKF ukf(ukfMemory);
 

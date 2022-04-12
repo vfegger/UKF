@@ -176,12 +176,21 @@ void Data::LoadData(unsigned* indexes_in, double** array_in, unsigned* lengthArr
         LoadData(indexes_in[i], array_in[i], lengthArray_in[i]);
     }
 }
+unsigned Data::GetCapacity() const {
+    return lengthElements;
+}
 double* Data::GetPointer() const {
     if(isValid == false){
         std::cout << "Error: Pointer is not initialized.";
         return NULL;
     }
     return pointer;
+}
+bool Data::GetValidation() const {
+    return isValid;
+}
+unsigned Data::GetCount() const {
+    return count;
 }
 unsigned Data::GetLength() const {
     if(isValid == false){
@@ -190,8 +199,19 @@ unsigned Data::GetLength() const {
     }
     return length;
 }
-bool Data::GetValidation() const {
-    return isValid;
+unsigned Data::GetLength(unsigned index_in) const {
+    if(index_in >= count){
+        std::cout << "Error: Invalid index access.";
+        return 0u;
+    }
+    return lengthArray[index_in];
+}
+std::string Data::GetNames(unsigned index_in) const {
+    if(index_in >= count){
+        std::cout << "Error: Invalid index access.";
+        return 0u;
+    }
+    return names[index_in];
 }
 double*& Data::operator[](unsigned index){
     return offsetPointer[index];

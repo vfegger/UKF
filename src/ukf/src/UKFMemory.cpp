@@ -1,11 +1,11 @@
 #include "../include/UKFMemory.hpp"
 
-UKFMemory::UKFMemory(Data& inputData_in, Data& inputDataCovariance_in, Data& inputDataNoise_in, Data& measureData_in, Data& measureDataNoise_in, Parameter& inputParameter_in){
+UKFMemory::UKFMemory(Data& inputData_in, DataCovariance& inputDataCovariance_in, DataCovariance& inputDataNoise_in, Data& measureData_in, DataCovariance& measureDataNoise_in, Parameter& inputParameter_in){
     state = new Data(inputData_in);
-    stateCovariance = new Data(inputDataCovariance_in);
-    stateNoise = new Data(inputDataNoise_in);
+    stateCovariance = new DataCovariance(inputDataCovariance_in);
+    stateNoise = new DataCovariance(inputDataNoise_in);
     measureData = new Data(measureData_in);
-    measureDataNoise = new Data(measureDataNoise_in);
+    measureDataNoise = new DataCovariance(measureDataNoise_in);
 
     parameter = new Parameter(inputParameter_in);
 }
@@ -29,11 +29,11 @@ Data* UKFMemory::GetState(){
     return state;
 }
 
-Data* UKFMemory::GetStateCovariance(){
+DataCovariance* UKFMemory::GetStateCovariance(){
     return stateCovariance;
 }
 
-Data* UKFMemory::GetStateNoise(){
+DataCovariance* UKFMemory::GetStateNoise(){
     return stateCovariance;
 }
 
@@ -55,7 +55,7 @@ void UKFMemory::UpdateMeasure(Data& measureData_in){
     }
 }
 
-Data* UKFMemory::GetMeasureNoise(){
+DataCovariance* UKFMemory::GetMeasureNoise(){
     return measureDataNoise;
 }
 

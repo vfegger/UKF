@@ -20,12 +20,12 @@ namespace Math {
         }
     }
     void AddInPlace(double* matrix_inout, double* matrix_in, unsigned length_in){
-        for(unsigned i = 0u; i < length_in){
+        for(unsigned i = 0u; i < length_in; i++){
             matrix_inout[i] += matrix_in[i];
         }
     }
     void SubInPlace(double* matrix_inout, double* matrix_in, unsigned length_in){
-        for(unsigned i = 0u; i < length_in){
+        for(unsigned i = 0u; i < length_in; i++){
             matrix_inout[i] -= matrix_in[i];
         }
     }
