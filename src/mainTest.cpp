@@ -42,6 +42,7 @@ public:
         double T0;
         unsigned index;
         double* T = data_inout[0u];
+        double* Q = data_inout[1u];
         for(unsigned k = 0u; k < Lz; k++){
             for(unsigned j = 0u; j < Ly; j++){
                 for(unsigned i = 0u; i < Lx; i++){
@@ -60,6 +61,10 @@ public:
                     acc += DifferentialK(TjN,T0,TjP,dx);
                     // Z dependency
                     acc += DifferentialK(TkN,T0,TkP,dx);
+
+                    if(k == Lz - 1){
+                        acc += Q[j*Lx+i]/dz;
+                    }
                     T[index] += dt*acc/C(T0);
                 }
             }
@@ -128,7 +133,7 @@ public:
             double Q[Lx*Ly];
             double sigmaQ[Lx*Ly];
             for(unsigned i = 0u; i < Lx*Ly; i++){
-                Q[i] = 0.0;
+                Q[i] = 10.0;
                 sigmaQ[i] = 1.25;
             }
             input->LoadData(indexT, T, Lx*Ly*Lz);
@@ -227,7 +232,11 @@ int main(){
 
     UKF ukf(problem.GetMemory(), 0.001, 3.0, 0.0);
 
+    Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),4*4*(2+1),1);
+
     ukf.Iterate();
+
+    Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),4*4*(2+1),1);
 
     std::cout << "\nEnd Execution\n";
     return 0;
