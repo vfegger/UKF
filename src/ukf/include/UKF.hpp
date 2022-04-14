@@ -14,7 +14,7 @@ protected:
     double alpha, beta, kappa;
     double lambda;
 public:
-    UKF(UKFMemory* memory_in, double alpha, double beta, double kappa);
+    UKF(UKFMemory* memory_in, double alpha_in, double beta_in, double kappa_in);
     void Iterate();
 };
 

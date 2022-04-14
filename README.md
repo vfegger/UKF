@@ -21,6 +21,14 @@ The following commands are used to run this project at the main project folder:
 > build/UKF_1
 > valgrind build/UKF_1
 
+Or
+
+> cmake -S src/ -B build-debug/ -DCMAKE_BUILD_TYPE=Debug \
+> cmake --build build-debug \
+> build-debug/UKF_1
+> valgrind --leak-check=full build-debug/UKF_1
+>
+
 ## Execution
 
 This project is still ongoing and it is not expected to give any results yet. The only thing that is capable of is memory control.

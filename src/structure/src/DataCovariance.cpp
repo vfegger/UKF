@@ -100,7 +100,7 @@ DataCovariance::DataCovariance(const DataCovariance& dataCovariance_in){
         }
         for(unsigned i = 0u; i < length*length; i++)
         {
-            pointer[i] = 0u;
+            pointer[i] = dataCovariance_in.pointer[i];
         }
     }
 }
@@ -161,17 +161,14 @@ void DataCovariance::LoadData(unsigned index_in, double* array_in, unsigned leng
     case DataCovarianceMode::Natural :
         unsigned ii, jj;
         for(unsigned j = 0u; j < length_in; j++){
-            jj = j + offsetArray[index_in];
             for(unsigned i = 0; i < length_in; i++){
-                ii = i + offsetArray[index_in];
-                offsetPointer[index_in][jj*length+ii] = array_in[j*length_in+i];
+                offsetPointer[index_in][j*length+i] = array_in[j*length_in+i];
             }
         }
         break;
     case DataCovarianceMode::Compact :
         for(unsigned i = 0; i < length_in; i++){
-            ii = i + offsetArray[index_in];
-            offsetPointer[index_in][ii*length+ii] = array_in[i];
+            offsetPointer[index_in][i*length+i] = array_in[i];
         }
         break;
     case DataCovarianceMode::Complete :

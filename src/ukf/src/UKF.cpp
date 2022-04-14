@@ -1,7 +1,7 @@
 #include "../include/UKF.hpp"
 
 
-UKF::UKF(UKFMemory* memory_in, double alpha, double beta, double kappa){
+UKF::UKF(UKFMemory* memory_in, double alpha_in, double beta_in, double kappa_in){
     memory = memory_in;
     bool isValid =
     memory->GetState()->GetValidation() &&
@@ -12,9 +12,9 @@ UKF::UKF(UKFMemory* memory_in, double alpha, double beta, double kappa){
     if(!isValid){
         std::cout << "Error: Memory is not properly initialized.\n";
     }
-    alpha = alpha;
-    beta = beta;
-    kappa = kappa;
+    alpha = alpha_in;
+    beta = beta_in;
+    kappa = kappa_in;
     unsigned L = memory->GetState()->GetLength();
     lambda = alpha*alpha*(L+kappa)-L;
 }
@@ -47,27 +47,30 @@ void UKF::Iterate(){
     std::cout << "State length: " << lengthState << "; Observation length: " << lengthObservation << "\n";
 
     double* crossCovariancePointer = new(std::nothrow) double[lengthState * lengthObservation];
-    double* inverseObservationCovariancePointer = new(std::nothrow) double[lengthObservation*lengthObservation];
     double* kalmanGainPointer = new(std::nothrow) double[lengthState*lengthObservation];
     for(unsigned i = 0u; i < lengthState * lengthObservation; i++){
         crossCovariancePointer[i] = 0.0;
         kalmanGainPointer[i] = 0.0;
     }
-    for(unsigned i = 0u; i < lengthObservation * lengthObservation; i++){
-        inverseObservationCovariancePointer[i] = 0.0;
-    }
     //Methods
     std::cout << "Calculate Cholesky Decomposition\n";
     double* chol = new(std::nothrow) double[lengthState * lengthState];
+    for(unsigned i = 0u; i < lengthState*lengthState; i++){
+        chol[i] = 0.0;
+    }
     Math::CholeskyDecomposition(chol,stateCovariancePointer,lengthState,lengthState);
-    
     std::cout << "Generate Sigma Points based on Cholesky Decompostion\n";
     unsigned sigmaPointsLength = 2u*lengthState + 1u;
     double* WeightMean = new(std::nothrow) double[sigmaPointsLength];
     double* WeightCovariance = new(std::nothrow) double[sigmaPointsLength];
     for(unsigned i = 0; i < sigmaPointsLength; i++){
-        WeightMean[i] = (i == 0) ? lambda/(lengthState+lambda) : 0.5/(lengthState+lambda);
-        WeightCovariance[i] = WeightMean[i] - (i == 0) ? (1-alpha*alpha-beta) : 0.0;
+        if(i == 0u){
+            WeightMean[i] = lambda/(lengthState+lambda);
+            WeightCovariance[i] = lambda/(lengthState+lambda) + (1.0-alpha*alpha+beta);
+        } else {
+            WeightMean[i] = 0.5/(lengthState+lambda);
+            WeightCovariance[i] = 0.5/(lengthState+lambda);
+        }
     }
     Data* sigmaPointsState = new(std::nothrow) Data[sigmaPointsLength];
     Data::InstantiateMultiple(sigmaPointsState,*state,sigmaPointsLength);
@@ -96,38 +99,39 @@ void UKF::Iterate(){
     Math::MatrixMultiplication(stateCovariancePointer,
     sigmaPointsState->GetPointer(), Math::MatrixStructure::Natural, lengthState, sigmaPointsLength,
     sigmaPointsState->GetPointer(), Math::MatrixStructure::Transposed, lengthState, sigmaPointsLength,
-    WeightCovariance);
+    false, WeightCovariance);
     Math::AddInPlace(stateCovariancePointer,stateNoisePointer,lengthState*lengthState);
+    
     Math::MatrixMultiplication(observationCovariancePointer,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Natural, lengthObservation, sigmaPointsLength,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Transposed, lengthObservation, sigmaPointsLength,
-    WeightCovariance);
+    false, WeightCovariance);
     Math::AddInPlace(observationCovariancePointer,measureNoisePointer,lengthObservation*lengthObservation);
+
     Math::MatrixMultiplication(crossCovariancePointer,
     sigmaPointsState->GetPointer(), Math::MatrixStructure::Natural, lengthState, sigmaPointsLength,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Transposed, lengthObservation, sigmaPointsLength,
-    WeightCovariance);
-    //  TODO: RHSolver to find K = Pxy*(Pyy^-1) <=> K * Pyy = Pxy
-    Math::RHSolver(kalmanGainPointer,observationCovariancePointer,crossCovariancePointer,lengthState,lengthObservation);
+    false, WeightCovariance);
+
+    //  RHSolver to find K = Pxy*(Pyy^-1) <=> K * Pyy = Pxy
     std::cout << "Kalman Gain Calulation\n";
-    Math::MatrixMultiplication(kalmanGainPointer,
-    crossCovariancePointer, Math::MatrixStructure::Natural, lengthState, lengthObservation,
-    inverseObservationCovariancePointer, Math::MatrixStructure::Transposed, lengthObservation, lengthObservation);
-    
+    Math::RHSolver(kalmanGainPointer,observationCovariancePointer,crossCovariancePointer,lengthState,lengthObservation);
     std::cout << "State Update\n";
     std::cout << "State\n";
     Math::SubInPlace(measurePointer,observationPointer,lengthObservation);
-    Math::MatrixMultiplication(observationPointer,
+    Math::MatrixMultiplication(statePointer,
     kalmanGainPointer, Math::MatrixStructure::Natural, lengthState, lengthObservation,
-    measurePointer, Math::MatrixStructure::Natural, lengthObservation, 1u);
+    measurePointer, Math::MatrixStructure::Natural, lengthObservation, 1u,
+    true);
     std::cout << "State Covariance\n";
     Math::MatrixMultiplication(crossCovariancePointer,
     kalmanGainPointer, Math::MatrixStructure::Natural, lengthState, lengthObservation,
-    observationCovariancePointer, Math::MatrixStructure::Natural, lengthObservation, lengthObservation);
-    Math::MatrixMultiplication(observationCovariancePointer,
+    observationCovariancePointer, Math::MatrixStructure::Natural, lengthObservation, lengthObservation,
+    false);
+    Math::MatrixMultiplication(stateCovariancePointer,
     crossCovariancePointer, Math::MatrixStructure::Natural, lengthState, lengthObservation,
-    kalmanGainPointer, Math::MatrixStructure::Transposed, lengthState, lengthObservation);
-    Math::AddInPlace(stateCovariancePointer, observationCovariancePointer, lengthState*lengthState);
+    kalmanGainPointer, Math::MatrixStructure::Transposed, lengthState, lengthObservation,
+    true);
 
     std::cout << "Delete Auxiliary Structures\n";
     delete[] WeightMean;
@@ -135,7 +139,6 @@ void UKF::Iterate(){
 
     delete[] crossCovariancePointer;
     delete[] kalmanGainPointer;
-    delete[] inverseObservationCovariancePointer;
 
     delete[] sigmaPointsState;
     delete[] sigmaPointsObservation;

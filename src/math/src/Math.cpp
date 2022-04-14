@@ -1,6 +1,18 @@
 #include "../include/Math.hpp"
 
 namespace Math {
+    void PrintMatrix(double* matrix_in, unsigned lengthX_in, unsigned lengthY_in){
+        std::cout << "Size X = " << lengthX_in << "; ";
+        std::cout << "Size Y = " << lengthY_in << "\n";
+
+        for(unsigned i = 0u; i < lengthX_in; i++){
+            for(unsigned j = 0u; j < lengthY_in; j++){
+                std::cout << std::scientific << std::fixed << std::setprecision(2) << matrix_in[j*lengthX_in+i] << " "; 
+            }
+            std::cout << "\n";
+        }
+    }
+
     void CholeskyDecomposition(double* matrix_out, double* matrix_in, unsigned lengthX_in, unsigned lengthY_in){
         unsigned diagDim = (lengthX_in > lengthY_in) ? lengthX_in : lengthY_in;
         for (unsigned k = 0u; k < diagDim; k++)
@@ -33,7 +45,7 @@ namespace Math {
     void MatrixMultiplicationNN(double* matrix_out,
     double* matrixLeft_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
     double* matrixRight_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
-    double* weight_in) {
+    bool isInPlace, double* weight_in) {
         if(lengthLeftY_in != lengthRightX_in) { 
             std::cout << "Error: Multiplication sizes are not compatible.\n";
         }
@@ -41,7 +53,7 @@ namespace Math {
         if( weight_in != NULL){
             for(unsigned j = 0u; j < lengthRightY_in; j++){
                 for(unsigned i = 0u; i < lengthLeftX_in; i++){
-                    double acc = 0.0;
+                    double acc = (isInPlace) ? matrix_out[j*lengthLeftX_in + i] : 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
                         acc += matrixLeft_in[k*lengthLeftX_in+i] * matrixRight_in[j*lengthRightX_in+k] * weight_in[k];
                     }
@@ -51,7 +63,7 @@ namespace Math {
         } else {
             for(unsigned j = 0u; j < lengthRightY_in; j++){
                 for(unsigned i = 0u; i < lengthLeftX_in; i++){
-                    double acc = 0.0;
+                    double acc = (isInPlace) ? matrix_out[j*lengthLeftX_in + i] : 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
                         acc += matrixLeft_in[k*lengthLeftX_in+i] * matrixRight_in[j*lengthRightX_in+k];
                     }
@@ -63,7 +75,7 @@ namespace Math {
     void MatrixMultiplicationNT(double* matrix_out,
     double* matrixLeft_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
     double* matrixRight_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
-    double* weight_in) {
+    bool isInPlace, double* weight_in) {
         if(lengthLeftY_in != lengthRightY_in) { 
             std::cout << "Error: Multiplication sizes are not compatible.\n";
         }
@@ -71,7 +83,7 @@ namespace Math {
         if(weight_in != NULL){
             for(unsigned j = 0u; j < lengthRightX_in; j++){
                 for(unsigned i = 0u; i < lengthLeftX_in; i++){
-                    double acc = 0.0;
+                    double acc = (isInPlace) ? matrix_out[j*lengthLeftX_in + i] : 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
                         acc += matrixLeft_in[k*lengthLeftX_in+i] * matrixRight_in[k*lengthRightX_in+j] * weight_in[k];
                     }
@@ -81,7 +93,7 @@ namespace Math {
         } else { 
             for(unsigned j = 0u; j < lengthRightX_in; j++){
                 for(unsigned i = 0u; i < lengthLeftX_in; i++){
-                    double acc = 0.0;
+                    double acc = (isInPlace) ? matrix_out[j*lengthLeftX_in + i] : 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
                         acc += matrixLeft_in[k*lengthLeftX_in+i] * matrixRight_in[k*lengthRightX_in+j];
                     }
@@ -93,7 +105,7 @@ namespace Math {
     void MatrixMultiplicationTN(double* matrix_out,
     double* matrixLeft_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
     double* matrixRight_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
-    double* weight_in) {
+    bool isInPlace, double* weight_in) {
         if(lengthLeftX_in != lengthRightX_in) { 
             std::cout << "Error: Multiplication sizes are not compatible.\n";
         }
@@ -101,7 +113,7 @@ namespace Math {
         if(weight_in != NULL){
             for(unsigned j = 0u; j < lengthRightY_in; j++){
                 for(unsigned i = 0u; i < lengthLeftY_in; i++){
-                    double acc = 0.0;
+                    double acc = (isInPlace) ? matrix_out[j*lengthLeftY_in + i] : 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
                         acc += matrixLeft_in[i*lengthLeftX_in+k] * matrixRight_in[j*lengthRightX_in+k] * weight_in[k];
                     }
@@ -111,7 +123,7 @@ namespace Math {
         } else {
             for(unsigned j = 0u; j < lengthRightY_in; j++){
                 for(unsigned i = 0u; i < lengthLeftY_in; i++){
-                    double acc = 0.0;
+                    double acc = (isInPlace) ? matrix_out[j*lengthLeftY_in + i] : 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
                         acc += matrixLeft_in[i*lengthLeftX_in+k] * matrixRight_in[j*lengthRightX_in+k];
                     }
@@ -123,7 +135,7 @@ namespace Math {
     void MatrixMultiplicationTT(double* matrix_out,
     double* matrixLeft_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
     double* matrixRight_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
-    double* weight_in) {
+    bool isInPlace, double* weight_in) {
         if(lengthLeftX_in != lengthRightY_in) { 
             std::cout << "Error: Multiplication sizes are not compatible.\n";
         }
@@ -131,7 +143,7 @@ namespace Math {
         if(weight_in != NULL){
             for(unsigned j = 0u; j < lengthRightX_in; j++){
                 for(unsigned i = 0u; i < lengthLeftY_in; i++){
-                    double acc = 0.0;
+                    double acc = (isInPlace) ? matrix_out[j*lengthLeftY_in + i] : 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
                         acc += matrixLeft_in[i*lengthLeftX_in+k] * matrixRight_in[k*lengthRightX_in+j] * weight_in[k];
                     }
@@ -141,7 +153,7 @@ namespace Math {
         } else {
             for(unsigned j = 0u; j < lengthRightX_in; j++){
                 for(unsigned i = 0u; i < lengthLeftY_in; i++){
-                    double acc = 0.0;
+                    double acc = (isInPlace) ? matrix_out[j*lengthLeftY_in + i] : 0.0;
                     for(unsigned k = 0u; k < lengthK; k++){
                         acc += matrixLeft_in[i*lengthLeftX_in+k] * matrixRight_in[k*lengthRightX_in+j];
                     }
@@ -153,15 +165,15 @@ namespace Math {
     void MatrixMultiplication(double* matrix_out,
     double* matrixLeft_in, MatrixStructure structureLeft, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
     double* matrixRight_in, MatrixStructure structureRight, unsigned lengthRightX_in, unsigned lengthRightY_in,
-    double* weight_in){
+    bool isInPlace, double* weight_in){
         if(structureLeft == MatrixStructure::Natural && structureRight == MatrixStructure::Natural){
-            MatrixMultiplicationNN(matrix_out,matrixLeft_in,lengthLeftX_in,lengthLeftY_in,matrixRight_in, lengthRightX_in, lengthRightY_in, weight_in);
+            MatrixMultiplicationNN(matrix_out,matrixLeft_in,lengthLeftX_in,lengthLeftY_in,matrixRight_in, lengthRightX_in, lengthRightY_in, isInPlace, weight_in);
         } else if (structureLeft == MatrixStructure::Natural){
-            MatrixMultiplicationNT(matrix_out,matrixLeft_in,lengthLeftX_in,lengthLeftY_in,matrixRight_in, lengthRightX_in, lengthRightY_in, weight_in);
+            MatrixMultiplicationNT(matrix_out,matrixLeft_in,lengthLeftX_in,lengthLeftY_in,matrixRight_in, lengthRightX_in, lengthRightY_in, isInPlace, weight_in);
         } else if (structureRight == MatrixStructure::Natural){
-            MatrixMultiplicationTN(matrix_out,matrixLeft_in,lengthLeftX_in,lengthLeftY_in,matrixRight_in, lengthRightX_in, lengthRightY_in, weight_in);
+            MatrixMultiplicationTN(matrix_out,matrixLeft_in,lengthLeftX_in,lengthLeftY_in,matrixRight_in, lengthRightX_in, lengthRightY_in, isInPlace, weight_in);
         } else {
-            MatrixMultiplicationTT(matrix_out,matrixLeft_in,lengthLeftX_in,lengthLeftY_in,matrixRight_in, lengthRightX_in, lengthRightY_in, weight_in);
+            MatrixMultiplicationTT(matrix_out,matrixLeft_in,lengthLeftX_in,lengthLeftY_in,matrixRight_in, lengthRightX_in, lengthRightY_in, isInPlace, weight_in);
         }
     }
     void DistributeOperation(void (*f)(double* matrixLeft_inout, double* matrixRight_in, unsigned length_in), double* matrixLeft_inout, double* matrixRight_in, unsigned length_in, unsigned strideLeft_in, unsigned strideRight_in, unsigned iteration_in, unsigned offsetLeft_in, unsigned offsetRight_in){
@@ -171,7 +183,7 @@ namespace Math {
             std::cout << "Warning: The behavior is undefined to left strides lower than the length of the operation.\n";
         }
         for(unsigned i = 0u; i < iteration_in; i++) {
-            f(matrixLeft_inout + i * strideLeft_in,matrixRight_in + i * strideRight_in,length_in);
+            f(left + i * strideLeft_in,right + i * strideRight_in,length_in);
         }
     }
     void Mean(double* vector_out, double* matrix_in, unsigned lengthX_in, unsigned lengthY_in, double* weight_in){
