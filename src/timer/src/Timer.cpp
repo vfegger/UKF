@@ -17,7 +17,7 @@ void Timer::Save(){
     if(count >= length){
         std::cout << "Error: Insufficient size\n";
     }
-    duration[count] = std::chrono::duration_cast<std::chrono::milliseconds>(Time::now()-startTime).count();
+    duration[count] = (Time::now()-startTime).count();
     count++;
 }
 void Timer::Reset(){
@@ -27,9 +27,9 @@ void Timer::Reset(){
 void Timer::Print(){
     for(unsigned i = 0u; i < count; i++){
         if(i == 0){
-            std::cout << "Time duration " << i << ": " << duration[i] << " ms\n"; 
+            std::cout << "Time duration " << i << ": " << duration[i]/1e+6 << " ms\n"; 
         } else {
-            std::cout << "Time duration " << i << ": " << duration[i] - duration[i-1u] << " ms\n"; 
+            std::cout << "Time duration " << i << ": " << (duration[i] - duration[i-1u])/1e+6 << " ms\n"; 
         }
     }
 }

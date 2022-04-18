@@ -17,7 +17,7 @@ This project uses the following libraries or applications:
 The following commands are used to run this project at the main project folder:
 
 > cmake -S src/ -B build/ \
-> make -C build \
+> cmake --build build \
 > build/UKF_1
 > valgrind build/UKF_1
 
@@ -31,4 +31,4 @@ Or
 
 ## Execution
 
-This project is still ongoing and it is not expected to give any results yet. The only thing that is capable of is memory control.
+This project is still ongoing and it is not expected to give any correct results yet. It should be able to measure the time needed for each iteration.
