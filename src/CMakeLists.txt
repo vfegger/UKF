@@ -7,9 +7,11 @@ add_subdirectory(structure)
 add_subdirectory(parser)
 add_subdirectory(ukf)
 add_subdirectory(math)
+add_subdirectory(timer)
+
 
 # Add the executable
 add_executable(${PROJECT_NAME} mainTest.cpp)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Structure Math Parser UKF)
+target_link_libraries(${PROJECT_NAME} PUBLIC Structure Math Parser Timer UKF)
 

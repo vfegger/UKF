@@ -15,27 +15,29 @@ namespace Math {
     void CholeskyDecomposition(double* matrix_out, double* matrix_in, unsigned lengthX_in, unsigned lengthY_in);
     void AddInPlace(double* matrix_inout, double* matrix_in, unsigned length_in);
     void SubInPlace(double* matrix_inout, double* matrix_in, unsigned length_in);
+    void ConstantMultiplicationInPlace(double* matrix_inout, double value_in, unsigned length_in);
     
-    void MatrixMultiplicationNN(double* matrix_out,
+    void MatrixMultiplicationNN(double* matrix_out, double alpha, double beta,
     double* matrixLeft_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
     double* matrixRight_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
-    bool isInPlace, double* weight_in);
-    void MatrixMultiplicationNT(double* matrix_out,
+    double* weight_in);
+    void MatrixMultiplicationNT(double* matrix_out, double alpha, double beta,
     double* matrixLeft_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
     double* matrixRight_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
-    bool isInPlace, double* weight_in);
-    void MatrixMultiplicationTN(double* matrix_out,
+    double* weight_in);
+    void MatrixMultiplicationTN(double* matrix_out, double alpha, double beta,
     double* matrixLeft_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
     double* matrixRight_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
-    bool isInPlace, double* weight_in);
-    void MatrixMultiplicationTT(double* matrix_out,
+    double* weight_in);
+    void MatrixMultiplicationTT(double* matrix_out, double alpha, double beta,
     double* matrixLeft_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
     double* matrixRight_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
-    bool isInPlace, double* weight_in);
-    void MatrixMultiplication(double* matrix_out,
+    double* weight_in);
+    //Matrix Multiplication alpha * A * B + beta * C => C
+    void MatrixMultiplication(double* matrix_out, double alpha, double beta,
     double* matrixLeft_in, MatrixStructure structureLeft, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
     double* matrixRight_in, MatrixStructure structureRight, unsigned lengthRightX_in, unsigned lengthRightY_in,
-    bool isInPlace = false, double* weight_in = NULL);
+    double* weight_in = NULL);
     void DistributeOperation(void (*f)(double* matrixLeft_inout, double* matrixRight_in, unsigned length_in), double* matrixLeft_inout, double* matrixRight_in, unsigned length_in, unsigned strideLeft_in, unsigned strideRight_in, unsigned iteration_in = 1u, unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u);
     void Mean(double* vector_out, double* matrix_in, unsigned lengthX_in, unsigned lengthY_in, double* weight_in = NULL);
 

@@ -127,6 +127,8 @@ void Data::InstantiateMultiple(Data*& dataArray_out, const Data& data_in, unsign
     }
     dataArray_out = new(std::nothrow) Data[length_in];
     for(unsigned i = 0u; i < length_in; i++){
+        dataArray_out[i].lengthElements = data_in.lengthElements;
+        dataArray_out[i].count = data_in.count;
         dataArray_out[i].lengthArray = new unsigned[data_in.lengthElements];
         dataArray_out[i].names = new std::string[data_in.lengthElements];
         dataArray_out[i].offsetPointer = new double*[data_in.lengthElements];

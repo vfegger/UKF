@@ -34,7 +34,7 @@ DataCovariance* UKFMemory::GetStateCovariance(){
 }
 
 DataCovariance* UKFMemory::GetStateNoise(){
-    return stateCovariance;
+    return stateNoise;
 }
 
 Data* UKFMemory::GetMeasure(){

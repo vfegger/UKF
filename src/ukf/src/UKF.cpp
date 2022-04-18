@@ -19,7 +19,9 @@ UKF::UKF(UKFMemory* memory_in, double alpha_in, double beta_in, double kappa_in)
     lambda = alpha*alpha*(L+kappa)-L;
 }
 //UKF Iteration
-void UKF::Iterate(){
+void UKF::Iterate(Timer& timer){
+    timer.Reset();
+    timer.Start();
     //Initialization of variables
     Parameter* parameter = memory->GetParameter();
 
@@ -30,7 +32,7 @@ void UKF::Iterate(){
     DataCovariance* stateNoise = memory->GetStateNoise();
     double* stateNoisePointer = stateNoise->GetPointer();
 
-    Data* measure = memory->GetMeasure();
+    Data* measure = new Data(*(memory->GetMeasure()));
     double* measurePointer = measure->GetPointer();
     DataCovariance* measureNoise = memory->GetMeasureNoise();
     double* measureNoisePointer = measureNoise->GetPointer();
@@ -39,7 +41,6 @@ void UKF::Iterate(){
     double* observationPointer = observation->GetPointer();
     DataCovariance* observationCovariance = new DataCovariance(*observation);
     double* observationCovariancePointer = observationCovariance->GetPointer();
-
 
     unsigned lengthState = state->GetLength();
     unsigned lengthObservation = observation->GetLength();
@@ -52,13 +53,18 @@ void UKF::Iterate(){
         crossCovariancePointer[i] = 0.0;
         kalmanGainPointer[i] = 0.0;
     }
+    timer.Save();
+
     //Methods
     std::cout << "Calculate Cholesky Decomposition\n";
     double* chol = new(std::nothrow) double[lengthState * lengthState];
     for(unsigned i = 0u; i < lengthState*lengthState; i++){
         chol[i] = 0.0;
     }
+    Math::ConstantMultiplicationInPlace(stateCovariancePointer,lengthState+lambda,lengthState*lengthState);
     Math::CholeskyDecomposition(chol,stateCovariancePointer,lengthState,lengthState);
+    timer.Save();
+
     std::cout << "Generate Sigma Points based on Cholesky Decompostion\n";
     unsigned sigmaPointsLength = 2u*lengthState + 1u;
     double* WeightMean = new(std::nothrow) double[sigmaPointsLength];
@@ -72,66 +78,77 @@ void UKF::Iterate(){
             WeightCovariance[i] = 0.5/(lengthState+lambda);
         }
     }
-    Data* sigmaPointsState = new(std::nothrow) Data[sigmaPointsLength];
+    Data* sigmaPointsState = NULL;
+    Data* sigmaPointsObservation = NULL;
     Data::InstantiateMultiple(sigmaPointsState,*state,sigmaPointsLength);
-    Data* sigmaPointsObservation = new(std::nothrow) Data[sigmaPointsLength];
     Data::InstantiateMultiple(sigmaPointsObservation,*measure,sigmaPointsLength);
-    Math::DistributeOperation(Math::AddInPlace,sigmaPointsState->GetPointer(), chol, lengthState, lengthState, lengthState, lengthState,lengthState,0u);
-    Math::DistributeOperation(Math::SubInPlace,sigmaPointsState->GetPointer(), chol, lengthState, lengthState, lengthState, lengthState,(lengthState+1u)*lengthState,0u);
+    Math::DistributeOperation(Math::AddInPlace,sigmaPointsState->GetPointer(), chol, lengthState, lengthState, lengthState, lengthState, lengthState, 0u);
+    Math::DistributeOperation(Math::SubInPlace,sigmaPointsState->GetPointer(), chol, lengthState, lengthState, lengthState, lengthState, (lengthState+1u)*lengthState, 0u);
     delete[] chol;
-    std::cout << "Evolution Step\n";
-    for(unsigned i = 0u; i < sigmaPointsLength; i++){
-        memory->Evolution(sigmaPointsState[i], *parameter);
-    }
-    
+    timer.Save();
+
     std::cout << "Observation Step\n";
     for(unsigned i = 0u; i < sigmaPointsLength; i++){
         memory->Observation(sigmaPointsState[i], *parameter, sigmaPointsObservation[i]);
     }
+    timer.Save();
+
+    std::cout << "Evolution Step\n";
+    for(unsigned i = 0u; i < sigmaPointsLength; i++){
+        memory->Evolution(sigmaPointsState[i], *parameter);
+    }
+    timer.Save();
     
     std::cout << "Mean\n";
     Math::Mean(statePointer, sigmaPointsState->GetPointer(), lengthState, sigmaPointsLength, WeightMean);
     Math::Mean(observationPointer, sigmaPointsObservation->GetPointer(), lengthObservation, sigmaPointsLength, WeightMean);
-    
+    timer.Save();
+
     std::cout << "Covariance\n";
     Math::DistributeOperation(Math::SubInPlace,sigmaPointsState->GetPointer(), statePointer, lengthState, lengthState, 0u, sigmaPointsLength);
     Math::DistributeOperation(Math::SubInPlace,sigmaPointsObservation->GetPointer(), observationPointer, lengthObservation, lengthObservation, 0u, sigmaPointsLength);
-    Math::MatrixMultiplication(stateCovariancePointer,
+     
+    Math::MatrixMultiplication(stateCovariancePointer, 1.0, 0.0,
     sigmaPointsState->GetPointer(), Math::MatrixStructure::Natural, lengthState, sigmaPointsLength,
     sigmaPointsState->GetPointer(), Math::MatrixStructure::Transposed, lengthState, sigmaPointsLength,
-    false, WeightCovariance);
+    WeightCovariance);
     Math::AddInPlace(stateCovariancePointer,stateNoisePointer,lengthState*lengthState);
     
-    Math::MatrixMultiplication(observationCovariancePointer,
+    Math::MatrixMultiplication(observationCovariancePointer, 1.0, 0.0,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Natural, lengthObservation, sigmaPointsLength,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Transposed, lengthObservation, sigmaPointsLength,
-    false, WeightCovariance);
+    WeightCovariance);
     Math::AddInPlace(observationCovariancePointer,measureNoisePointer,lengthObservation*lengthObservation);
-
-    Math::MatrixMultiplication(crossCovariancePointer,
+    
+    Math::MatrixMultiplication(crossCovariancePointer, 1.0, 0.0,
     sigmaPointsState->GetPointer(), Math::MatrixStructure::Natural, lengthState, sigmaPointsLength,
     sigmaPointsObservation->GetPointer(), Math::MatrixStructure::Transposed, lengthObservation, sigmaPointsLength,
-    false, WeightCovariance);
+    WeightCovariance);
+
+    timer.Save();
 
     //  RHSolver to find K = Pxy*(Pyy^-1) <=> K * Pyy = Pxy
     std::cout << "Kalman Gain Calulation\n";
     Math::RHSolver(kalmanGainPointer,observationCovariancePointer,crossCovariancePointer,lengthState,lengthObservation);
+    timer.Save();
+    
     std::cout << "State Update\n";
     std::cout << "State\n";
     Math::SubInPlace(measurePointer,observationPointer,lengthObservation);
-    Math::MatrixMultiplication(statePointer,
+    Math::MatrixMultiplication(statePointer, 1.0, 1.0,
     kalmanGainPointer, Math::MatrixStructure::Natural, lengthState, lengthObservation,
-    measurePointer, Math::MatrixStructure::Natural, lengthObservation, 1u,
-    true);
+    measurePointer, Math::MatrixStructure::Natural, lengthObservation, 1u);
+    timer.Save();
+    
     std::cout << "State Covariance\n";
-    Math::MatrixMultiplication(crossCovariancePointer,
+    Math::MatrixMultiplication(crossCovariancePointer, 1.0, 0.0,
     kalmanGainPointer, Math::MatrixStructure::Natural, lengthState, lengthObservation,
-    observationCovariancePointer, Math::MatrixStructure::Natural, lengthObservation, lengthObservation,
-    false);
-    Math::MatrixMultiplication(stateCovariancePointer,
+    observationCovariancePointer, Math::MatrixStructure::Natural, lengthObservation, lengthObservation);
+    
+    Math::MatrixMultiplication(stateCovariancePointer, -1.0, 1.0,
     crossCovariancePointer, Math::MatrixStructure::Natural, lengthState, lengthObservation,
-    kalmanGainPointer, Math::MatrixStructure::Transposed, lengthState, lengthObservation,
-    true);
+    kalmanGainPointer, Math::MatrixStructure::Transposed, lengthState, lengthObservation);
+    timer.Save();
 
     std::cout << "Delete Auxiliary Structures\n";
     delete[] WeightMean;
@@ -143,8 +160,10 @@ void UKF::Iterate(){
     delete[] sigmaPointsState;
     delete[] sigmaPointsObservation;
 
+    delete measure;
     delete observation;
     delete observationCovariance;
+    timer.Save();
 
     std::cout << "Iteration Ended\n";
 }

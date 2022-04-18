@@ -4,6 +4,9 @@
 #include "structure/include/Parameter.hpp"
 #include "parser/include/Parser.hpp"
 #include "ukf/include/UKF.hpp"
+#include "timer/include/Timer.hpp"
+#include <stdlib.h>
+
 
 class HeatFluxEstimationMemory : public UKFMemory{
 public:
@@ -18,8 +21,8 @@ public:
         return 12.45 + (14e-3 + 2.517e-6*T)*T;
     }
 
-    unsigned DifferentialK(double TN, double T, double TP, double delta){
-        double auxN = 2.0*(K(T)*K(TN))/(K(T)+K(TN))*(TN - T)/delta;
+    double DifferentialK(double TN, double T, double TP, double delta){
+        double auxN = 2.0*(K(TN)*K(T))/(K(TN)+K(T))*(TN - T)/delta;
         double auxP = 2.0*(K(TP)*K(T))/(K(TP)+K(T))*(TP - T)/delta;
         return (auxN+auxP)/delta;
     }
@@ -35,7 +38,8 @@ public:
         double dy = delta[1u];
         double dz = delta[2u];
         double dt = delta[3u];
-        unsigned acc = 0.0;
+        double amp = parameter_in.GetPointer<double>(3u)[0u];
+        double acc = 0.0;
         double TiN, TiP;
         double TjN, TjP;
         double TkN, TkP;
@@ -43,33 +47,42 @@ public:
         unsigned index;
         double* T = data_inout[0u];
         double* Q = data_inout[1u];
+        double* T_out = new(std::nothrow) double[data_inout.GetLength(0u)];
         for(unsigned k = 0u; k < Lz; k++){
             for(unsigned j = 0u; j < Ly; j++){
                 for(unsigned i = 0u; i < Lx; i++){
                     index = (k*Ly+j)*Lx+i;
                     T0 = T[index];
-                    TiN = (i != 0u  ) ? T[index - 1]  : T0;
-                    TiP = (i != Lx-1) ? T[index + 1]  : T0;
-                    TjN = (j != 0u  ) ? T[index - Lx] : T0;
-                    TjP = (j != Ly-1) ? T[index + Lx] : T0;
-                    TkN = (k != 0u  ) ? T[index - Ly] : T0;
-                    TkP = (k != Lz-1) ? T[index + Ly] : T0;
+                    TiN = (i != 0u  ) ? T[index - 1]     : T0;
+                    TiP = (i != Lx-1) ? T[index + 1]     : T0;
+                    TjN = (j != 0u  ) ? T[index - Lx]    : T0;
+                    TjP = (j != Ly-1) ? T[index + Lx]    : T0;
+                    TkN = (k != 0u  ) ? T[index - Ly*Lx] : T0;
+                    TkP = (k != Lz-1) ? T[index + Ly*Lx] : T0;
                     acc = 0.0;
                     // X dependency
                     acc += DifferentialK(TiN,T0,TiP,dx);
                     // Y dependency
-                    acc += DifferentialK(TjN,T0,TjP,dx);
+                    acc += DifferentialK(TjN,T0,TjP,dy);
                     // Z dependency
-                    acc += DifferentialK(TkN,T0,TkP,dx);
+                    acc += DifferentialK(TkN,T0,TkP,dz);
 
                     if(k == Lz - 1){
-                        acc += Q[j*Lx+i]/dz;
+                        acc += amp*Q[j*Lx+i]/dz;
                     }
-                    T[index] += dt*acc/C(T0);
+                    T_out[index] = T0 + dt*acc/C(T0);
                 }
             }
         }
-
+        for(unsigned k = 0u; k < Lz; k++){
+            for(unsigned j = 0u; j < Ly; j++){
+                for(unsigned i = 0u; i < Lx; i++){
+                    index = (k*Ly+j)*Lx+i;
+                    T[index] = T_out[index];
+                }
+            }
+        }
+        delete[] T_out;
     }
     void Observation(Data& data_in, Parameter& parameter_in, Data& data_out) override {
         unsigned* length = parameter_in.GetPointer<unsigned>(0u);
@@ -105,11 +118,12 @@ public:
         unsigned Lx, unsigned Ly, unsigned Lz, unsigned Lt,
         double Sx, double Sy, double Sz, double St){
             std::cout << "Parameter Initialization\n";
-            parameter = new Parameter(3u);
-            unsigned indexL, indexD, indexS;
+            parameter = new Parameter(4u);
+            unsigned indexL, indexD, indexS, indexAmp;
             indexL = parameter->Add("Length",4u,sizeof(unsigned));
             indexD = parameter->Add("Delta",4u,sizeof(double));
             indexS = parameter->Add("Size",4u,sizeof(double));
+            indexAmp = parameter->Add("Amp",1u,sizeof(double));
             parameter->Initialize();
             unsigned L[4] = {Lx,Ly,Lz,Lt};
             parameter->LoadData(indexL, L, 4u);
@@ -117,6 +131,8 @@ public:
             parameter->LoadData(indexD, D, 4u);
             double S[4] = {Sx,Sy,Sz,St};
             parameter->LoadData(indexS, S, 4u);
+            double Amp[1] = {5e4};
+            parameter->LoadData(indexAmp, Amp, 1u);
 
             std::cout << "Input Initialization\n";
             input = new Data(2u);
@@ -133,7 +149,7 @@ public:
             double Q[Lx*Ly];
             double sigmaQ[Lx*Ly];
             for(unsigned i = 0u; i < Lx*Ly; i++){
-                Q[i] = 10.0;
+                Q[i] = 0.0;
                 sigmaQ[i] = 1.25;
             }
             input->LoadData(indexT, T, Lx*Ly*Lz);
@@ -154,7 +170,7 @@ public:
             double T_meas[Lx*Ly];
             double sigmaT_meas[Lx*Ly];
             for(unsigned i = 0u; i < Lx*Ly; i++){
-                T_meas[i] = 300.0;
+                T_meas[i] = 300.0 + (rand()%15000)/10000.0;
                 sigmaT_meas[i] = 1.5;
             }
             measure->LoadData(indexT_meas, T_meas, Lx*Ly);
@@ -181,6 +197,7 @@ public:
 };
 
 int main(){
+    srand(1u);
     std::cout << "\nStart Execution\n\n";
     std::string path = "/mnt/d/Research/UKF/data/";
 
@@ -228,15 +245,24 @@ int main(){
         std::cout << "Values: " << e[i][j] << "\n";
     } 
 
-    HeatFluxEstimation problem(4,4,2,20,160.0,160.0,3.0,2.0);
+    unsigned Lx = 12u;
+    unsigned Ly = 12u;
+    unsigned Lz = 6u;
+    unsigned Lt = 100u;
 
-    UKF ukf(problem.GetMemory(), 0.001, 3.0, 0.0);
+    HeatFluxEstimation problem(Lx,Ly,Lz,Lt,0.12,0.12,0.003,2.0);
 
-    Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),4*4*(2+1),1);
+    UKF ukf(problem.GetMemory(), 0.001, 2.0, 0.0);
 
-    ukf.Iterate();
+    Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),1,Lx*Ly*(Lz+1));
 
-    Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),4*4*(2+1),1);
+    Timer timer(UKF_TIMER);
+    for(unsigned i = 0u; i < 100u; i++){
+        ukf.Iterate(timer);
+        std::cout << "\n";
+        Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),1,Lx*Ly*(Lz+1));
+        timer.Print();
+    }
 
     std::cout << "\nEnd Execution\n";
     return 0;
