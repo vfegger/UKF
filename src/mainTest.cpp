@@ -6,6 +6,7 @@
 #include "ukf/include/UKF.hpp"
 #include "timer/include/Timer.hpp"
 #include "hfe/include/HeatFluxEstimation.hpp"
+#include "hfe/include/HeatFluxGenerator.hpp"
 #include <stdlib.h>
 
 int main(){
@@ -61,19 +62,37 @@ int main(){
     unsigned Ly = 12u;
     unsigned Lz = 6u;
     unsigned Lt = 100u;
+    double Sx = 0.12;
+    double Sy = 0.12;
+    double Sz = 0.003;
+    double St = 2.0;
+    double T0 = 300.0;
+    double Amp = 5.0e4;
+    double mean = 0.0;
+    double sigma = 1.5;
 
-    HeatFluxEstimation problem(Lx,Ly,Lz,Lt,0.12,0.12,0.003,2.0);
+    HeatFluxGenerator generator(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,T0,Amp);
+    
+    generator.Generate(mean,sigma);
 
-    UKF ukf(problem.GetMemory(), 0.001, 2.0, 0.0);
+    HeatFluxEstimation problem(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St);
+    
+    problem.UpdateMeasure(generator.GetTemperature(0u),Lx,Ly);
+    
+    double alpha = 0.001;
+    double beta = 2.0;
+    double kappa = 0.0;
+    UKF ukf(problem.GetMemory(), alpha, beta, kappa);
 
-    Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),1,Lx*Ly*(Lz+1));
+    Math::PrintMatrix(generator.GetTemperature(Lt),Lx,Ly);
 
     Timer timer(UKF_TIMER);
-    for(unsigned i = 0u; i < 100u; i++){
+    for(unsigned i = 1u; i <= Lt; i++){
         ukf.Iterate(timer);
         std::cout << "\n";
-        Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),1,Lx*Ly*(Lz+1));
+        Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,Lx,Ly);
         timer.Print();
+        problem.UpdateMeasure(generator.GetTemperature(i),Lx,Ly);
     }
 
     std::cout << "\nEnd Execution\n";

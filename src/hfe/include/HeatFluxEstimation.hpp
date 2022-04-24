@@ -17,6 +17,8 @@ public:
 
     HeatFluxEstimation(unsigned Lx, unsigned Ly, unsigned Lz, unsigned Lt, double Sx, double Sy, double Sz, double St);
 
+    void UpdateMeasure(double* T_in, unsigned Lx, unsigned Ly);
+
     ~HeatFluxEstimation();
 };
 

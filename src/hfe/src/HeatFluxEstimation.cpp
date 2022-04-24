@@ -59,7 +59,7 @@ HeatFluxEstimation::HeatFluxEstimation(
         double T_meas[Lx*Ly];
         double sigmaT_meas[Lx*Ly];
         for(unsigned i = 0u; i < Lx*Ly; i++){
-            T_meas[i] = 300.0 + (rand()%15000)/10000.0;
+            T_meas[i] = 300.0;
             sigmaT_meas[i] = 1.5;
         }
         measure->LoadData(indexT_meas, T_meas, Lx*Ly);
@@ -70,6 +70,16 @@ HeatFluxEstimation::HeatFluxEstimation(
         memory = new HeatFluxEstimationMemory(*input,*inputCovariance,*inputNoise,*measure,*measureNoise,*parameter);
         
         std::cout << "End Initialization\n";
+}
+
+void HeatFluxEstimation::UpdateMeasure(double* T_in, unsigned Lx, unsigned Ly){
+    Data* measure_aux = new Data(1u);
+    unsigned indexT_meas;
+    indexT_meas = measure_aux->Add("Temperature",Lx*Ly);
+    measure_aux->Initialize();
+    measure_aux->LoadData(indexT_meas, T_in, Lx*Ly); 
+    memory->UpdateMeasure(*measure_aux);
+    delete measure_aux;
 }
 
 HeatFluxEstimation::~HeatFluxEstimation(){
