@@ -10,7 +10,6 @@
 #include <stdlib.h>
 
 int main(){
-    srand(1u);
     std::cout << "\nStart Execution\n\n";
     std::string path = "/mnt/d/Research/UKF/data/";
 
