@@ -27,7 +27,6 @@ Or
 > cmake --build build-debug \
 > build-debug/UKF_1
 > valgrind --leak-check=full build-debug/UKF_1
->
 
 ## Execution
 
