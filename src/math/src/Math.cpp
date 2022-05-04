@@ -233,7 +233,7 @@ namespace Math {
                 for(unsigned k = j+1; k < lengthY_in; k++){
                     acc += X_out[k*lengthX_in+i]*A[j*lengthY_in+k];
                 }
-                X_out[j*lengthX_in+i] = (1/A[j*lengthY_in+j])*(B[j*lengthX_in+i]-acc);
+                X_out[j*lengthX_in+i] = (1.0/A[j*lengthY_in+j])*(B[j*lengthX_in+i]-acc);
             }
         }
     }
