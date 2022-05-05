@@ -15,7 +15,7 @@ private:
 public:
     Parser(unsigned length_in);
 
-    unsigned OpenFile(std::string name_in, std::string extension_in, unsigned index = UINT_MAX_VALUE);
+    unsigned OpenFile(std::string path_in, std::string name_in, std::string extension_in, std::ios::openmode mode_in, unsigned index = UINT_MAX_VALUE);
     void ImportConfiguration(unsigned index_in, std::string& name_out, unsigned& length_out);
     void ImportData(unsigned index_in, unsigned length_in, double* data_out);
     void ImportParameter(unsigned index_in, unsigned length_in, void* parameter_out, unsigned sizeType_in);

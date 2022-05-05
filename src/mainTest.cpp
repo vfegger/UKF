@@ -34,18 +34,54 @@ int main(){
         std::cout << "Values: " << c.GetPointer<unsigned>(k)[j] << "\n";
     }
 
-    Parser parser(3u);
-    unsigned index = parser.OpenFile(path + "TestData",".dat");
-    std::string name = "";
-    unsigned length = 0u;
-    parser.ImportConfiguration(index,name,length);
-    std::cout << "Name: " << name << "\n";
-    std::cout << "Length: " << length << "\n";
-    double values[length];
-    parser.ImportData(index, length, values);
-    for(unsigned j = 0u; j < length; j++){
+    Parser *parser = new Parser(4u);
+    unsigned index_in = parser->OpenFile(path,"TestData",".dat", std::ios::in);
+    std::string name_in = "";
+    unsigned length_in = 0u;
+    parser->ImportConfiguration(index_in,name_in,length_in);
+    std::cout << "Name: " << name_in << "\n";
+    std::cout << "Length: " << length_in << "\n";
+    double values[length_in];
+    parser->ImportData(index_in, length_in, values);
+    for(unsigned j = 0u; j < length_in; j++){
         std::cout << "Values: " << values[j] << "\n";
     }
+    unsigned index_out = parser->OpenFile(path,"TestData_out",".dat", std::ios::out | std::ios::trunc);
+    std::string name_out = name_in + " Out";
+    unsigned length_out = length_in;
+
+    std::cout << "Name: " << name_out << "\n";
+    std::cout << "Length: " << length_out << "\n";
+    parser->ExportConfiguration(index_out,name_out,length_out);
+    parser->ExportData(index_out,length_out,values);
+    
+    index_in = parser->OpenFile(path,"TestParameter",".dat", std::ios::in);
+    name_in = "";
+    length_in = 0u;
+    parser->ImportConfiguration(index_in,name_in,length_in);
+    std::cout << "Name: " << name_in << "\n";
+    std::cout << "Length: " << length_in << "\n";
+    unsigned params[length_in];
+    parser->ImportParameter(index_in, length_in, params, sizeof(unsigned));
+    for(unsigned j = 0u; j < length_in; j++){
+        std::cout << "Params: " << params[j] << "\n";
+    }
+    for(unsigned j = 0u; j < length_in; j++){
+        params[j] = j;
+    }
+    index_out = parser->OpenFile(path,"TestParameter_out",".dat", std::ios::out | std::ios::trunc);
+    name_out = name_in + " Out";
+    length_out = length_in;
+
+    std::cout << "Name: " << name_out << "\n";
+    std::cout << "Length: " << length_out << "\n";
+    parser->ExportConfiguration(index_out,name_out,length_out);
+    parser->ExportParameter(index_out,length_out,params,sizeof(unsigned));
+
+    delete parser;
+
+
+    return 1;
 
     std::cout << "Test: Data Covariance \n"; 
     DataCovariance e = DataCovariance(a);
