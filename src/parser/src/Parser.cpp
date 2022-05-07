@@ -1,9 +1,12 @@
 #include "../include/Parser.hpp"
 
 Parser::Parser(unsigned length_in){
-    length = length_in;
-    fileArray = new std::ofstream[length_in];
-    count = 0u;
+    length_In = length_in;
+    length_Out = length_in;
+    fileArray_In = new std::ifstream[length_in];
+    fileArray_Out = new std::ofstream[length_in];
+    count_In = 0u;
+    count_Out = 0u;
 }
 
 void Parser::ImportConfiguration(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out){
@@ -364,45 +367,89 @@ void Parser::ConvertToText(std::string path_in, std::string path_out, std::strin
     }
 }
 
-
-unsigned Parser::OpenFile(std::string path_in, std::string name_in, std::string extension_in, std::ios::openmode mode_in, unsigned index_in){
+unsigned Parser::OpenFileIn(std::string path_in, std::string name_in, std::string extension_in, std::ios::openmode mode_in, unsigned index_in){
     std::cout << "Trying to open file with name: " << name_in << "\n";
     if(index_in == UINT_MAX_VALUE){
-        if(count >= length){
+        if(count_In >= length_In){
             std::cout << "Error: Too many files are open at the moment. Use old indexes to reopen in the same place or close all files.";
             return UINT_MAX_VALUE;
         }
-        fileArray[count] = std::ofstream(path_in + name_in + extension_in, mode_in);
-        count++;
-        return count-1;
+        fileArray_In[count_In] = std::ifstream(path_in + name_in + extension_in, mode_in);
+        count_In++;
+        return count_In-1;
     } else {
-        if(index_in >= length){
+        if(index_in >= length_In){
             std::cout << "Error: Index is out of range.";
             return UINT_MAX_VALUE;
         }
-        if(fileArray[index_in].is_open()){
-            fileArray[index_in].close();
+        if(fileArray_In[index_in].is_open()){
+            fileArray_In[index_in].close();
         }
-        fileArray[index_in] = std::ofstream(path_in + name_in + extension_in, mode_in);
+        fileArray_In[index_in] = std::ifstream(path_in + name_in + extension_in, mode_in);
         return index_in;
     }
 }
 
-std::ofstream& Parser::GetStream(unsigned index_in){
-    return fileArray[index_in];
+unsigned Parser::OpenFileOut(std::string path_in, std::string name_in, std::string extension_in, std::ios::openmode mode_in, unsigned index_in){
+    std::cout << "Trying to open file with name: " << name_in << "\n";
+    if(index_in == UINT_MAX_VALUE){
+        if(count_Out >= length_Out){
+            std::cout << "Error: Too many files are open at the moment. Use old indexes to reopen in the same place or close all files.";
+            return UINT_MAX_VALUE;
+        }
+        fileArray_Out[count_Out] = std::ofstream(path_in + name_in + extension_in, mode_in);
+        count_Out++;
+        return count_Out-1;
+    } else {
+        if(index_in >= length_Out){
+            std::cout << "Error: Index is out of range.";
+            return UINT_MAX_VALUE;
+        }
+        if(fileArray_Out[index_in].is_open()){
+            fileArray_Out[index_in].close();
+        }
+        fileArray_Out[index_in] = std::ofstream(path_in + name_in + extension_in, mode_in);
+        return index_in;
+    }
 }
 
-void Parser::CloseFile(unsigned index_in){
-    fileArray[index_in].close();
+std::ifstream& Parser::GetStreamIn(unsigned index_in){
+    return fileArray_In[index_in];
+}
+std::ofstream& Parser::GetStreamOut(unsigned index_in){
+    return fileArray_Out[index_in];
 }
 
-Parser::~Parser(){
-    for(unsigned i = 0u; i < length; i++){
-        if(fileArray[i].is_open()){
-            fileArray[i].close();
+void Parser::CloseFileIn(unsigned index_in){
+    fileArray_In[index_in].close();
+}
+void Parser::CloseFileOut(unsigned index_in){
+    fileArray_Out[index_in].close();
+}
+
+void Parser::CloseAllFileIn(){
+    for(unsigned i = 0u; i < length_In; i++){
+        if(fileArray_In[i].is_open()){
+            fileArray_In[i].close();
         }
     }
-    length = 0;
-    delete[] fileArray;
-    count = 0u;
+    count_Out = 0u;
+}
+void Parser::CloseAllFileOut(){
+    for(unsigned i = 0u; i < length_Out; i++){
+        if(fileArray_Out[i].is_open()){
+            fileArray_Out[i].close();
+        }
+    }
+    count_Out = 0u;
+}
+
+
+Parser::~Parser(){
+    CloseAllFileIn();
+    CloseAllFileOut();
+    length_In = 0u;
+    length_Out = 0u;
+    delete[] fileArray_In;
+    delete[] fileArray_Out;
 }

@@ -17,6 +17,10 @@ int main(){
     std::string path_text_out = "/mnt/d/Research/UKF/data/text/out/";
     std::string path_binary_out = "/mnt/d/Research/UKF/data/binary/out/";
 
+    std::string name_length = "ParameterLength";
+    std::string name_size = "ParameterSize";
+    std::string name_heatProblem = "ParameterHeatProblem";
+
     std::string name_timer = "Timer";
     std::string name_temperature = "Temperature";
     std::string name_heatFlux = "HeatFlux";
@@ -26,6 +30,10 @@ int main(){
 
     Parser::ConvertToBinary(path_text_in,path_binary_in,extension_binary);
     Parser::ConvertToText(path_binary_out,path_text_out,extension_text);
+
+    Parser* parser = new Parser(20u);
+
+    parser->OpenFile(path_binary_in,name_length,extension_binary,std::ios::binary);
 
     return 1;
 
@@ -37,6 +45,7 @@ int main(){
     double Sy = 0.12;
     double Sz = 0.003;
     double St = 2.0;
+
     double T0 = 300.0;
     double Amp = 5.0e4;
     double mean = 0.0;
