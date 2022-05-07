@@ -35,8 +35,8 @@ public:
     std::ofstream& GetStream(unsigned index_in);
     void CloseFile(unsigned index_in);
 
-    static void ConvertToBinary(std::string path_in, std::string path_out);
-    static void ConvertToText(std::string path_in, std::string path_out);
+    static void ConvertToBinary(std::string path_in, std::string path_out, std::string extension_in);
+    static void ConvertToText(std::string path_in, std::string path_out, std::string extension_in);
 
 
     static void ImportConfiguration(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out);

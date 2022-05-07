@@ -33,6 +33,12 @@ void Timer::Print(){
         }
     }
 }
+double* Timer::GetValues(){
+    return duration;
+}
+unsigned Timer::GetCount(){
+    return count;
+}
 Timer::~Timer(){
     delete[] duration;
 }

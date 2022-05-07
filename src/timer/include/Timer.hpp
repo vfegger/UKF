@@ -2,6 +2,7 @@
 #define TIMER_HEADER
 
 #include <iostream>
+#include <fstream>
 #include <chrono>
 
 using Time = std::chrono::high_resolution_clock;
@@ -11,7 +12,6 @@ using TimePoint = std::chrono::time_point<Time,Duration>;
 class Timer
 {
 private:
-
     Time clock;
     TimePoint startTime;
     double* duration;
@@ -25,6 +25,10 @@ public:
     void Save();
     void Reset();
     void Print();
+    double* GetValues();
+    unsigned GetCount();
+
+
 
     ~Timer();
 };

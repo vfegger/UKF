@@ -134,14 +134,15 @@ void Parser::ExportValues(std::ofstream& file_in, unsigned length_in, ParserType
 
 void Parser::ImportConfigurationBinary(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out){
     unsigned type;
-    unsigned size = 0u;
+    unsigned size;
     file_in.read((char*)(&size),sizeof(unsigned));
-    char aux[size];
+    char* aux = new char[size];
     file_in.read(aux,sizeof(char)*size);
     file_in.read((char*)(&length_out),sizeof(unsigned));
     file_in.read((char*)(&(type)),sizeof(unsigned));
-    name_out = aux;
+    name_out = std::string(aux,size);
     type_out = (ParserType)type;
+    delete[] aux;
 }
 
 void Parser::ExportConfigurationBinary(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in){
@@ -307,7 +308,7 @@ void Parser::DeleteValues(void* values_in, ParserType type_in){
     }
 }
 
-void Parser::ConvertToBinary(std::string path_in, std::string path_out){
+void Parser::ConvertToBinary(std::string path_in, std::string path_out, std::string extension_in){
     std::string name;
     unsigned length;
     ParserType type;
@@ -316,8 +317,8 @@ void Parser::ConvertToBinary(std::string path_in, std::string path_out){
     std::string name_in;
     std::string name_out;
     for(const auto & entry : std::filesystem::directory_iterator(path_in)){
-        name_in = path_in + entry.path().filename().string();
-        name_out = path_out + entry.path().filename().string();
+        name_in = path_in + entry.path().stem().string();
+        name_out = path_out + entry.path().stem().string();
         
         std::ifstream in(name_in);
         std::ofstream out(name_out, std::ios::binary | std::ios::trunc);
@@ -335,15 +336,20 @@ void Parser::ConvertToBinary(std::string path_in, std::string path_out){
     }
 }
 
-void Parser::ConvertToText(std::string path_in, std::string path_out){
+void Parser::ConvertToText(std::string path_in, std::string path_out, std::string extension_in){
     std::string name;
     unsigned length;
     ParserType type;
     void* values;
     unsigned sizeType;
+    std::string name_in;
+    std::string name_out;
     for(const auto & entry : std::filesystem::directory_iterator(path_in)){
-        std::ifstream in(path_in + entry.path().filename().string(), std::ios::binary);
-        std::ofstream out(path_out + entry.path().filename().string(), std::ios::trunc);
+        name_in = path_in + entry.path().stem().string();
+        name_out = path_out + entry.path().stem().string();
+        
+        std::ifstream in(name_in, std::ios::binary);
+        std::ofstream out(name_out, std::ios::trunc);
         
         ImportConfigurationBinary(in,name,length,type);
         ImportValuesBinary(in,length,type,values);

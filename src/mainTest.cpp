@@ -11,10 +11,21 @@
 
 int main(){
     std::cout << "\nStart Execution\n\n";
-    std::string path_text = "/mnt/d/Research/UKF/data/text/in/";
-    std::string path_binary = "/mnt/d/Research/UKF/data/binary/in/";
+    std::string path_text_in = "/mnt/d/Research/UKF/data/text/in/";
+    std::string path_binary_in = "/mnt/d/Research/UKF/data/binary/in/";
+    
+    std::string path_text_out = "/mnt/d/Research/UKF/data/text/out/";
+    std::string path_binary_out = "/mnt/d/Research/UKF/data/binary/out/";
 
-    Parser::ConvertToBinary(path_text,path_binary);
+    std::string name_timer = "Timer";
+    std::string name_temperature = "Temperature";
+    std::string name_heatFlux = "HeatFlux";
+
+    std::string extension_text = ".dat";
+    std::string extension_binary = ".bin";
+
+    Parser::ConvertToBinary(path_text_in,path_binary_in,extension_binary);
+    Parser::ConvertToText(path_binary_out,path_text_out,extension_text);
 
     return 1;
 
