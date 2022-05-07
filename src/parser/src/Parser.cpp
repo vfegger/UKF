@@ -317,8 +317,8 @@ void Parser::ConvertToBinary(std::string path_in, std::string path_out, std::str
     std::string name_in;
     std::string name_out;
     for(const auto & entry : std::filesystem::directory_iterator(path_in)){
-        name_in = path_in + entry.path().stem().string();
-        name_out = path_out + entry.path().stem().string();
+        name_in = path_in + entry.path().filename().string();
+        name_out = path_out + entry.path().stem().string() + extension_in;
         
         std::ifstream in(name_in);
         std::ofstream out(name_out, std::ios::binary | std::ios::trunc);
@@ -345,8 +345,8 @@ void Parser::ConvertToText(std::string path_in, std::string path_out, std::strin
     std::string name_in;
     std::string name_out;
     for(const auto & entry : std::filesystem::directory_iterator(path_in)){
-        name_in = path_in + entry.path().stem().string();
-        name_out = path_out + entry.path().stem().string();
+        name_in = path_in + entry.path().filename().string();
+        name_out = path_out + entry.path().stem().string() + extension_in;
         
         std::ifstream in(name_in, std::ios::binary);
         std::ofstream out(name_out, std::ios::trunc);
