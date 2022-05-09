@@ -33,23 +33,48 @@ int main(){
 
     Parser* parser = new Parser(20u);
 
-    parser->OpenFile(path_binary_in,name_length,extension_binary,std::ios::binary);
+    unsigned indexLength = parser->OpenFileIn(path_binary_in,name_length,extension_binary,std::ios::binary);
+    unsigned indexSize =parser->OpenFileIn(path_binary_in,name_size,extension_binary,std::ios::binary);
+    unsigned indexHPParm =parser->OpenFileIn(path_binary_in,name_heatProblem,extension_binary,std::ios::binary);
+
+    unsigned* L = NULL;
+    double* S = NULL;
+    double* HPParm = NULL;
+
+    std::string name;
+    unsigned length;
+    ParserType type;
+    unsigned iteration;
+    void* pointer = NULL;
+
+    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexLength),name,length,type,iteration);
+    Parser::ImportValuesBinary(parser->GetStreamIn(indexLength),length,type,pointer,0u);
+    L = (unsigned*)pointer;
+    
+    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexSize),name,length,type,iteration);
+    Parser::ImportValuesBinary(parser->GetStreamIn(indexSize),length,type,pointer,0u);
+    S = (double*)pointer;
+    
+    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexHPParm),name,length,type,iteration);
+    Parser::ImportValuesBinary(parser->GetStreamIn(indexHPParm),length,type,pointer,0u);
+    HPParm = (double*)pointer;
+
+    unsigned Lx = L[0u];
+    unsigned Ly = L[1u];
+    unsigned Lz = L[2u];
+    unsigned Lt = L[3u];
+
+    double Sx = S[0u];
+    double Sy = S[1u];
+    double Sz = S[2u];
+    double St = S[3u];
+
+    double T0 = HPParm[0u];
+    double Amp = HPParm[1u];
+    double mean = HPParm[2u];
+    double sigma = HPParm[3u];
 
     return 1;
-
-    unsigned Lx = 12u;
-    unsigned Ly = 12u;
-    unsigned Lz = 6u;
-    unsigned Lt = 100u;
-    double Sx = 0.12;
-    double Sy = 0.12;
-    double Sz = 0.003;
-    double St = 2.0;
-
-    double T0 = 300.0;
-    double Amp = 5.0e4;
-    double mean = 0.0;
-    double sigma = 1.5;
 
     HeatFluxGenerator generator(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,T0,Amp);
     

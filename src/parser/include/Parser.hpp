@@ -49,28 +49,34 @@ public:
     static void ConvertToText(std::string path_in, std::string path_out, std::string extension_in);
 
 
-    static void ImportConfiguration(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out);
-    static void ExportConfiguration(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in);
+    static void ImportConfiguration(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out, unsigned& iteration_out);
+    static void ExportConfiguration(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in, std::streampos& iterationPosition_out);
     
     template<typename T>
     static void ImportValues(std::ifstream& file_in, unsigned length_in, void*& values_out);
     template<typename T>
     static void ExportValues(std::ofstream& file_in, unsigned length_in, void* values_in);
 
-    static void ImportValues(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out);
-    static void ExportValues(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in);
+    static void ImportValues(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in = 0u);
+    static void ExportValues(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in = 0u);
+    
+    static void ImportAllValues(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in = 1u);
+    static void ExportAllValues(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in = 1u);
     
 
-    static void ImportConfigurationBinary(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out);
-    static void ExportConfigurationBinary(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in);
+    static void ImportConfigurationBinary(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out, unsigned& iteration_out);
+    static void ExportConfigurationBinary(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in, std::streampos& iterationPosition_out);
     
     template<typename T>
     static void ImportValuesBinary(std::ifstream& file_in, unsigned length_in, void*& values_out);
     template<typename T>
     static void ExportValuesBinary(std::ofstream& file_in, unsigned length_in, void* values_in);
 
-    static void ImportValuesBinary(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out);
-    static void ExportValuesBinary(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in);
+    static void ImportValuesBinary(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in = 0u);
+    static void ExportValuesBinary(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in = 0u);
+    
+    static void ImportAllValuesBinary(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in = 1u);
+    static void ExportAllValuesBinary(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in = 1u);
     
 
     //static void NewValues(void* values_in, ParserType type_in);

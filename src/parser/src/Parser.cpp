@@ -9,7 +9,7 @@ Parser::Parser(unsigned length_in){
     count_Out = 0u;
 }
 
-void Parser::ImportConfiguration(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out){
+void Parser::ImportConfiguration(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out, unsigned& iteration_out){
     char aux[100];
     unsigned type;
     file_in.getline(aux,100);
@@ -19,16 +19,24 @@ void Parser::ImportConfiguration(std::ifstream& file_in, std::string& name_out, 
     }
     file_in >> length_out;
     file_in >> type;
+    file_in >> iteration_out;
     type_out = (ParserType)type;
 }
 
-void Parser::ExportConfiguration(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in){
+void Parser::ExportConfiguration(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in, std::streampos& iterationPosition_out){
+    std::string iteration_string = std::to_string(0u) + "    ";
     file_in << name_in << "\n";
     file_in << length_in << "\t";
-    file_in << (unsigned)type_in << "\n";
+    file_in << (unsigned)type_in << "\t";
+    iterationPosition_out = file_in.tellp();
+    file_in << iteration_string << "\n";
 }
 
-void Parser::ImportValues(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out){
+void Parser::ImportValues(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in){
+    std::streampos position = file_in.tellg();
+    for(unsigned i = 0u; i < iteration_in * length_in; i++){
+        file_in.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    }
     switch (type_in)
     {
     case ParserType::Char:
@@ -86,9 +94,14 @@ void Parser::ImportValues(std::ifstream& file_in, unsigned length_in, ParserType
     default:
         break;
     }
+    file_in.seekg(position);
 }
 
-void Parser::ExportValues(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in){
+void Parser::ExportValues(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in){
+    std::streampos position = file_in.tellp();
+    file_in.seekp(iterationPosition_in);
+    file_in << iteration_in + 1u;
+    file_in.seekp(position);
     switch (type_in)
     {
     case ParserType::Char:
@@ -135,7 +148,120 @@ void Parser::ExportValues(std::ofstream& file_in, unsigned length_in, ParserType
     }
 }
 
-void Parser::ImportConfigurationBinary(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out){
+void Parser::ImportAllValues(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in){
+    unsigned size = length_in * iteration_in;
+    switch (type_in)
+    {
+    case ParserType::Char:
+        values_out = new char[size];
+        ImportValues<char>(file_in, size, values_out);
+        break;
+    case ParserType::UChar:
+        values_out = new unsigned char[size];
+        ImportValues<unsigned char>(file_in, size, values_out);
+        break;
+    case ParserType::SInt:
+        values_out = new short int[size];
+        ImportValues<short int>(file_in, size, values_out);
+        break;
+    case ParserType::SUInt:
+        values_out = new short unsigned int[size];
+        ImportValues<short unsigned int>(file_in, size, values_out);
+        break;
+    case ParserType::Int:
+        values_out = new int[size];
+        ImportValues<int>(file_in, size, values_out);
+        break;
+    case ParserType::UInt:
+        values_out = new unsigned int[size];
+        ImportValues<unsigned int>(file_in, size, values_out);
+        break;
+    case ParserType::LInt:
+        values_out = new long int[size];
+        ImportValues<long int>(file_in, size, values_out);
+        break;
+    case ParserType::LUInt:
+        values_out = new long unsigned int[size];
+        ImportValues<long unsigned int>(file_in, size, values_out);
+        break;
+    case ParserType::LLInt:
+        values_out = new long long int[size];
+        ImportValues<long long int>(file_in, size, values_out);
+        break;
+    case ParserType::LLUInt:
+        values_out = new long long unsigned int[size];
+        ImportValues<long long unsigned int>(file_in, size, values_out);
+        break;
+    case ParserType::Float:
+        values_out = new float[size];
+        ImportValues<float>(file_in, size, values_out);
+        break;
+    case ParserType::Double:
+        values_out = new double[size];
+        ImportValues<double>(file_in, size, values_out);
+        break;
+    case ParserType::LDouble:
+        values_out = new long double[size];
+        ImportValues<long double>(file_in, size, values_out);
+        break;
+    default:
+        break;
+    }
+}
+
+void Parser::ExportAllValues(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in){
+    std::streampos position = file_in.tellp();
+    file_in.seekp(iterationPosition_in);
+    file_in << iteration_in;
+    file_in.seekp(position);
+    unsigned size = length_in * iteration_in;
+    switch (type_in)
+    {
+    case ParserType::Char:
+        ExportValues<char>(file_in, size, values_in);
+        break;
+    case ParserType::UChar:
+        ExportValues<unsigned char>(file_in, size, values_in);
+        break;
+    case ParserType::SInt:
+        ExportValues<short int>(file_in, size, values_in);
+        break;
+    case ParserType::SUInt:
+        ExportValues<short unsigned int>(file_in, size, values_in);
+        break;
+    case ParserType::Int:
+        ExportValues<int>(file_in, size, values_in);
+        break;
+    case ParserType::UInt:
+        ExportValues<unsigned int>(file_in, size, values_in);
+        break;
+    case ParserType::LInt:
+        ExportValues<long int>(file_in, size, values_in);
+        break;
+    case ParserType::LUInt:
+        ExportValues<long unsigned int>(file_in, size, values_in);
+        break;
+    case ParserType::LLInt:
+        ExportValues<long long int>(file_in, size, values_in);
+        break;
+    case ParserType::LLUInt:
+        ExportValues<long long unsigned int>(file_in, size, values_in);
+        break;
+    case ParserType::Float:
+        ExportValues<float>(file_in, size, values_in);
+        break;
+    case ParserType::Double:
+        ExportValues<double>(file_in, size, values_in);
+        break;
+    case ParserType::LDouble:
+        ExportValues<long double>(file_in, size, values_in);
+        break;
+    default:
+        break;
+    }
+}
+
+void Parser::ImportConfigurationBinary(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out, unsigned& iteration_out){
     unsigned type;
     unsigned size;
     file_in.read((char*)(&size),sizeof(unsigned));
@@ -143,21 +269,27 @@ void Parser::ImportConfigurationBinary(std::ifstream& file_in, std::string& name
     file_in.read(aux,sizeof(char)*size);
     file_in.read((char*)(&length_out),sizeof(unsigned));
     file_in.read((char*)(&(type)),sizeof(unsigned));
+    file_in.read((char*)(&(iteration_out)),sizeof(unsigned));
     name_out = std::string(aux,size);
     type_out = (ParserType)type;
     delete[] aux;
 }
 
-void Parser::ExportConfigurationBinary(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in){
+void Parser::ExportConfigurationBinary(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in, std::streampos& iterationPosition_out){
     unsigned size = name_in.size();
     unsigned type = (unsigned)type_in;
+    unsigned iteration = 0u;
     file_in.write((char*)(&size),sizeof(unsigned));
     file_in.write(name_in.c_str(),sizeof(char)*size);
     file_in.write((char*)(&length_in),sizeof(unsigned));
     file_in.write((char*)(&(type)),sizeof(unsigned));
+    iterationPosition_out = file_in.tellp();
+    file_in.write((char*)(&iteration),sizeof(unsigned));
 }
 
-void Parser::ImportValuesBinary(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out){
+void Parser::ImportValuesBinary(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in){
+    std::streampos position = file_in.tellg();
+    file_in.seekg(position+(std::streamoff)(length_in*iteration_in));
     switch (type_in)
     {
     case ParserType::Char:
@@ -215,9 +347,14 @@ void Parser::ImportValuesBinary(std::ifstream& file_in, unsigned length_in, Pars
     default:
         break;
     }
+    file_in.seekg(position);
 }
 
-void Parser::ExportValuesBinary(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in){
+void Parser::ExportValuesBinary(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in){
+    std::streampos position = file_in.tellp();
+    file_in.seekp(iterationPosition_in);
+    file_in << iteration_in + 1u;
+    file_in.seekp(position);
     switch (type_in)
     {
     case ParserType::Char:
@@ -258,6 +395,119 @@ void Parser::ExportValuesBinary(std::ofstream& file_in, unsigned length_in, Pars
         break;
     case ParserType::LDouble:
         ExportValuesBinary<long double>(file_in, length_in, values_in);
+        break;
+    default:
+        break;
+    }
+}
+
+void Parser::ImportAllValuesBinary(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in){
+    unsigned size = length_in * iteration_in;
+    switch (type_in)
+    {
+    case ParserType::Char:
+        values_out = new char[size];
+        ImportValuesBinary<char>(file_in, size, values_out);
+        break;
+    case ParserType::UChar:
+        values_out = new unsigned char[size];
+        ImportValuesBinary<unsigned char>(file_in, size, values_out);
+        break;
+    case ParserType::SInt:
+        values_out = new short int[size];
+        ImportValuesBinary<short int>(file_in, size, values_out);
+        break;
+    case ParserType::SUInt:
+        values_out = new short unsigned int[size];
+        ImportValuesBinary<short unsigned int>(file_in, size, values_out);
+        break;
+    case ParserType::Int:
+        values_out = new int[size];
+        ImportValuesBinary<int>(file_in, size, values_out);
+        break;
+    case ParserType::UInt:
+        values_out = new unsigned int[size];
+        ImportValuesBinary<unsigned int>(file_in, size, values_out);
+        break;
+    case ParserType::LInt:
+        values_out = new long int[size];
+        ImportValuesBinary<long int>(file_in, size, values_out);
+        break;
+    case ParserType::LUInt:
+        values_out = new long unsigned int[size];
+        ImportValuesBinary<long unsigned int>(file_in, size, values_out);
+        break;
+    case ParserType::LLInt:
+        values_out = new long long int[size];
+        ImportValuesBinary<long long int>(file_in, size, values_out);
+        break;
+    case ParserType::LLUInt:
+        values_out = new long long unsigned int[size];
+        ImportValuesBinary<long long unsigned int>(file_in, size, values_out);
+        break;
+    case ParserType::Float:
+        values_out = new float[size];
+        ImportValuesBinary<float>(file_in, size, values_out);
+        break;
+    case ParserType::Double:
+        values_out = new double[size];
+        ImportValuesBinary<double>(file_in, size, values_out);
+        break;
+    case ParserType::LDouble:
+        values_out = new long double[size];
+        ImportValuesBinary<long double>(file_in, size, values_out);
+        break;
+    default:
+        break;
+    }
+}
+
+void Parser::ExportAllValuesBinary(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in){
+    std::streampos position = file_in.tellp();
+    file_in.seekp(iterationPosition_in);
+    file_in.write((char*)&iteration_in,sizeof(unsigned));
+    file_in.seekp(position);
+    unsigned size = length_in * iteration_in;
+    switch (type_in)
+    {
+    case ParserType::Char:
+        ExportValuesBinary<char>(file_in, size, values_in);
+        break;
+    case ParserType::UChar:
+        ExportValuesBinary<unsigned char>(file_in, size, values_in);
+        break;
+    case ParserType::SInt:
+        ExportValuesBinary<short int>(file_in, size, values_in);
+        break;
+    case ParserType::SUInt:
+        ExportValuesBinary<short unsigned int>(file_in, size, values_in);
+        break;
+    case ParserType::Int:
+        ExportValuesBinary<int>(file_in, size, values_in);
+        break;
+    case ParserType::UInt:
+        ExportValuesBinary<unsigned int>(file_in, size, values_in);
+        break;
+    case ParserType::LInt:
+        ExportValuesBinary<long int>(file_in, size, values_in);
+        break;
+    case ParserType::LUInt:
+        ExportValuesBinary<long unsigned int>(file_in, size, values_in);
+        break;
+    case ParserType::LLInt:
+        ExportValuesBinary<long long int>(file_in, size, values_in);
+        break;
+    case ParserType::LLUInt:
+        ExportValuesBinary<long long unsigned int>(file_in, size, values_in);
+        break;
+    case ParserType::Float:
+        ExportValuesBinary<float>(file_in, size, values_in);
+        break;
+    case ParserType::Double:
+        ExportValuesBinary<double>(file_in, size, values_in);
+        break;
+    case ParserType::LDouble:
+        ExportValuesBinary<long double>(file_in, size, values_in);
         break;
     default:
         break;
@@ -325,12 +575,15 @@ void Parser::ConvertToBinary(std::string path_in, std::string path_out, std::str
         
         std::ifstream in(name_in);
         std::ofstream out(name_out, std::ios::binary | std::ios::trunc);
-        
-        ImportConfiguration(in,name,length,type);
-        ImportValues(in,length,type,values);
 
-        ExportConfigurationBinary(out,name,length,type);
-        ExportValuesBinary(out,length,type,values);
+        std::streampos iterationPosition;
+        unsigned iteration = 0u;
+        
+        ImportConfiguration(in,name,length,type,iteration);
+        ImportAllValues(in,length,type,values,iteration);
+
+        ExportConfigurationBinary(out,name,length,type,iterationPosition);
+        ExportAllValuesBinary(out,length,type,values,iterationPosition,iteration);
 
         DeleteValues(values,type);
 
@@ -353,12 +606,15 @@ void Parser::ConvertToText(std::string path_in, std::string path_out, std::strin
         
         std::ifstream in(name_in, std::ios::binary);
         std::ofstream out(name_out, std::ios::trunc);
-        
-        ImportConfigurationBinary(in,name,length,type);
-        ImportValuesBinary(in,length,type,values);
 
-        ExportConfiguration(out,name,length,type);
-        ExportValues(out,length,type,values);
+        std::streampos iterationPosition;
+        unsigned iteration = 0u;
+        
+        ImportConfigurationBinary(in,name,length,type,iteration);
+        ImportAllValuesBinary(in,length,type,values,iteration);
+
+        ExportConfiguration(out,name,length,type,iterationPosition);
+        ExportAllValues(out,length,type,values,iterationPosition,iteration);
 
         DeleteValues(values,type);
 
@@ -375,6 +631,9 @@ unsigned Parser::OpenFileIn(std::string path_in, std::string name_in, std::strin
             return UINT_MAX_VALUE;
         }
         fileArray_In[count_In] = std::ifstream(path_in + name_in + extension_in, mode_in);
+        if(!fileArray_In[count_In].is_open()){
+            std::cout << "Error: Failed to open file.\n";
+        }
         count_In++;
         return count_In-1;
     } else {
@@ -398,6 +657,9 @@ unsigned Parser::OpenFileOut(std::string path_in, std::string name_in, std::stri
             return UINT_MAX_VALUE;
         }
         fileArray_Out[count_Out] = std::ofstream(path_in + name_in + extension_in, mode_in);
+        if(!fileArray_Out[count_Out].is_open()){
+            std::cout << "Error: Failed to open file.\n";
+        }
         count_Out++;
         return count_Out-1;
     } else {
