@@ -8,10 +8,12 @@ Timer::Timer(unsigned length_in) : clock(){
     }
     duration = new(std::nothrow) double[length_in];
     count = 0u;
+    isValid = false;
 }
 
 void Timer::Start(){
     startTime = Time::now();
+    isValid = false;
 }
 void Timer::Save(){
     if(count >= length){
@@ -23,15 +25,27 @@ void Timer::Save(){
 void Timer::Reset(){
     startTime = Time::now();
     count = 0u;
+    isValid = false;
 }
 void Timer::Print(){
-    for(unsigned i = 0u; i < count; i++){
-        if(i == 0){
-            std::cout << "Time duration " << i << ": " << duration[i]/1e+6 << " ms\n"; 
-        } else {
-            std::cout << "Time duration " << i << ": " << (duration[i] - duration[i-1u])/1e+6 << " ms\n"; 
-        }
+    if(!isValid){
+        SetValues();
     }
+    for(unsigned i = 0u; i < count; i++){
+        std::cout << "Time duration " << i << ": " << duration[i] << " ms\n"; 
+    }
+}
+void Timer::SetValues(){
+    if(isValid){
+        return;
+    }
+    for(unsigned i = count-1u; i > 0u; i--){
+        duration[i] -= duration[i-1u];
+    }
+    for(unsigned i = 0u; i < count; i++){
+        duration[i] /= 1e+6;
+    }
+    isValid = true;
 }
 double* Timer::GetValues(){
     return duration;

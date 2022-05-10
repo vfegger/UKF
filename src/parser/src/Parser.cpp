@@ -353,7 +353,8 @@ void Parser::ImportValuesBinary(std::ifstream& file_in, unsigned length_in, Pars
 void Parser::ExportValuesBinary(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in){
     std::streampos position = file_in.tellp();
     file_in.seekp(iterationPosition_in);
-    file_in << iteration_in + 1u;
+    iteration_in += 1u;
+    file_in.write((char*)(&iteration_in),sizeof(unsigned));
     file_in.seekp(position);
     switch (type_in)
     {

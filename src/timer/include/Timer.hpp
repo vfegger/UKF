@@ -17,6 +17,7 @@ private:
     double* duration;
     unsigned count;
     unsigned length;
+    bool isValid;
 
 public:
     Timer(unsigned length_in);
@@ -25,10 +26,9 @@ public:
     void Save();
     void Reset();
     void Print();
+    void SetValues();
     double* GetValues();
     unsigned GetCount();
-
-
 
     ~Timer();
 };

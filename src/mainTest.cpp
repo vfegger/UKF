@@ -63,8 +63,8 @@ int main(){
     Parser::ImportValuesBinary(parser->GetStreamIn(indexHPParm),length,type,pointer,0u);
     HPParm = (double*)pointer;
     
-    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexHPParm),name,length,type,iteration);
-    Parser::ImportValuesBinary(parser->GetStreamIn(indexHPParm),length,type,pointer,0u);
+    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexUKFParm),name,length,type,iteration);
+    Parser::ImportValuesBinary(parser->GetStreamIn(indexUKFParm),length,type,pointer,0u);
     UKFParm = (double*)pointer;
 
     unsigned Lx = L_lower[0u];
@@ -109,15 +109,15 @@ int main(){
     + "Z" + std::to_string(Lz) 
     + "T" + std::to_string(Lt);
 
-    indexTimer = parser->OpenFileIn(path_binary_out,name_timer_aux,extension_binary,std::ios::binary);
-    indexTemperature = parser->OpenFileIn(path_binary_out,name_temperature_aux,extension_binary,std::ios::binary);
-    indexHeatFlux = parser->OpenFileIn(path_binary_out,name_heatFlux_aux,extension_binary,std::ios::binary);
+    indexTimer = parser->OpenFileOut(path_binary_out,name_timer_aux,extension_binary,std::ios::binary);
+    indexTemperature = parser->OpenFileOut(path_binary_out,name_temperature_aux,extension_binary,std::ios::binary);
+    indexHeatFlux = parser->OpenFileOut(path_binary_out,name_heatFlux_aux,extension_binary,std::ios::binary);
 
     std::streampos positionTimer;
     std::streampos positionTemperature;
     std::streampos positionHeatFlux; 
 
-    Parser::ExportConfigurationBinary(parser->GetStreamOut(indexTimer),"Timer",UKF_TIMER,ParserType::UInt,positionTimer);
+    Parser::ExportConfigurationBinary(parser->GetStreamOut(indexTimer),"Timer",UKF_TIMER,ParserType::Double,positionTimer);
     Parser::ExportConfigurationBinary(parser->GetStreamOut(indexTemperature),"Temperature",Lx*Ly*Lz,ParserType::Double,positionTemperature);
     Parser::ExportConfigurationBinary(parser->GetStreamOut(indexHeatFlux),"Heat Flux",Lx*Ly,ParserType::Double,positionHeatFlux);
 
@@ -134,12 +134,15 @@ int main(){
 
     Timer timer(UKF_TIMER);
     for(unsigned i = 1u; i <= Lt; i++){
+        std::cout << "Iteration " << i << ":\n";
         ukf.Iterate(timer);
-        Parser::ExportValuesBinary(parser->GetStreamOut(indexTemperature),Lx*Ly*Lz,ParserType::Double,problem.GetMemory()->GetState()->GetPointer(),);
-        Parser::ExportValuesBinary(parser->GetStreamOut(indexHeatFlux),Lx*Ly,problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz);
-        std::cout << "\n";
-        Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,Lx,Ly);
+        timer.SetValues();
         timer.Print();
+        Parser::ExportValuesBinary(parser->GetStreamOut(indexTemperature),Lx*Ly*Lz,ParserType::Double,problem.GetMemory()->GetState()->GetPointer(),positionTemperature,i-1u);
+        Parser::ExportValuesBinary(parser->GetStreamOut(indexHeatFlux),Lx*Ly,ParserType::Double,problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,positionHeatFlux,i-1u);
+        Parser::ExportValuesBinary(parser->GetStreamOut(indexTimer),UKF_TIMER,ParserType::Double,timer.GetValues(),positionTimer,i-1u);
+        Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),Lx,Ly);
+        Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,Lx,Ly);
         problem.UpdateMeasure(generator.GetTemperature(i),Lx,Ly);
     }
 
