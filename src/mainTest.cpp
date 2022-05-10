@@ -30,7 +30,6 @@ int main(){
     std::string extension_binary = ".bin";
 
     Parser::ConvertToBinary(path_text_in,path_binary_in,extension_binary);
-    Parser::ConvertToText(path_binary_out,path_text_out,extension_text);
 
     Parser* parser = new Parser(20u);
 
@@ -82,6 +81,45 @@ int main(){
     double Amp = HPParm[1u];
     double mean = HPParm[2u];
     double sigma = HPParm[3u];
+    
+    double alpha = UKFParm[0u];
+    double beta = UKFParm[1u];
+    double kappa = UKFParm[2u];
+
+    parser->CloseAllFileIn();
+    parser->CloseAllFileOut();
+    
+    unsigned indexTimer;
+    unsigned indexTemperature;
+    unsigned indexHeatFlux;
+    
+    std::string name_timer_aux = name_timer 
+    + "X" + std::to_string(Lx) 
+    + "Y" + std::to_string(Ly) 
+    + "Z" + std::to_string(Lz) 
+    + "T" + std::to_string(Lt);
+    std::string name_temperature_aux = name_temperature
+    + "X" + std::to_string(Lx) 
+    + "Y" + std::to_string(Ly) 
+    + "Z" + std::to_string(Lz) 
+    + "T" + std::to_string(Lt);
+    std::string name_heatFlux_aux = name_heatFlux
+    + "X" + std::to_string(Lx) 
+    + "Y" + std::to_string(Ly) 
+    + "Z" + std::to_string(Lz) 
+    + "T" + std::to_string(Lt);
+
+    indexTimer = parser->OpenFileIn(path_binary_out,name_timer_aux,extension_binary,std::ios::binary);
+    indexTemperature = parser->OpenFileIn(path_binary_out,name_temperature_aux,extension_binary,std::ios::binary);
+    indexHeatFlux = parser->OpenFileIn(path_binary_out,name_heatFlux_aux,extension_binary,std::ios::binary);
+
+    std::streampos positionTimer;
+    std::streampos positionTemperature;
+    std::streampos positionHeatFlux; 
+
+    Parser::ExportConfigurationBinary(parser->GetStreamOut(indexTimer),"Timer",UKF_TIMER,ParserType::UInt,positionTimer);
+    Parser::ExportConfigurationBinary(parser->GetStreamOut(indexTemperature),"Temperature",Lx*Ly*Lz,ParserType::Double,positionTemperature);
+    Parser::ExportConfigurationBinary(parser->GetStreamOut(indexHeatFlux),"Heat Flux",Lx*Ly,ParserType::Double,positionHeatFlux);
 
     HeatFluxGenerator generator(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,T0,Amp);
     
@@ -90,10 +128,6 @@ int main(){
     HeatFluxEstimation problem(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St);
     
     problem.UpdateMeasure(generator.GetTemperature(0u),Lx,Ly);
-    
-    double alpha = UKFParm[0u];
-    double beta = UKFParm[1u];
-    double kappa = UKFParm[2u];
     UKF ukf(problem.GetMemory(), alpha, beta, kappa);
 
     Math::PrintMatrix(generator.GetTemperature(Lt),Lx,Ly);
@@ -101,11 +135,15 @@ int main(){
     Timer timer(UKF_TIMER);
     for(unsigned i = 1u; i <= Lt; i++){
         ukf.Iterate(timer);
+        Parser::ExportValuesBinary(parser->GetStreamOut(indexTemperature),Lx*Ly*Lz,ParserType::Double,problem.GetMemory()->GetState()->GetPointer(),);
+        Parser::ExportValuesBinary(parser->GetStreamOut(indexHeatFlux),Lx*Ly,problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz);
         std::cout << "\n";
         Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,Lx,Ly);
         timer.Print();
         problem.UpdateMeasure(generator.GetTemperature(i),Lx,Ly);
     }
+
+    Parser::ConvertToText(path_binary_out,path_text_out,extension_text);
 
     std::cout << "\nEnd Execution\n";
     return 0;
