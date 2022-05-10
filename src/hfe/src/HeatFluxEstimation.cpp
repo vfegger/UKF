@@ -30,14 +30,14 @@ HeatFluxEstimation::HeatFluxEstimation(
         indexT = input->Add("Temperature",Lx*Ly*Lz);
         indexQ = input->Add("Heat Flux",Lx*Ly);
         input->Initialize();
-        double T[Lx*Ly*Lz];
-        double sigmaT[Lx*Ly*Lz];
+        double* T = new double[Lx*Ly*Lz];
+        double* sigmaT = new double[Lx*Ly*Lz];
         for(unsigned i = 0u; i < Lx*Ly*Lz; i++){
             T[i] = 300.0;
             sigmaT[i] = 1.0;
         }
-        double Q[Lx*Ly];
-        double sigmaQ[Lx*Ly];
+        double* Q = new double[Lx*Ly];
+        double* sigmaQ = new double[Lx*Ly];
         for(unsigned i = 0u; i < Lx*Ly; i++){
             Q[i] = 0.0;
             sigmaQ[i] = 1.25;
@@ -51,13 +51,18 @@ HeatFluxEstimation::HeatFluxEstimation(
         inputNoise->LoadData(indexT, sigmaT, Lx*Ly*Lz, DataCovarianceMode::Compact);
         inputNoise->LoadData(indexQ, sigmaQ, Lx*Ly, DataCovarianceMode::Compact);
         
+        delete[] sigmaQ;
+        delete[] Q;
+        delete[] sigmaT;
+        delete[] T;
+
         std::cout << "Measure Initialization\n";
         measure = new Data(1u);
         unsigned indexT_meas;
         indexT_meas = measure->Add("Temperature",Lx*Ly);
         measure->Initialize();
-        double T_meas[Lx*Ly];
-        double sigmaT_meas[Lx*Ly];
+        double* T_meas = new double[Lx*Ly];
+        double* sigmaT_meas = new double[Lx*Ly];
         for(unsigned i = 0u; i < Lx*Ly; i++){
             T_meas[i] = 300.0;
             sigmaT_meas[i] = 1.5;
@@ -65,6 +70,9 @@ HeatFluxEstimation::HeatFluxEstimation(
         measure->LoadData(indexT_meas, T_meas, Lx*Ly);
         measureNoise = new DataCovariance(*measure);
         measureNoise->LoadData(indexT_meas, sigmaT_meas, Lx*Ly, DataCovarianceMode::Compact);
+
+        delete[] sigmaT_meas;
+        delete[] T_meas;
 
         std::cout << "Memory Initialization\n";
         memory = new HeatFluxEstimationMemory(*input,*inputCovariance,*inputNoise,*measure,*measureNoise,*parameter);
