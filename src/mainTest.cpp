@@ -20,6 +20,7 @@ int main(){
     std::string name_length = "ParameterLength";
     std::string name_size = "ParameterSize";
     std::string name_heatProblem = "ParameterHeatProblem";
+    std::string name_UKFParm = "ParameterUKF";
 
     std::string name_timer = "Timer";
     std::string name_temperature = "Temperature";
@@ -34,12 +35,14 @@ int main(){
     Parser* parser = new Parser(20u);
 
     unsigned indexLength = parser->OpenFileIn(path_binary_in,name_length,extension_binary,std::ios::binary);
-    unsigned indexSize =parser->OpenFileIn(path_binary_in,name_size,extension_binary,std::ios::binary);
-    unsigned indexHPParm =parser->OpenFileIn(path_binary_in,name_heatProblem,extension_binary,std::ios::binary);
+    unsigned indexSize = parser->OpenFileIn(path_binary_in,name_size,extension_binary,std::ios::binary);
+    unsigned indexHPParm = parser->OpenFileIn(path_binary_in,name_heatProblem,extension_binary,std::ios::binary);
+    unsigned indexUKFParm = parser->OpenFileIn(path_binary_in,name_UKFParm,extension_binary,std::ios::binary);
 
-    unsigned* L = NULL;
+    unsigned* L_lower = NULL, * L_upper = NULL;
     double* S = NULL;
     double* HPParm = NULL;
+    double* UKFParm = NULL;
 
     std::string name;
     unsigned length;
@@ -49,7 +52,9 @@ int main(){
 
     Parser::ImportConfigurationBinary(parser->GetStreamIn(indexLength),name,length,type,iteration);
     Parser::ImportValuesBinary(parser->GetStreamIn(indexLength),length,type,pointer,0u);
-    L = (unsigned*)pointer;
+    L_lower = (unsigned*)pointer;
+    Parser::ImportValuesBinary(parser->GetStreamIn(indexLength),length,type,pointer,1u);
+    L_upper = (unsigned*)pointer;
     
     Parser::ImportConfigurationBinary(parser->GetStreamIn(indexSize),name,length,type,iteration);
     Parser::ImportValuesBinary(parser->GetStreamIn(indexSize),length,type,pointer,0u);
@@ -58,11 +63,15 @@ int main(){
     Parser::ImportConfigurationBinary(parser->GetStreamIn(indexHPParm),name,length,type,iteration);
     Parser::ImportValuesBinary(parser->GetStreamIn(indexHPParm),length,type,pointer,0u);
     HPParm = (double*)pointer;
+    
+    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexHPParm),name,length,type,iteration);
+    Parser::ImportValuesBinary(parser->GetStreamIn(indexHPParm),length,type,pointer,0u);
+    UKFParm = (double*)pointer;
 
-    unsigned Lx = L[0u];
-    unsigned Ly = L[1u];
-    unsigned Lz = L[2u];
-    unsigned Lt = L[3u];
+    unsigned Lx = L_lower[0u];
+    unsigned Ly = L_lower[1u];
+    unsigned Lz = L_lower[2u];
+    unsigned Lt = L_lower[3u];
 
     double Sx = S[0u];
     double Sy = S[1u];
@@ -74,8 +83,6 @@ int main(){
     double mean = HPParm[2u];
     double sigma = HPParm[3u];
 
-    return 1;
-
     HeatFluxGenerator generator(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,T0,Amp);
     
     generator.Generate(mean,sigma);
@@ -84,9 +91,9 @@ int main(){
     
     problem.UpdateMeasure(generator.GetTemperature(0u),Lx,Ly);
     
-    double alpha = 0.001;
-    double beta = 2.0;
-    double kappa = 0.0;
+    double alpha = UKFParm[0u];
+    double beta = UKFParm[1u];
+    double kappa = UKFParm[2u];
     UKF ukf(problem.GetMemory(), alpha, beta, kappa);
 
     Math::PrintMatrix(generator.GetTemperature(Lt),Lx,Ly);
