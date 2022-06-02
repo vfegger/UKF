@@ -1,0 +1,31 @@
+file_path = "data/"
+timer_file = "Timer"
+temperature_file = "Temperature"
+heatFlux_file = "HeatFlux"
+extension = ".dat"
+
+mod(x,y) = x-(floor(x/y)*y) 
+
+plot for [i=12:12] for [j=12:12] for [k=6:6] for [t=100:100] file_path.timer_file."X".i."Y".j."Z".k."T".t.extension every 12::8 title "Time"." X".i." Y".j." Z".k." T".t 
+
+pause -1;
+set size square;
+
+do for [t=100:100] { \
+    do for [i=12:12] { \
+        do for [j=12:12] { \
+            do for [k=6:6] { \
+                set hidden3d;
+                set view map;
+                set pm3d at b;
+                set dgrid3d i,j;
+                splot [0:i-1][0:j-1][200:1100] file_path.temperature_file."X".i."Y".j."Z".k."T".t.extension using (mod(mod($1,i*j),i)):(floor(mod($1,i*j)/i)):2 every ::(99*i*j*k)::(99*i*j*k+i*j) title "Time"." X".i." Y".j." Z".k." T".t 
+                pause -1;
+                splot [0:i-1][0:j-1][-1000000:6000000] file_path.heatFlux_file."X".i."Y".j."Z".k."T".t.extension using (mod(mod($1,i*j),i)):(floor(mod($1,i*j)/i)):2 every ::(99*i*j)::(100*i*j) title "Time"." X".i." Y".j." Z".k." T".t 
+                pause -1;
+            }
+        }
+    }
+}
+
+exit;

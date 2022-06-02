@@ -25,7 +25,7 @@ enum ParserType {
 };
 
 class Parser {
-private:
+protected:
     std::ifstream* fileArray_In;
     unsigned length_In;
     unsigned count_In;
@@ -77,7 +77,6 @@ public:
     
     static void ImportAllValuesBinary(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in = 1u);
     static void ExportAllValuesBinary(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in = 1u);
-    
 
     //static void NewValues(void* values_in, ParserType type_in);
     static void DeleteValues(void* values_in, ParserType type_in);

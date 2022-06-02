@@ -24,6 +24,7 @@ int main(){
 
     std::string name_timer = "Timer";
     std::string name_temperature = "Temperature";
+    std::string name_temperature_measured = "Temperature_measured";
     std::string name_heatFlux = "HeatFlux";
 
     std::string extension_text = ".dat";
@@ -91,6 +92,7 @@ int main(){
     
     unsigned indexTimer;
     unsigned indexTemperature;
+    unsigned indexTemperatureMeasured;
     unsigned indexHeatFlux;
     
     std::string name_timer_aux = name_timer 
@@ -103,6 +105,11 @@ int main(){
     + "Y" + std::to_string(Ly) 
     + "Z" + std::to_string(Lz) 
     + "T" + std::to_string(Lt);
+    std::string name_temperature_measured_aux = name_temperature_measured
+    + "X" + std::to_string(Lx) 
+    + "Y" + std::to_string(Ly) 
+    + "Z" + std::to_string(Lz) 
+    + "T" + std::to_string(Lt);
     std::string name_heatFlux_aux = name_heatFlux
     + "X" + std::to_string(Lx) 
     + "Y" + std::to_string(Ly) 
@@ -111,14 +118,17 @@ int main(){
 
     indexTimer = parser->OpenFileOut(path_binary_out,name_timer_aux,extension_binary,std::ios::binary);
     indexTemperature = parser->OpenFileOut(path_binary_out,name_temperature_aux,extension_binary,std::ios::binary);
+    indexTemperatureMeasured = parser->OpenFileOut(path_binary_out,name_temperature_measured_aux,extension_binary,std::ios::binary);
     indexHeatFlux = parser->OpenFileOut(path_binary_out,name_heatFlux_aux,extension_binary,std::ios::binary);
 
     std::streampos positionTimer;
     std::streampos positionTemperature;
+    std::streampos positionTemperatureMeasured;
     std::streampos positionHeatFlux; 
 
-    Parser::ExportConfigurationBinary(parser->GetStreamOut(indexTimer),"Timer",UKF_TIMER,ParserType::Double,positionTimer);
+    Parser::ExportConfigurationBinary(parser->GetStreamOut(indexTimer),"Timer",UKF_TIMER+1,ParserType::Double,positionTimer);
     Parser::ExportConfigurationBinary(parser->GetStreamOut(indexTemperature),"Temperature",Lx*Ly*Lz,ParserType::Double,positionTemperature);
+    Parser::ExportConfigurationBinary(parser->GetStreamOut(indexTemperatureMeasured),"Temperature Measured",Lx*Ly,ParserType::Double,positionTemperatureMeasured);
     Parser::ExportConfigurationBinary(parser->GetStreamOut(indexHeatFlux),"Heat Flux",Lx*Ly,ParserType::Double,positionHeatFlux);
 
     HeatFluxGenerator generator(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,T0,Amp);
@@ -128,21 +138,25 @@ int main(){
     HeatFluxEstimation problem(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St);
     
     problem.UpdateMeasure(generator.GetTemperature(0u),Lx,Ly);
+    Parser::ExportValuesBinary(parser->GetStreamOut(indexTemperatureMeasured),Lx*Ly,ParserType::Double,generator.GetTemperature(0u),positionTemperatureMeasured,0u);
+        
     UKF ukf(problem.GetMemory(), alpha, beta, kappa);
 
     Math::PrintMatrix(generator.GetTemperature(Lt),Lx,Ly);
 
-    Timer timer(UKF_TIMER);
+    Timer timer(UKF_TIMER+1u);
     for(unsigned i = 1u; i <= Lt; i++){
         std::cout << "Iteration " << i << ":\n";
         ukf.Iterate(timer);
-        timer.SetValues();
-        timer.Print();
         Parser::ExportValuesBinary(parser->GetStreamOut(indexTemperature),Lx*Ly*Lz,ParserType::Double,problem.GetMemory()->GetState()->GetPointer(),positionTemperature,i-1u);
         Parser::ExportValuesBinary(parser->GetStreamOut(indexHeatFlux),Lx*Ly,ParserType::Double,problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,positionHeatFlux,i-1u);
-        Parser::ExportValuesBinary(parser->GetStreamOut(indexTimer),UKF_TIMER,ParserType::Double,timer.GetValues(),positionTimer,i-1u);
+        timer.Save();
+        timer.SetValues();
+        timer.Print();
+        Parser::ExportValuesBinary(parser->GetStreamOut(indexTimer),UKF_TIMER+1,ParserType::Double,timer.GetValues(),positionTimer,i-1u);
         Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),Lx,Ly);
         Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,Lx,Ly);
+        Parser::ExportValuesBinary(parser->GetStreamOut(indexTemperatureMeasured),Lx*Ly,ParserType::Double,generator.GetTemperature(i),positionTemperatureMeasured,i);
         problem.UpdateMeasure(generator.GetTemperature(i),Lx,Ly);
     }
 

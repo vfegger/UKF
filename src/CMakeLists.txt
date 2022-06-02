@@ -12,10 +12,10 @@ add_subdirectory(ukf)
 add_subdirectory(math)
 add_subdirectory(timer)
 add_subdirectory(hfe)
+add_subdirectory(graph)
 
 
 # Add the executable
 add_executable(${PROJECT_NAME} mainTest.cpp)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Structure Math Parser Timer UKF HeatFluxEstimation)
-
+target_link_libraries(${PROJECT_NAME} PUBLIC Structure Math Parser Timer UKF HeatFluxEstimation Graph)
