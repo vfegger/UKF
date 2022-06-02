@@ -8,14 +8,16 @@
 #include "hfe/include/HeatFluxEstimation.hpp"
 #include "hfe/include/HeatFluxGenerator.hpp"
 #include <stdlib.h>
+#include <filesystem>
 
 int main(){
     std::cout << "\nStart Execution\n\n";
-    std::string path_text_in = "/mnt/d/Research/UKF/data/text/in/";
-    std::string path_binary_in = "/mnt/d/Research/UKF/data/binary/in/";
+    std::string path_dir = std::filesystem::current_path();
+    std::string path_text_in = path_dir + "/data/text/in/";
+    std::string path_binary_in = path_dir + "/data/binary/in/";
     
-    std::string path_text_out = "/mnt/d/Research/UKF/data/text/out/";
-    std::string path_binary_out = "/mnt/d/Research/UKF/data/binary/out/";
+    std::string path_text_out = path_dir + "/data/text/out/";
+    std::string path_binary_out = path_dir + "/data/binary/out/";
 
     std::string name_length = "ParameterLength";
     std::string name_size = "ParameterSize";
@@ -86,6 +88,12 @@ int main(){
     double alpha = UKFParm[0u];
     double beta = UKFParm[1u];
     double kappa = UKFParm[2u];
+
+    delete[] L_lower;
+    delete[] L_upper;
+    delete[] S;
+    delete[] HPParm;
+    delete[] UKFParm;
 
     parser->CloseAllFileIn();
     parser->CloseAllFileOut();

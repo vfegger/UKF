@@ -1,0 +1,199 @@
+==18435== Memcheck, a memory error detector
+==18435== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==18435== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==18435== Command: ./build-debug/UKF_1
+==18435== Parent PID: 18384
+==18435== 
+==18435== Conditional jump or move depends on uninitialised value(s)
+==18435==    at 0x4BFC078: __printf_fp_l (printf_fp.c:387)
+==18435==    by 0x4C174B9: __vfprintf_internal (vfprintf-internal.c:1687)
+==18435==    by 0x4C2BF99: __vsnprintf_internal (vsnprintf.c:114)
+==18435==    by 0x4948C3F: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x497A245: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_float<double>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, char, double) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x4988972: std::ostream& std::ostream::_M_insert<double>(double) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x117BAF: void Parser::ExportValues<double>(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, void*) (Parser.hpp:101)
+==18435==    by 0x113D93: Parser::ExportAllValues(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*, std::fpos<__mbstate_t>&, unsigned int) (Parser.cpp:254)
+==18435==    by 0x1158E7: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:616)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435==  Uninitialised value was created by a heap allocation
+==18435==    at 0x483C583: operator new[](unsigned long) (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18435==    by 0x1149EF: Parser::ImportAllValuesBinary(std::basic_ifstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*&, unsigned int) (Parser.cpp:454)
+==18435==    by 0x115857: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:613)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435== 
+==18435== Conditional jump or move depends on uninitialised value(s)
+==18435==    at 0x4BFC092: __printf_fp_l (printf_fp.c:387)
+==18435==    by 0x4C174B9: __vfprintf_internal (vfprintf-internal.c:1687)
+==18435==    by 0x4C2BF99: __vsnprintf_internal (vsnprintf.c:114)
+==18435==    by 0x4948C3F: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x497A245: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_float<double>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, char, double) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x4988972: std::ostream& std::ostream::_M_insert<double>(double) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x117BAF: void Parser::ExportValues<double>(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, void*) (Parser.hpp:101)
+==18435==    by 0x113D93: Parser::ExportAllValues(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*, std::fpos<__mbstate_t>&, unsigned int) (Parser.cpp:254)
+==18435==    by 0x1158E7: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:616)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435==  Uninitialised value was created by a heap allocation
+==18435==    at 0x483C583: operator new[](unsigned long) (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18435==    by 0x1149EF: Parser::ImportAllValuesBinary(std::basic_ifstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*&, unsigned int) (Parser.cpp:454)
+==18435==    by 0x115857: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:613)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435== 
+==18435== Conditional jump or move depends on uninitialised value(s)
+==18435==    at 0x4BF7B34: __mpn_extract_double (dbl2mpn.c:56)
+==18435==    by 0x4BFC38E: __printf_fp_l (printf_fp.c:387)
+==18435==    by 0x4C174B9: __vfprintf_internal (vfprintf-internal.c:1687)
+==18435==    by 0x4C2BF99: __vsnprintf_internal (vsnprintf.c:114)
+==18435==    by 0x4948C3F: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x497A245: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_float<double>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, char, double) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x4988972: std::ostream& std::ostream::_M_insert<double>(double) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x117BAF: void Parser::ExportValues<double>(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, void*) (Parser.hpp:101)
+==18435==    by 0x113D93: Parser::ExportAllValues(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*, std::fpos<__mbstate_t>&, unsigned int) (Parser.cpp:254)
+==18435==    by 0x1158E7: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:616)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435==  Uninitialised value was created by a heap allocation
+==18435==    at 0x483C583: operator new[](unsigned long) (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18435==    by 0x1149EF: Parser::ImportAllValuesBinary(std::basic_ifstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*&, unsigned int) (Parser.cpp:454)
+==18435==    by 0x115857: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:613)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435== 
+==18435== Conditional jump or move depends on uninitialised value(s)
+==18435==    at 0x4BF7B39: __mpn_extract_double (dbl2mpn.c:60)
+==18435==    by 0x4BFC38E: __printf_fp_l (printf_fp.c:387)
+==18435==    by 0x4C174B9: __vfprintf_internal (vfprintf-internal.c:1687)
+==18435==    by 0x4C2BF99: __vsnprintf_internal (vsnprintf.c:114)
+==18435==    by 0x4948C3F: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x497A245: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_float<double>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, char, double) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x4988972: std::ostream& std::ostream::_M_insert<double>(double) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x117BAF: void Parser::ExportValues<double>(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, void*) (Parser.hpp:101)
+==18435==    by 0x113D93: Parser::ExportAllValues(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*, std::fpos<__mbstate_t>&, unsigned int) (Parser.cpp:254)
+==18435==    by 0x1158E7: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:616)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435==  Uninitialised value was created by a heap allocation
+==18435==    at 0x483C583: operator new[](unsigned long) (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18435==    by 0x1149EF: Parser::ImportAllValuesBinary(std::basic_ifstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*&, unsigned int) (Parser.cpp:454)
+==18435==    by 0x115857: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:613)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435== 
+==18435== Conditional jump or move depends on uninitialised value(s)
+==18435==    at 0x4BFCDF0: __printf_fp_l (printf_fp.c:969)
+==18435==    by 0x4C174B9: __vfprintf_internal (vfprintf-internal.c:1687)
+==18435==    by 0x4C2BF99: __vsnprintf_internal (vsnprintf.c:114)
+==18435==    by 0x4948C3F: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x497A245: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_float<double>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, char, double) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x4988972: std::ostream& std::ostream::_M_insert<double>(double) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x117BAF: void Parser::ExportValues<double>(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, void*) (Parser.hpp:101)
+==18435==    by 0x113D93: Parser::ExportAllValues(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*, std::fpos<__mbstate_t>&, unsigned int) (Parser.cpp:254)
+==18435==    by 0x1158E7: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:616)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435==  Uninitialised value was created by a heap allocation
+==18435==    at 0x483C583: operator new[](unsigned long) (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18435==    by 0x1149EF: Parser::ImportAllValuesBinary(std::basic_ifstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*&, unsigned int) (Parser.cpp:454)
+==18435==    by 0x115857: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:613)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435== 
+==18435== Conditional jump or move depends on uninitialised value(s)
+==18435==    at 0x4BFCE29: __printf_fp_l (printf_fp.c:972)
+==18435==    by 0x4C174B9: __vfprintf_internal (vfprintf-internal.c:1687)
+==18435==    by 0x4C2BF99: __vsnprintf_internal (vsnprintf.c:114)
+==18435==    by 0x4948C3F: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x497A245: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_float<double>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, char, double) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x4988972: std::ostream& std::ostream::_M_insert<double>(double) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x117BAF: void Parser::ExportValues<double>(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, void*) (Parser.hpp:101)
+==18435==    by 0x113D93: Parser::ExportAllValues(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*, std::fpos<__mbstate_t>&, unsigned int) (Parser.cpp:254)
+==18435==    by 0x1158E7: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:616)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435==  Uninitialised value was created by a heap allocation
+==18435==    at 0x483C583: operator new[](unsigned long) (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18435==    by 0x1149EF: Parser::ImportAllValuesBinary(std::basic_ifstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*&, unsigned int) (Parser.cpp:454)
+==18435==    by 0x115857: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:613)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435== 
+==18435== Conditional jump or move depends on uninitialised value(s)
+==18435==    at 0x4BFCE64: __printf_fp_l (printf_fp.c:982)
+==18435==    by 0x4C174B9: __vfprintf_internal (vfprintf-internal.c:1687)
+==18435==    by 0x4C2BF99: __vsnprintf_internal (vsnprintf.c:114)
+==18435==    by 0x4948C3F: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x497A245: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_float<double>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, char, double) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x4988972: std::ostream& std::ostream::_M_insert<double>(double) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x117BAF: void Parser::ExportValues<double>(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, void*) (Parser.hpp:101)
+==18435==    by 0x113D93: Parser::ExportAllValues(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*, std::fpos<__mbstate_t>&, unsigned int) (Parser.cpp:254)
+==18435==    by 0x1158E7: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:616)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435==  Uninitialised value was created by a heap allocation
+==18435==    at 0x483C583: operator new[](unsigned long) (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18435==    by 0x1149EF: Parser::ImportAllValuesBinary(std::basic_ifstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*&, unsigned int) (Parser.cpp:454)
+==18435==    by 0x115857: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:613)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435== 
+==18435== Conditional jump or move depends on uninitialised value(s)
+==18435==    at 0x4BFCE9A: round_away (rounding-mode.h:52)
+==18435==    by 0x4BFCE9A: __printf_fp_l (printf_fp.c:989)
+==18435==    by 0x4C174B9: __vfprintf_internal (vfprintf-internal.c:1687)
+==18435==    by 0x4C2BF99: __vsnprintf_internal (vsnprintf.c:114)
+==18435==    by 0x4948C3F: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x497A245: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_float<double>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, char, double) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x4988972: std::ostream& std::ostream::_M_insert<double>(double) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x117BAF: void Parser::ExportValues<double>(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, void*) (Parser.hpp:101)
+==18435==    by 0x113D93: Parser::ExportAllValues(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*, std::fpos<__mbstate_t>&, unsigned int) (Parser.cpp:254)
+==18435==    by 0x1158E7: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:616)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435==  Uninitialised value was created by a heap allocation
+==18435==    at 0x483C583: operator new[](unsigned long) (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18435==    by 0x1149EF: Parser::ImportAllValuesBinary(std::basic_ifstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*&, unsigned int) (Parser.cpp:454)
+==18435==    by 0x115857: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:613)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435== 
+==18435== Conditional jump or move depends on uninitialised value(s)
+==18435==    at 0x4BFCED1: __printf_fp_l (printf_fp.c:1088)
+==18435==    by 0x4C174B9: __vfprintf_internal (vfprintf-internal.c:1687)
+==18435==    by 0x4C2BF99: __vsnprintf_internal (vsnprintf.c:114)
+==18435==    by 0x4948C3F: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x497A245: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_float<double>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, char, double) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x4988972: std::ostream& std::ostream::_M_insert<double>(double) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x117BAF: void Parser::ExportValues<double>(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, void*) (Parser.hpp:101)
+==18435==    by 0x113D93: Parser::ExportAllValues(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*, std::fpos<__mbstate_t>&, unsigned int) (Parser.cpp:254)
+==18435==    by 0x1158E7: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:616)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435==  Uninitialised value was created by a heap allocation
+==18435==    at 0x483C583: operator new[](unsigned long) (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18435==    by 0x1149EF: Parser::ImportAllValuesBinary(std::basic_ifstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*&, unsigned int) (Parser.cpp:454)
+==18435==    by 0x115857: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:613)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435== 
+==18435== Conditional jump or move depends on uninitialised value(s)
+==18435==    at 0x4BFD104: __printf_fp_l (printf_fp.c:1157)
+==18435==    by 0x4C174B9: __vfprintf_internal (vfprintf-internal.c:1687)
+==18435==    by 0x4C2BF99: __vsnprintf_internal (vsnprintf.c:114)
+==18435==    by 0x4948C3F: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x497A245: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_float<double>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, char, double) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x4988972: std::ostream& std::ostream::_M_insert<double>(double) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==18435==    by 0x117BAF: void Parser::ExportValues<double>(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, void*) (Parser.hpp:101)
+==18435==    by 0x113D93: Parser::ExportAllValues(std::basic_ofstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*, std::fpos<__mbstate_t>&, unsigned int) (Parser.cpp:254)
+==18435==    by 0x1158E7: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:616)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435==  Uninitialised value was created by a heap allocation
+==18435==    at 0x483C583: operator new[](unsigned long) (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18435==    by 0x1149EF: Parser::ImportAllValuesBinary(std::basic_ifstream<char, std::char_traits<char> >&, unsigned int, ParserType, void*&, unsigned int) (Parser.cpp:454)
+==18435==    by 0x115857: Parser::ConvertToText(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (Parser.cpp:613)
+==18435==    by 0x10E884: main (mainTest.cpp:157)
+==18435== 
+==18435== 
+==18435== HEAP SUMMARY:
+==18435==     in use at exit: 46,680 bytes in 9 blocks
+==18435==   total heap usage: 14,475 allocs, 14,466 frees, 78,860,924 bytes allocated
+==18435== 
+==18435== 45,264 (32 direct, 45,232 indirect) bytes in 1 blocks are definitely lost in loss record 9 of 9
+==18435==    at 0x483BE63: operator new(unsigned long) (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18435==    by 0x10D34F: main (mainTest.cpp:36)
+==18435== 
+==18435== LEAK SUMMARY:
+==18435==    definitely lost: 32 bytes in 1 blocks
+==18435==    indirectly lost: 45,232 bytes in 5 blocks
+==18435==      possibly lost: 0 bytes in 0 blocks
+==18435==    still reachable: 1,416 bytes in 3 blocks
+==18435==         suppressed: 0 bytes in 0 blocks
+==18435== Reachable blocks (those to which a pointer was found) are not shown.
+==18435== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==18435== 
+==18435== For lists of detected and suppressed errors, rerun with: -s
+==18435== ERROR SUMMARY: 166 errors from 11 contexts (suppressed: 0 from 0)

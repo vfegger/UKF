@@ -567,7 +567,6 @@ void Parser::ConvertToBinary(std::string path_in, std::string path_out, std::str
     unsigned length;
     ParserType type;
     void* values;
-    unsigned sizeType;
     std::string name_in;
     std::string name_out;
     for(const auto & entry : std::filesystem::directory_iterator(path_in)){
@@ -595,10 +594,9 @@ void Parser::ConvertToBinary(std::string path_in, std::string path_out, std::str
 
 void Parser::ConvertToText(std::string path_in, std::string path_out, std::string extension_in){
     std::string name;
-    unsigned length;
-    ParserType type;
-    void* values;
-    unsigned sizeType;
+    unsigned length = 0u;
+    ParserType type = ParserType::Char; 
+    void* values = NULL;
     std::string name_in;
     std::string name_out;
     for(const auto & entry : std::filesystem::directory_iterator(path_in)){
@@ -636,6 +634,7 @@ unsigned Parser::OpenFileIn(std::string path_in, std::string name_in, std::strin
             std::cout << "Error: Failed to open file.\n";
         }
         count_In++;
+        std::cout << "\tFile opened successefully!\n";
         return count_In-1;
     } else {
         if(index_in >= length_In){
@@ -646,6 +645,7 @@ unsigned Parser::OpenFileIn(std::string path_in, std::string name_in, std::strin
             fileArray_In[index_in].close();
         }
         fileArray_In[index_in] = std::ifstream(path_in + name_in + extension_in, mode_in);
+        std::cout << "\tFile opened successefully!\n";
         return index_in;
     }
 }
@@ -662,6 +662,7 @@ unsigned Parser::OpenFileOut(std::string path_in, std::string name_in, std::stri
             std::cout << "Error: Failed to open file.\n";
         }
         count_Out++;
+        std::cout << "\tFile opened successefully!\n";
         return count_Out-1;
     } else {
         if(index_in >= length_Out){
@@ -672,6 +673,7 @@ unsigned Parser::OpenFileOut(std::string path_in, std::string name_in, std::stri
             fileArray_Out[index_in].close();
         }
         fileArray_Out[index_in] = std::ofstream(path_in + name_in + extension_in, mode_in);
+        std::cout << "\tFile opened successefully!\n";
         return index_in;
     }
 }
