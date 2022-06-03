@@ -100,12 +100,12 @@ void Parser::ExportValues(std::ofstream& file_in, unsigned length_in, void* valu
 
 template<typename T>
 void Parser::ImportValuesBinary(std::ifstream& file_in, unsigned length_in, void*& values_out){
-    file_in.read((char*)values_out,sizeof(T)*length_in/sizeof(char));
+    file_in.read((char*)values_out,sizeof(T)*length_in);
 }
 
 template<typename T>
 void Parser::ExportValuesBinary(std::ofstream& file_in, unsigned length_in, void* values_in){
-    file_in.write((char*)values_in,sizeof(T)*length_in/sizeof(char));
+    file_in.write((char*)values_in,sizeof(T)*length_in);
 }
 
 #endif

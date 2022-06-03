@@ -10,6 +10,7 @@ Parser::Parser(unsigned length_in){
 }
 
 void Parser::ImportConfiguration(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out, unsigned& iteration_out){
+    file_in.seekg(0, file_in.beg);
     char aux[100];
     unsigned type;
     file_in.getline(aux,100);
@@ -24,6 +25,7 @@ void Parser::ImportConfiguration(std::ifstream& file_in, std::string& name_out, 
 }
 
 void Parser::ExportConfiguration(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in, std::streampos& iterationPosition_out){
+    file_in.seekp(0, file_in.beg);
     std::string iteration_string = std::to_string(0u) + "    ";
     file_in << name_in << "\n";
     file_in << length_in << "\t";
@@ -262,6 +264,7 @@ void Parser::ExportAllValues(std::ofstream& file_in, unsigned length_in, ParserT
 }
 
 void Parser::ImportConfigurationBinary(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out, unsigned& iteration_out){
+    file_in.seekg(0, file_in.beg);
     unsigned type;
     unsigned size;
     file_in.read((char*)(&size),sizeof(unsigned));
@@ -276,6 +279,7 @@ void Parser::ImportConfigurationBinary(std::ifstream& file_in, std::string& name
 }
 
 void Parser::ExportConfigurationBinary(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in, std::streampos& iterationPosition_out){
+    file_in.seekp(0, file_in.beg);
     unsigned size = name_in.size();
     unsigned type = (unsigned)type_in;
     unsigned iteration = 0u;

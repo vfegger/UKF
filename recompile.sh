@@ -5,6 +5,7 @@ DEBUG=$1
 FILE_PATH="$BASH_SOURCE"
 DIR_PATH="$(dirname "$BASH_SOURCE")"
 SOURCE_PATH=$DIR_PATH/src
+DATA_PATH=$DIR_PATH/data
 
 BUILD_DIR="build"
 BUILD_PATH=
@@ -23,6 +24,9 @@ else
     echo Normal Mode
     BUILD_PATH=$DIR_PATH/$BUILD_DIR
 fi
+rm $DATA_PATH/text/out/*.dat
+rm $DATA_PATH/binary/in/*.bin
+rm $DATA_PATH/binary/out/*.bin
 
 cmake -S $SOURCE_PATH -B $BUILD_PATH $BUILD_OPTIONS
 cmake --build $BUILD_PATH
