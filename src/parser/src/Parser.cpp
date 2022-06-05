@@ -148,6 +148,7 @@ void Parser::ExportValues(std::ofstream& file_in, unsigned length_in, ParserType
     default:
         break;
     }
+    file_in.flush();
 }
 
 void Parser::ImportAllValues(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in){
@@ -261,6 +262,7 @@ void Parser::ExportAllValues(std::ofstream& file_in, unsigned length_in, ParserT
     default:
         break;
     }
+    file_in.flush();
 }
 
 void Parser::ImportConfigurationBinary(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out, unsigned& iteration_out){
@@ -404,6 +406,7 @@ void Parser::ExportValuesBinary(std::ofstream& file_in, unsigned length_in, Pars
     default:
         break;
     }
+    file_in.flush();
 }
 
 void Parser::ImportAllValuesBinary(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in){
@@ -517,6 +520,7 @@ void Parser::ExportAllValuesBinary(std::ofstream& file_in, unsigned length_in, P
     default:
         break;
     }
+    file_in.flush();
 }
 
 void Parser::DeleteValues(void* values_in, ParserType type_in){
