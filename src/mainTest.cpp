@@ -153,7 +153,7 @@ int main(){
     Math::PrintMatrix(generator.GetTemperature(Lt),Lx,Ly);
 
     Timer* timer = new Timer(UKF_TIMER+1u);
-    for(unsigned i = 1u; i <= 1; i++){
+    for(unsigned i = 1u; i <= Lt; i++){
         std::cout << "Iteration " << i << ":\n";
         ukf.Iterate(*timer);
         Parser::ExportValuesBinary(parser->GetStreamOut(indexTemperature),Lx*Ly*Lz,ParserType::Double,problem.GetMemory()->GetState()->GetPointer(),positionTemperature,i-1u);
