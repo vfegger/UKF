@@ -3,8 +3,9 @@
 
 int main(){
     std::cout << "\nStart Execution\n\n";
-    std::string path_text_in = "/mnt/d/Research/UKF/data/text/out/";
-    std::string path_text_out = "/mnt/d/Research/UKF/graph/data/";
+    std::string path_dir = std::filesystem::current_path();
+    std::string path_text_in = path_dir + "/data/text/out/";
+    std::string path_text_out = path_dir + "/graph/data/";
 
     std::string extension_text_in = ".dat";
     std::string extension_text_out = ".dat";

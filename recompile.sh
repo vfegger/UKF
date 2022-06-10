@@ -30,13 +30,19 @@ rm $DATA_PATH/binary/out/*.bin
 
 cmake -S $SOURCE_PATH -B $BUILD_PATH $BUILD_OPTIONS
 cmake --build $BUILD_PATH
-valgrind $MEMORY_CHECK_OPTIONS $BUILD_PATH/UKF_1
+if [ "$DEBUG" = "-d" ] || [ "$DEBUG" = "-debug" ] || [ "$DEBUG" = "-DEBUG" ] || [ "$DEBUG" = "-Debug" ];
+then
+    valgrind $MEMORY_CHECK_OPTIONS $BUILD_PATH/UKF_1
+fi
 $BUILD_PATH/UKF_1
 
 GRAPH_PATH=$DIR_PATH/graph
 
+rm $GRAPH_PATH/data/*
+rm $GRAPH_PATH/output/*
+
 echo "Running Parser for GNUPlot" 
-$BUILD_PATH/graph/GRAPH_UKF
+$BUILD_PATH/graph/Graph_UKF
 echo "Finished GNUPlot Parser Execution"
 
 echo "Running GNUPlot for graph generation"
