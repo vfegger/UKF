@@ -2,4 +2,4 @@
 build*/
 data/binary/
 data/text/out/
-valgrind*.txt
+./valgrindOutput.txt
