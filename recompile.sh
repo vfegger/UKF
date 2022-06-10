@@ -24,9 +24,12 @@ else
     echo "Normal Mode"
     BUILD_PATH=$DIR_PATH/$BUILD_DIR
 fi
+rm -r $BUILD_PATH
+
 rm $DATA_PATH/text/out/*.dat
 rm $DATA_PATH/binary/in/*.bin
 rm $DATA_PATH/binary/out/*.bin
+
 
 cmake -S $SOURCE_PATH -B $BUILD_PATH $BUILD_OPTIONS
 cmake --build $BUILD_PATH
