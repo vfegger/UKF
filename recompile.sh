@@ -40,7 +40,7 @@ then
 fi
 LX_REF=4
 LY_REF=4
-LZ_REF=0
+LZ_REF=3
 LT_REF=5
 for i in $(seq 0 6); do
     rm $DATA_PATH/binary/in/*.bin
@@ -52,7 +52,7 @@ for i in $(seq 0 6); do
     rm $DATA_PATH/binary/out/*.bin
     $BUILD_PATH/UKF_1 $LX_REF $i $LZ_REF $LT_REF
 done
-for i in $(seq 0 3); do
+for i in $(seq 0 5); do
     rm $DATA_PATH/binary/in/*.bin
     rm $DATA_PATH/binary/out/*.bin
     $BUILD_PATH/UKF_1 $LX_REF $LY_REF $i $LT_REF
