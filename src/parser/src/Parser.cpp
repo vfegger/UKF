@@ -296,58 +296,85 @@ void Parser::ExportConfigurationBinary(std::ofstream& file_in, std::string name_
 void Parser::ImportValuesBinary(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in){
     std::streampos position = file_in.tellg();
     file_in.seekg(position+(std::streamoff)(length_in*iteration_in));
+    unsigned sizeType = 0u;
     switch (type_in)
     {
     case ParserType::Char:
         values_out = new char[length_in];
+        sizeType = sizeof(char);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<char>(file_in, length_in, values_out);
         break;
     case ParserType::UChar:
         values_out = new unsigned char[length_in];
+        sizeType = sizeof(unsigned char);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<unsigned char>(file_in, length_in, values_out);
         break;
     case ParserType::SInt:
         values_out = new short int[length_in];
+        sizeType = sizeof(short int);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<short int>(file_in, length_in, values_out);
         break;
     case ParserType::SUInt:
         values_out = new short unsigned int[length_in];
+        sizeType = sizeof(short unsigned int);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<short unsigned int>(file_in, length_in, values_out);
         break;
     case ParserType::Int:
         values_out = new int[length_in];
+        sizeType = sizeof(int);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<int>(file_in, length_in, values_out);
         break;
     case ParserType::UInt:
         values_out = new unsigned int[length_in];
+        sizeType = sizeof(unsigned int);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<unsigned int>(file_in, length_in, values_out);
         break;
     case ParserType::LInt:
         values_out = new long int[length_in];
+        sizeType = sizeof(long int);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<long int>(file_in, length_in, values_out);
         break;
     case ParserType::LUInt:
         values_out = new long unsigned int[length_in];
+        sizeType = sizeof(long unsigned int);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<long unsigned int>(file_in, length_in, values_out);
         break;
     case ParserType::LLInt:
         values_out = new long long int[length_in];
+        sizeType = sizeof(long long int);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<long long int>(file_in, length_in, values_out);
         break;
     case ParserType::LLUInt:
         values_out = new long long unsigned int[length_in];
+        sizeType = sizeof(long long unsigned int);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<long long unsigned int>(file_in, length_in, values_out);
         break;
     case ParserType::Float:
         values_out = new float[length_in];
+        sizeType = sizeof(float);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<float>(file_in, length_in, values_out);
         break;
     case ParserType::Double:
         values_out = new double[length_in];
+        sizeType = sizeof(double);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<double>(file_in, length_in, values_out);
         break;
     case ParserType::LDouble:
         values_out = new long double[length_in];
+        sizeType = sizeof(long double);
+        file_in.seekg(position+(std::streamoff)(sizeType*length_in*iteration_in));
         ImportValuesBinary<long double>(file_in, length_in, values_out);
         break;
     default:
