@@ -1,6 +1,7 @@
 #!
 
 DEBUG=$1
+CLEAN=false
 
 FILE_PATH="$BASH_SOURCE"
 DIR_PATH="$(dirname "$BASH_SOURCE")"
@@ -26,10 +27,10 @@ else
 fi
 rm -r $BUILD_PATH
 
-rm $DATA_PATH/text/out/*.dat
-rm $DATA_PATH/binary/in/*.bin
-rm $DATA_PATH/binary/out/*.bin
-
+if [ "$CLEAN" = "true"];
+then
+    rm $DATA_PATH/text/out/*.dat
+fi
 
 cmake -S $SOURCE_PATH -B $BUILD_PATH $BUILD_OPTIONS
 cmake --build $BUILD_PATH
@@ -37,7 +38,30 @@ if [ "$DEBUG" = "-d" ] || [ "$DEBUG" = "-debug" ] || [ "$DEBUG" = "-DEBUG" ] || 
 then
     valgrind $MEMORY_CHECK_OPTIONS $BUILD_PATH/UKF_1
 fi
-$BUILD_PATH/UKF_1
+LX_REF=4
+LY_REF=4
+LZ_REF=0
+LT_REF=5
+for i in $(seq 0 6); do
+    rm $DATA_PATH/binary/in/*.bin
+    rm $DATA_PATH/binary/out/*.bin
+    $BUILD_PATH/UKF_1 $i $LY_REF $LZ_REF $LT_REF
+done
+for i in $(seq 0 6); do
+    rm $DATA_PATH/binary/in/*.bin
+    rm $DATA_PATH/binary/out/*.bin
+    $BUILD_PATH/UKF_1 $LX_REF $i $LZ_REF $LT_REF
+done
+for i in $(seq 0 3); do
+    rm $DATA_PATH/binary/in/*.bin
+    rm $DATA_PATH/binary/out/*.bin
+    $BUILD_PATH/UKF_1 $LX_REF $LY_REF $i $LT_REF
+done
+for i in $(seq 0 10); do
+    rm $DATA_PATH/binary/in/*.bin
+    rm $DATA_PATH/binary/out/*.bin
+    $BUILD_PATH/UKF_1 $LX_REF $LY_REF $LZ_REF $i
+done
 
 GRAPH_PATH=$DIR_PATH/graph
 

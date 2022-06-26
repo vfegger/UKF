@@ -176,6 +176,21 @@ int main(int argc, char** argv){
     unsigned Lz_stride = L_stride[2u];
     unsigned Lt_stride = L_stride[3u];
 
+    unsigned Lx = Lx_ref; 
+    unsigned Ly = Ly_ref;
+    unsigned Lz = Lz_ref;
+    unsigned Lt = Lt_ref;
+    if(argc == 1 + 4) {
+        int cx = std::stoi(argv[1u]);
+        int cy = std::stoi(argv[2u]);
+        int cz = std::stoi(argv[3u]);
+        int ct = std::stoi(argv[4u]);
+        Lx = (Lx_upper > Lx_lower + Lx_stride * cx) ? Lx_lower + Lx_stride * cx : Lx_upper; 
+        Ly = (Ly_upper > Ly_lower + Ly_stride * cy) ? Ly_lower + Ly_stride * cy : Ly_upper;
+        Lz = (Lz_upper > Lz_lower + Lz_stride * cz) ? Lz_lower + Lz_stride * cz : Lz_upper;
+        Lt = (Lt_upper > Lt_lower + Lt_stride * ct) ? Lt_lower + Lt_stride * ct : Lt_upper;
+    }
+
     double Sx = S[0u];
     double Sy = S[1u];
     double Sz = S[2u];
@@ -198,38 +213,14 @@ int main(int argc, char** argv){
     delete[] HPParm;
     delete[] UKFParm;
 
-    for(unsigned Lx = Lx_lower; Lx <= Lx_upper; Lx += Lx_stride){
-        RunCase(path_binary_out,extension_binary,
-            Lx,Ly_ref,Lz_ref,Lt_ref,
-            Sx,Sy,Sz,St,
-            T0,Amp,mean,sigma,
-            alpha,beta,kappa
-        );
-    }
-    for(unsigned Ly = Ly_lower; Ly <= Ly_upper; Ly += Ly_stride){
-        RunCase(path_binary_out,extension_binary,
-            Lx_ref,Ly,Lz_ref,Lt_ref,
-            Sx,Sy,Sz,St,
-            T0,Amp,mean,sigma,
-            alpha,beta,kappa
-        );
-    }
-    for(unsigned Lz = Lz_lower; Lz <= Lz_upper; Lz += Lz_stride){
-        RunCase(path_binary_out,extension_binary,
-            Lx_ref,Ly_ref,Lz,Lt_ref,
-            Sx,Sy,Sz,St,
-            T0,Amp,mean,sigma,
-            alpha,beta,kappa
-        );
-    }
-    for(unsigned Lt = Lt_lower; Lt <= Lt_upper; Lt += Lt_stride){
-        RunCase(path_binary_out,extension_binary,
-            Lx_ref,Ly_ref,Lz_ref,Lt,
-            Sx,Sy,Sz,St,
-            T0,Amp,mean,sigma,
-            alpha,beta,kappa
-        );
-    }
+    std::cout << "\nRunning case with grid: (" << Lx << "," << Ly << "," << Lz << "," << Lt << ")\n\n";
+
+    RunCase(path_binary_out,extension_binary,
+        Lx,Ly,Lz,Lt,
+        Sx,Sy,Sz,St,
+        T0,Amp,mean,sigma,
+        alpha,beta,kappa
+    );
 
     Parser::ConvertToText(path_binary_out,path_text_out,extension_text);
 
