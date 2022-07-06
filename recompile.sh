@@ -34,14 +34,14 @@ fi
 
 cmake -S $SOURCE_PATH -B $BUILD_PATH $BUILD_OPTIONS
 cmake --build $BUILD_PATH
-if [ "$DEBUG" = "-d" ] || [ "$DEBUG" = "-debug" ] || [ "$DEBUG" = "-DEBUG" ] || [ "$DEBUG" = "-Debug" ];
-then
-    valgrind $MEMORY_CHECK_OPTIONS $BUILD_PATH/UKF_1
-fi
 LX_REF=4
 LY_REF=4
 LZ_REF=3
 LT_REF=5
+if [ "$DEBUG" = "-d" ] || [ "$DEBUG" = "-debug" ] || [ "$DEBUG" = "-DEBUG" ] || [ "$DEBUG" = "-Debug" ];
+then
+    valgrind $MEMORY_CHECK_OPTIONS $BUILD_PATH/UKF_1 $LX_REF $LY_REF $LZ_REF $LT_REF
+fi
 for i in $(seq 0 6); do
     rm $DATA_PATH/binary/in/*.bin
     rm $DATA_PATH/binary/out/*.bin

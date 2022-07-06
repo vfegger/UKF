@@ -3,3 +3,5 @@ build*/
 data/binary/
 data/text/out/
 /valgrindOutput.txt
+graph/data/
+graph/output/
