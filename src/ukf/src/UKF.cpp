@@ -170,5 +170,5 @@ void UKF::Iterate(Timer& timer){
     delete observationCovariance;
     timer.Save();
 
-    std::cout << "Iteration Ended\n";
+    std::cout << "Iteration Ended\n\n";
 }

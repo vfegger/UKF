@@ -3,6 +3,8 @@ FILE_PATH_GRAPH="$BASH_SOURCE"
 DIR_PATH_GRAPH="$(dirname "$BASH_SOURCE")"
 GRAPH_PATH=$DIR_PATH_GRAPH/graph
 
+CURRENT_PATH=$PWD
+
 LX=$2
 LY=$3
 LZ=$4
@@ -18,4 +20,5 @@ echo "Finished GNUPlot Parser Execution"
 echo "Running GNUPlot for graph generation"
 cd $GRAPH_PATH
 gnuplot -c gnuplot_script.plg $LX $LY $LZ $LT
+cd $CURRENT_PATH
 echo "Finished GNUPlot Execution"

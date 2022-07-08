@@ -84,10 +84,10 @@ int RunCase(std::string& path_binary, std::string& extension_binary,
         Parser::ExportValuesBinary(parser->GetStreamOut(indexHeatFlux),Lx*Ly,ParserType::Double,problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,positionHeatFlux,i-1u);
         timer->Save();
         timer->SetValues();
-        timer->Print();
+        //timer->Print();
         Parser::ExportValuesBinary(parser->GetStreamOut(indexTimer),UKF_TIMER+1,ParserType::Double,timer->GetValues(),positionTimer,i-1u);
-        Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),Lx,Ly);
-        Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,Lx,Ly);
+        //Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),Lx,Ly);
+        //Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,Lx,Ly);
         problem.UpdateMeasure(generator.GetTemperature(i),Lx,Ly);
         Parser::ExportValuesBinary(parser->GetStreamOut(indexTemperatureMeasured),Lx*Ly,ParserType::Double,generator.GetTemperature(i),positionTemperatureMeasured,i);
     }
@@ -191,9 +191,6 @@ int main(int argc, char** argv){
 
     Parser::ConvertToText(path_binary_out,path_text_out,extension_text);
 
-    std::cout << "\nEnd Execution\n";
-
-
     std::string ok_name = path_text_out +
         "X" + std::to_string(Lx) +
         "Y" + std::to_string(Ly) +
@@ -201,5 +198,7 @@ int main(int argc, char** argv){
         "T" + std::to_string(Lt) + ".ok";
     std::ofstream ok_file(ok_name);
     ok_file.close();
+
+    std::cout << "\nEnd Execution\n";
     return 0;
 }
