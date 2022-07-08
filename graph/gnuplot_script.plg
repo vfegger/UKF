@@ -1,0 +1,45 @@
+x = ARG1
+y = ARG2
+z = ARG3
+t = ARG4
+
+file_path = "data/"
+output_path = "output/"
+if(ARGC > 4) file_path = ARG5
+if(ARGC > 5) output_path = ARG6
+
+
+timer_file = "Timer"
+temperature_file = "Temperature"
+heatFlux_file = "HeatFlux"
+extension = ".dat"
+output_extension = ".png"
+
+set term png;
+set size square;
+
+mod(x,y) = x-(floor(x/y)*y) 
+
+output_name = "TimeSteps"
+
+id_name = "X".x."Y".y."Z".z."T".t
+title_name = "Time"." X".x." Y".y." Z".z." T".t 
+
+set output output_path.output_name.id_name.output_extension
+plot file_path.timer_file.id_name.extension every 12::8 title title_name
+                
+set hidden3d;
+set view map;
+set pm3d at b;
+
+set dgrid3d x,y;
+
+output_name = "TemperatureProfile"
+set output output_path.output_name.id_name.output_extension
+splot [0:x-1][0:y-1][200:1100] file_path.temperature_file.id_name.extension using (mod(mod($1,x*y),x)):(floor(mod($1,x*y)/x)):2 every ::((t-1)*x*y*z)::((t-1)*x*y*z+x*y) notitle
+
+output_name = "HeatFluxProfile"
+set output output_path.output_name.id_name.output_extension
+splot [0:x-1][0:y-1][-1000000:6000000] file_path.heatFlux_file.id_name.extension using (mod(mod($1,x*y),x)):(floor(mod($1,x*y)/x)):2 every ::((t-1)*x*y)::(t*x*y) notitle 
+
+exit;
