@@ -263,7 +263,7 @@ void GnuplotParser::ConvertToGnuplot(std::string path_in, std::string path_out, 
     std::string name_in;
     std::string name_out;
     for(const auto & entry : std::filesystem::directory_iterator(path_in)){
-        if(entry.path().filename().string() != extension_in){
+        if(entry.path().extension().string() != extension_in){
             continue;
         }
         name_in = path_in + entry.path().stem().string() + extension_in;

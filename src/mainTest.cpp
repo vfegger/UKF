@@ -194,11 +194,11 @@ int main(int argc, char** argv){
     std::cout << "\nEnd Execution\n";
 
 
-    std::string ok_name = 
+    std::string ok_name = path_text_out +
         "X" + std::to_string(Lx) +
         "Y" + std::to_string(Ly) +
         "Z" + std::to_string(Lz) +
-        "T" + std::to_string(Lt);
+        "T" + std::to_string(Lt) + ".ok";
     std::ofstream ok_file(ok_name);
     ok_file.close();
     return 0;

@@ -1,7 +1,7 @@
-BUILD_PATH=$1
-FILE_PATH="$BASH_SOURCE"
-DIR_PATH="$(dirname "$BASH_SOURCE")"
-GRAPH_PATH=$DIR_PATH/graph
+BUILD_PATH_GRAPH=$1
+FILE_PATH_GRAPH="$BASH_SOURCE"
+DIR_PATH_GRAPH="$(dirname "$BASH_SOURCE")"
+GRAPH_PATH=$DIR_PATH_GRAPH/graph
 
 LX=$2
 LY=$3
@@ -12,7 +12,7 @@ rm $GRAPH_PATH/data/*
 rm $GRAPH_PATH/output/*X${LX}Y${LY}Z${LZ}T${LT}*
 
 echo "Running Parser for GNUPlot" 
-$BUILD_PATH/graph/Graph_UKF
+$BUILD_PATH_GRAPH/graph/Graph_UKF
 echo "Finished GNUPlot Parser Execution"
 
 echo "Running GNUPlot for graph generation"
