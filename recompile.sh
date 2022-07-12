@@ -1,7 +1,7 @@
 #!
 
 DEBUG=$1
-CLEAN=true
+CLEAN=false
 
 FILE_PATH="$BASH_SOURCE"
 DIR_PATH="$(dirname "$BASH_SOURCE")"
@@ -73,10 +73,10 @@ done
 for i in $(seq $LY_LOWER $LY_STRIDE $LY_UPPER); do
     FILE_OK=$DATA_PATH/text/out/X${LX_REF}Y${i}Z${LZ_REF}T${LT_REF}.ok
     if [ ! -f "$FILE_OK" ]; then
-        echo "Run case ("$LX_REF $LY_REF $i $LT_REF")"
+        echo "Run case ("$LX_REF $i $LZ_REF $LT_REF")"
         rm $DATA_PATH/binary/in/*.bin
         rm $DATA_PATH/binary/out/*.bin
-        $BUILD_PATH/UKF_1 $LX_REF $LY_REF $i $LT_REF
+        $BUILD_PATH/UKF_1 $LX_REF $i $LZ_REF $LT_REF
         . $DIR_PATH/graph.sh $BUILD_PATH $LX_REF $i $LZ_REF $LT_REF
     fi
 done
