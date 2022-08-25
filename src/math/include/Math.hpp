@@ -2,15 +2,12 @@
 #define MATH_HEADER
 
 #include "../../structure/include/Data.hpp"
+#include "MathEnum.hpp"
 #include <math.h>
 #include <iomanip>
 #include <omp.h>
 
 namespace Math {
-    enum MatrixStructure{
-        Natural,Transposed,
-    };
-
     void PrintMatrix(double* matrix_in, unsigned lengthX_in, unsigned lengthY_in);
 
     void CholeskyDecomposition(double* matrix_out, double* matrix_in, unsigned lengthX_in, unsigned lengthY_in);
@@ -33,10 +30,6 @@ namespace Math {
 #ifdef _OPENMP
 
 namespace MathOpenMP{
-    enum MatrixStructure{
-        Natural,Transposed,
-    };
-
     
     void PrintMatrix(double* matrix_in, unsigned lengthX_in, unsigned lengthY_in);
 
