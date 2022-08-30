@@ -6,19 +6,24 @@
 #include <iomanip>
 
 namespace MathGPU {
-    void PrintMatrix(double* matrix_in, unsigned lengthX_in, unsigned lengthY_in);
+    
+    static cudaDeviceProp* properties;
+
+    void InitializeGPUContext(int device);
+
+    void PrintMatrix(double* matrix_in, unsigned lengthX_in, unsigned lengthY_in, unsigned precision = 5u);
 
     //Out-Placed Calculation
-    void Add(double* vector_out, double* vectorLeft_in, double* vectorRight_in, unsigned length_in);
-    void Sub(double* vector_out, double* vectorLeft_in, double* vectorRight_in, unsigned length_in);
-    void Mul(double* vector_out, double* vectorLeft_in, double* vectorRight_in, unsigned length_in);
-    void Mul(double* vector_out, double* vectorLeft_in, double value_in, unsigned length_in);
+    void Add(double* vector_out, double* vectorLeft_in, double* vectorRight_in, unsigned length_in, cudaStream_t stream = cudaStreamDefault);
+    void Sub(double* vector_out, double* vectorLeft_in, double* vectorRight_in, unsigned length_in, cudaStream_t stream = cudaStreamDefault);
+    void Mul(double* vector_out, double* vectorLeft_in, double* vectorRight_in, unsigned length_in, cudaStream_t stream = cudaStreamDefault);
+    void Mul(double* vector_out, double* vectorLeft_in, double value_in, unsigned length_in, cudaStream_t stream = cudaStreamDefault);
 
     //In-Placed Calculation
-    void Add(double* vector_inout, double* vector_in, unsigned length_in);
-    void Sub(double* vector_inout, double* vector_in, unsigned length_in);
-    void Mul(double* vector_inout, double* vector_in, unsigned length_in);
-    void Mul(double* vector_inout, double value_in, unsigned length_in);
+    void Add(double* vector_inout, double* vector_in, unsigned length_in, cudaStream_t stream);
+    void Sub(double* vector_inout, double* vector_in, unsigned length_in, cudaStream_t stream);
+    void Mul(double* vector_inout, double* vector_in, unsigned length_in, cudaStream_t stream);
+    void Mul(double* vector_inout, double value_in, unsigned length_in, cudaStream_t stream);
 
     //Matrix Multiplication
     void MatrixMultiplication(double* matrix_out, double alpha, double beta,
