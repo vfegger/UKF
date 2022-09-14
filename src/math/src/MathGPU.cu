@@ -1,4 +1,4 @@
-#include "MathGPU.hpp"
+#include "../include/MathGPU.hpp"
 
 void MathGPU::InitializeGPUContext(int device)
 {
@@ -236,5 +236,44 @@ void MathGPU::Operation(void (*operation_in)(double *matrixLeft_inout, double *m
 }
 
 // Reducibles Operations
-double Mean(double *vector_in, unsigned length_in, double *weight_in = NULL);
-void Mean(double *vector_out, double *matrix_in, unsigned lengthX_in, unsigned lengthY_in, double *weight_in = NULL);
+double MathGPU::Mean(double* value_out, double *vector_in, unsigned length_in, double *weight_in = NULL, bool transferResultCPU_in = true) {
+    bool noWeight = weight_in == NULL;
+    int stride = 1;
+    cublasHandle_t handle;
+    cublasCreate_v2(&handle);
+    if(noWeight){
+        cudaMalloc(&weight_in,sizeof(double));
+        stride = 0;
+        double value = 1.0/(double)length_in;
+        cudaMemcpy(weight_in,&value,sizeof(double),cudaMemcpyKind::cudaMemcpyHostToDevice);
+    }
+    cublasDdot_v2(handle,length_in,vector_in,1,weight_in,stride,value_out);
+    double res = 0.0;
+    if(transferResultCPU_in) {
+        cudaMemcpy(&res,value_out,1,cudaMemcpyKind::cudaMemcpyDeviceToHost);
+    }
+    if(noWeight){
+        cudaFree(weight_in);
+    }
+    return res;
+    
+}
+void Mean(double *vector_out, double *matrix_in, unsigned lengthX_in, unsigned lengthY_in, double *weight_in = NULL){
+    bool noWeight = weight_in == NULL;
+    int stride = 1;
+    int stride = 1;
+    cublasHandle_t handle;
+    cublasCreate_v2(&handle);
+    if(noWeight){
+        cudaMalloc(&weight_in,sizeof(double));
+        stride = 0;
+        double value = 1.0/(double)lengthY_in;
+        cudaMemcpy(weight_in,&value,sizeof(double),cudaMemcpyKind::cudaMemcpyHostToDevice);
+    }
+    cublasDdot_v2(handle,lengthY_in,matrix_in,lengthX_in,weight_in,stride,vector_out);
+    double res = 0.0;
+    if(noWeight){
+        cudaFree(weight_in);
+    }
+    return;
+}

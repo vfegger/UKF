@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 set(target Math)
+set(target_exe Math_Test)
 
 set(include_path "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(source_path "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 file(GLOB_RECURSE source ${source_path}/*.cpp)
+list(FILTER source EXCLUDE REGEX ".*MathTest\\.cpp$")
 
 add_library(${target} ${source})
 
