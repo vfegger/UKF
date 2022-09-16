@@ -261,7 +261,8 @@ double MathGPU::Mean(double* value_out, double *vector_in, unsigned length_in, d
 void Mean(double *vector_out, double *matrix_in, unsigned lengthX_in, unsigned lengthY_in, double *weight_in = NULL){
     bool noWeight = weight_in == NULL;
     int stride = 1;
-    int stride = 1;
+    double alpha = 1.0;
+    double beta = 0.0;
     cublasHandle_t handle;
     cublasCreate_v2(&handle);
     if(noWeight){
@@ -270,8 +271,7 @@ void Mean(double *vector_out, double *matrix_in, unsigned lengthX_in, unsigned l
         double value = 1.0/(double)lengthY_in;
         cudaMemcpy(weight_in,&value,sizeof(double),cudaMemcpyKind::cudaMemcpyHostToDevice);
     }
-    cublasDdot_v2(handle,lengthY_in,matrix_in,lengthX_in,weight_in,stride,vector_out);
-    double res = 0.0;
+    cublasDgemv_v2(handle,cublasOperation_t::CUBLAS_OP_N,lengthX_in,lengthY_in,&alpha,matrix_in,lengthX_in,weight_in,stride,&beta,vector_out,1);
     if(noWeight){
         cudaFree(weight_in);
     }
