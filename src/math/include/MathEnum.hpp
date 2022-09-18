@@ -6,7 +6,10 @@ enum MatrixStructure{
 };
 
 enum LinearSolverType{
-    Default,LU,LUP,QR,GJ,GS,SOR
+    Default,LU,LUP,QR,GJ,GS,SOR,
 };
 
+enum MatrixOperationSide{
+    Left,Right,
+}
 #endif
