@@ -11,5 +11,6 @@ enum LinearSolverType{
 
 enum MatrixOperationSide{
     Left,Right,
-}
+};
+
 #endif

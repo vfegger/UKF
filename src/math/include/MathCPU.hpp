@@ -1,7 +1,7 @@
-#ifndef MATHGPU_HEADER
-#define MATHGPU_HEADER
+#ifndef MATHCPU_HEADER
+#define MATHCPU_HEADER
 
-namespace MathGPU {
+namespace MathCPU {
     //In-Placed Calculation
 
     //Vector Element-wise Addition
