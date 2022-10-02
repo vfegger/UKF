@@ -51,7 +51,7 @@ namespace MathGPU {
                    unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u);
 
     //Reducibles Operations
-    void Mean(Pointer<double> vector_out, Pointer<double> matrixLeft_in, Pointer<double> matrixRight_out, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in = Pointer<double>());
+    void Mean(Pointer<double> vector_out, Pointer<double> matrixLeft_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in = Pointer<double>());
 
     //Linear System Solvers
 

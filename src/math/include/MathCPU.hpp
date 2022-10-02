@@ -24,7 +24,7 @@ namespace MathCPU {
     //Vector Element-wise Multiplication
     void Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in);
 
-    //Matrix Multiplication TDOD
+    //Matrix Multiplication TODO
     void MatrixMultiplication(Pointer<double> matrix_out,
                               Pointer<double> matrixLeft_in, MatrixStructure matrixLeftStructure_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
                               Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in);
@@ -51,7 +51,7 @@ namespace MathCPU {
                    unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u);
 
     //Reducibles Operations
-    void Mean(Pointer<double> vector_out, Pointer<double> matrixLeft_in, Pointer<double> matrixRight_out, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in = Pointer<double>());
+    void Mean(Pointer<double> vector_out, Pointer<double> matrixLeft_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in = Pointer<double>());
 
     //Linear System Solvers
 
