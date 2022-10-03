@@ -1,6 +1,10 @@
 #ifndef MATHCPU_HEADER
 #define MATHCPU_HEADER
 
+#include <iostream>
+#include "../include/MathEnum.hpp"
+#include "../../structure/include/MemoryHandler.hpp"
+
 namespace MathCPU {
     //In-Placed Calculation
 

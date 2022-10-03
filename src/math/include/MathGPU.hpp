@@ -1,6 +1,10 @@
 #ifndef MATHGPU_HEADER
 #define MATHGPU_HEADER
 
+#include <iostream>
+#include "../include/MathEnum.hpp"
+#include "../../structure/include/MemoryHandler.hpp"
+
 namespace MathGPU {
     //In-Placed Calculation
 
