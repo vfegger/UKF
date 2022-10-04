@@ -61,6 +61,8 @@ namespace MathGPU {
 
     //Helper Functions
 
+    // Main Methods
+    
     //Wrapper Methods
     void Decomposition(Pointer<double> decomposition_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out = Pointer<double>());
 
