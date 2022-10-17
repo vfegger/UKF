@@ -1,11 +1,5 @@
 #include "../include/UKF.hpp"
 
-#ifdef _OPENMP
-namespace MathUKF = MathOpenMP;
-#else
-namespace MathUKF = Math;
-#endif
-
 UKF::UKF(UKFMemory* memory_in, double alpha_in, double beta_in, double kappa_in){
     memory = memory_in;
     bool isValid =
@@ -66,8 +60,8 @@ void UKF::Iterate(Timer& timer){
     for(unsigned i = 0u; i < lengthState*lengthState; i++){
         chol[i] = 0.0;
     }
-    MathUKF::ConstantMultiplicationInPlace(stateCovariancePointer,lengthState+lambda,lengthState*lengthState);
-    MathUKF::CholeskyDecomposition(chol,stateCovariancePointer,lengthState,lengthState);
+    Math::Mul(stateCovariancePointer,lengthState+lambda,lengthState*lengthState);
+    Math::Decomposition(chol,stateCovariancePointer,lengthState,lengthState);
     timer.Save();
 
     std::cout << "Generate Sigma Points based on Cholesky Decompostion\n";

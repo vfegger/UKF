@@ -5,8 +5,12 @@ enum MatrixStructure{
     None,Natural,Transposed,
 };
 
+enum DecompositionType{
+    Default,LU,LUP,Cholesky,QR,
+};
+
 enum LinearSolverType{
-    Default,LU,LUP,QR,GJ,GS,SOR,
+    Default,LU,LUP,Cholesky,QR,GJ,GS,SOR,
 };
 
 enum MatrixOperationSide{

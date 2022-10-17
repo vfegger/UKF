@@ -388,12 +388,30 @@ void MathCPU::CholeskySolver(Pointer<double> X_out, MatrixOperationSide operatio
     delete[] workspace.pointer;
 }
 // Wrapper Methods
-void MathCPU::Decomposition(Pointer<double> decomposition_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out = Pointer<double>())
+void MathCPU::Decomposition(Pointer<double> decomposition_out, DecompositionType decompositionType_in, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out = Pointer<double>())
 {
+    switch (decompositionType_in)
+    {
+    case DecompositionType::Cholesky:
+        CholeskyDecomposition(decomposition_out,matrix_in,lengthX_in,lengthY_in);
+        break;
+    default:
+        break;
+    }
+    return;
 }
 
 void MathCPU::Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOperationSide operationSide_in,
                     Pointer<double> A_in, unsigned lengthAX_in, unsigned lengthAY_in,
                     Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in)
 {
+    switch (solverType_in)
+    {
+    case LinearSolverType::Cholesky:
+        CholeskySolver(X_out,operationSide_in,A_in,lengthAX_in,lengthAY_in,B_in,lengthBX_in,lengthBY_in);
+        break;
+    default:
+        break;
+    }
+    return;
 }
