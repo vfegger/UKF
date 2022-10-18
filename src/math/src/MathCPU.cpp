@@ -74,13 +74,13 @@ void GetIndexBoundaries(MatrixStructure matrixStructure_in, unsigned lengthX_in,
 {
     switch (matrixStructure_in)
     {
-    case MatrixStructure::Natural:
+    case MatrixStructure_Natural:
         sizeX_out = lengthX_in;
         sizeY_out = lengthY_in;
         strideX_out = 1u;
         strideY_out = lengthX_in;
         break;
-    case MatrixStructure::Transposed:
+    case MatrixStructure_Transposed:
         sizeX_out = lengthY_in;
         sizeY_out = lengthX_in;
         strideX_out = lengthX_in;
@@ -135,8 +135,8 @@ void MathCPU::MatrixMultiplication(Pointer<double> matrix_out,
 // In-Place Operator Distribution
 void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in),
                         Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                        unsigned strideOut_in = 1u, unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                        unsigned offsetOut_in = 0u, unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u)
+                        unsigned strideOut_in, unsigned strideLeft_in, unsigned strideRight_in,
+                        unsigned offsetOut_in, unsigned offsetLeft_in, unsigned offsetRight_in)
 {
     vector_out.pointer += offsetOut_in;
     vectorLeft_in.pointer += offsetLeft_in;
@@ -151,8 +151,8 @@ void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer
 }
 void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, double valueRight_in, unsigned length_in),
                         Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                        unsigned strideOut_in = 1u, unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                        unsigned offsetOut_in = 0u, unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u)
+                        unsigned strideOut_in, unsigned strideLeft_in, unsigned strideRight_in,
+                        unsigned offsetOut_in, unsigned offsetLeft_in, unsigned offsetRight_in)
 {
     vector_out.pointer += offsetOut_in;
     vectorLeft_in.pointer += offsetLeft_in;
@@ -168,8 +168,8 @@ void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer
 // Out-Place Operator Distribution
 void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in),
                         Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                        unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                        unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u)
+                        unsigned strideLeft_in, unsigned strideRight_in,
+                        unsigned offsetLeft_in, unsigned offsetRight_in)
 {
     vector_inout.pointer += offsetLeft_in;
     vectorRight_in.pointer += offsetRight_in;
@@ -182,8 +182,8 @@ void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_inout, Point
 }
 void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_inout, double valueRight_in, unsigned length_in),
                         Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                        unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                        unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u)
+                        unsigned strideLeft_in, unsigned strideRight_in,
+                        unsigned offsetLeft_in, unsigned offsetRight_in)
 {
     vector_inout.pointer += offsetLeft_in;
     vectorRight_in.pointer += offsetRight_in;
@@ -196,7 +196,7 @@ void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_inout, doubl
 }
 
 // Reducibles Operations
-void MathCPU::Mean(Pointer<double> vector_out, Pointer<double> matrixLeft_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in = Pointer<double>())
+void MathCPU::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in)
 {
     for (unsigned i = 0u; i < lengthX_in; i++)
     {
@@ -208,7 +208,7 @@ void MathCPU::Mean(Pointer<double> vector_out, Pointer<double> matrixLeft_in, un
         {
             for (unsigned i = 0u; i < lengthX_in; i++)
             {
-                vector_out.pointer[i] += matrixLeft_in.pointer[j * lengthX_in + i];
+                vector_out.pointer[i] += matrix_in.pointer[j * lengthX_in + i];
             }
         }
         for (unsigned i = 0u; i < lengthX_in; i++)
@@ -222,7 +222,7 @@ void MathCPU::Mean(Pointer<double> vector_out, Pointer<double> matrixLeft_in, un
         {
             for (unsigned i = 0u; i < lengthX_in; i++)
             {
-                vector_out.pointer[j * lengthX_in + i] = matrixLeft_in.pointer[j * lengthX_in + i] * weight_in.pointer[j];
+                vector_out.pointer[j * lengthX_in + i] = matrix_in.pointer[j * lengthX_in + i] * weight_in.pointer[j];
             }
         }
     }
@@ -365,21 +365,21 @@ void MathCPU::CholeskySolver(Pointer<double> X_out, MatrixOperationSide operatio
     CholeskyDecomposition(workspace, A_in, lengthAX_in, lengthAY_in);
     switch (operationSide_in)
     {
-    case MatrixOperationSide::Left:
-        ForwardSubstitution(X_out, MatrixStructure::Natural, lengthAY_in, lengthBY_in,
-                            workspace, MatrixStructure::Natural, lengthAX_in, lengthAY_in,
-                            B_in, MatrixStructure::Natural, lengthBX_in, lengthBY_in);
-        BackwardSubstitution(X_out, MatrixStructure::Natural, lengthAY_in, lengthBY_in,
-                            workspace, MatrixStructure::Transposed, lengthAX_in, lengthAY_in,
-                            X_out, MatrixStructure::Natural, lengthBX_in, lengthBY_in);
+    case MatrixOperationSide_Left:
+        ForwardSubstitution(X_out, MatrixStructure_Natural, lengthAY_in, lengthBY_in,
+                            workspace, MatrixStructure_Natural, lengthAX_in, lengthAY_in,
+                            B_in, MatrixStructure_Natural, lengthBX_in, lengthBY_in);
+        BackwardSubstitution(X_out, MatrixStructure_Natural, lengthAY_in, lengthBY_in,
+                            workspace, MatrixStructure_Transposed, lengthAX_in, lengthAY_in,
+                            X_out, MatrixStructure_Natural, lengthBX_in, lengthBY_in);
         break;
-    case MatrixOperationSide::Right:
-        ForwardSubstitution(X_out, MatrixStructure::Transposed, lengthAY_in, lengthBY_in,
-                            workspace, MatrixStructure::Transposed, lengthAX_in, lengthAY_in,
-                            B_in, MatrixStructure::Transposed, lengthBX_in, lengthBY_in);
-        BackwardSubstitution(X_out, MatrixStructure::Transposed, lengthAY_in, lengthBY_in,
-                            workspace, MatrixStructure::Natural, lengthAX_in, lengthAY_in,
-                            X_out, MatrixStructure::Transposed, lengthBX_in, lengthBY_in);
+    case MatrixOperationSide_Right:
+        ForwardSubstitution(X_out, MatrixStructure_Transposed, lengthAY_in, lengthBY_in,
+                            workspace, MatrixStructure_Transposed, lengthAX_in, lengthAY_in,
+                            B_in, MatrixStructure_Transposed, lengthBX_in, lengthBY_in);
+        BackwardSubstitution(X_out, MatrixStructure_Transposed, lengthAY_in, lengthBY_in,
+                            workspace, MatrixStructure_Natural, lengthAX_in, lengthAY_in,
+                            X_out, MatrixStructure_Transposed, lengthBX_in, lengthBY_in);
         break;
 
     default:
@@ -388,11 +388,11 @@ void MathCPU::CholeskySolver(Pointer<double> X_out, MatrixOperationSide operatio
     delete[] workspace.pointer;
 }
 // Wrapper Methods
-void MathCPU::Decomposition(Pointer<double> decomposition_out, DecompositionType decompositionType_in, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out = Pointer<double>())
+void MathCPU::Decomposition(Pointer<double> decomposition_out, DecompositionType decompositionType_in, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out)
 {
     switch (decompositionType_in)
     {
-    case DecompositionType::Cholesky:
+    case DecompositionType_Cholesky:
         CholeskyDecomposition(decomposition_out,matrix_in,lengthX_in,lengthY_in);
         break;
     default:
@@ -407,7 +407,7 @@ void MathCPU::Solve(Pointer<double> X_out, LinearSolverType solverType_in, Matri
 {
     switch (solverType_in)
     {
-    case LinearSolverType::Cholesky:
+    case LinearSolverType_Cholesky:
         CholeskySolver(X_out,operationSide_in,A_in,lengthAX_in,lengthAY_in,B_in,lengthBX_in,lengthBY_in);
         break;
     default:

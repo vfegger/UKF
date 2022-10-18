@@ -58,14 +58,14 @@ namespace Math {
                    unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u);
 
     //Reducibles Operations
-    void Mean(Pointer<double> vector_out, Pointer<double> matrixLeft_in, Pointer<double> matrixRight_out, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in = Pointer<double>());
+    void Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in = Pointer<double>());
 
     //Linear System Solvers
 
     //Helper Functions
 
     //Wrapper Methods
-    void Decomposition(Pointer<double> decomposition_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out = Pointer<double>());
+    void Decomposition(Pointer<double> decomposition_out, DecompositionType decompositionType_in, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out = Pointer<double>());
 
     void Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOperationSide operationSide_in,
                Pointer<double> A_in, unsigned lengthAX_in, unsigned lengthAY_in,

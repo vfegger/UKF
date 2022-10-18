@@ -2,47 +2,47 @@
 
 Parameter::Parameter(unsigned lengthElements_in){
     lengthElements = lengthElements_in;
-    names = new(std::nothrow) std::string[lengthElements];
-    sizeTypeArray = new(std::nothrow) unsigned[lengthElements];
-    lengthArray = new(std::nothrow) unsigned[lengthElements];
-    offsetPointer = new(std::nothrow) void*[lengthElements];
+    names = MemoryHandler::Alloc<std::string>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
+    sizeTypeArray = MemoryHandler::Alloc<unsigned>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
+    lengthArray = MemoryHandler::Alloc<unsigned>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
+    offset = MemoryHandler::Alloc<Pointer<void>>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
     for(unsigned i = 0; i < lengthElements; i++){
-        names[i] = "";
-        sizeTypeArray[i] = 0u;
-        lengthArray[i] = 0u;
-        offsetPointer[i] = NULL;
+        names.pointer[i] = "";
+        sizeTypeArray.pointer[i] = 0u;
+        lengthArray.pointer[i] = 0u;
+        offset.pointer[i] = Pointer<void>();
     }
-    pointer = NULL;
+    pointer =  Pointer<void>();
     length = 0u;
     isValid = false;
     count = 0u;
 }
 Parameter::Parameter(const Parameter& parameter_in){
     lengthElements = parameter_in.lengthElements;
-    names = new(std::nothrow) std::string[lengthElements];
-    sizeTypeArray = new(std::nothrow) unsigned[lengthElements];
-    lengthArray = new(std::nothrow) unsigned[lengthElements];
-    offsetPointer = new(std::nothrow) void*[lengthElements];
+    names = MemoryHandler::Alloc<std::string>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
+    sizeTypeArray = MemoryHandler::Alloc<unsigned>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
+    lengthArray = MemoryHandler::Alloc<unsigned>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
+    offset = MemoryHandler::Alloc<Pointer<void>>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
     for(unsigned i = 0; i < lengthElements; i++){
-        names[i] = parameter_in.names[i];
-        sizeTypeArray[i] = parameter_in.sizeTypeArray[i];
-        lengthArray[i] = parameter_in.lengthArray[i];
-        offsetPointer[i] = NULL;
+        names.pointer[i] = parameter_in.names.pointer[i];
+        sizeTypeArray.pointer[i] = parameter_in.sizeTypeArray.pointer[i];
+        lengthArray.pointer[i] = parameter_in.lengthArray.pointer[i];
+        offset.pointer[i] = Pointer<void>(parameter_in.offset.type, parameter_in.offset.context);
     }
-    pointer = NULL;
+    pointer = Pointer<void>();
     length = 0u;
     count = parameter_in.count;
     isValid = parameter_in.isValid;
     if(isValid){
         length = parameter_in.length;
-        pointer = (void*)new(std::nothrow) char[length];
+        pointer = MemoryHandler::Alloc<void>(length,parameter_in.pointer.type,parameter_in.pointer.context);
         for(unsigned i = 0u; i < length; i++){
-            ((char*)pointer)[i] = ((char*)parameter_in.pointer)[i];
+            ((char*)pointer.pointer)[i] = ((char*)parameter_in.pointer.pointer)[i];
         }
         unsigned offset_aux = 0u;
         for(unsigned i = 0; i < lengthElements; i++){
-            offsetPointer[i] = (void*)((char*)pointer + offset_aux);
-            offset_aux += lengthArray[i] * sizeTypeArray[i];
+            offset.pointer[i] = Pointer<void>(((char*)pointer.pointer + offset_aux),parameter_in.pointer.type,parameter_in.pointer.context);
+            offset_aux += lengthArray.pointer[i] * sizeTypeArray.pointer[i];
         }
     }
 }
@@ -52,37 +52,37 @@ unsigned Parameter::Add(std::string name_in, unsigned length_in, unsigned sizeTy
         std::cout << "Error: Added element is over the limit.";
         return lengthElements;
     }
-    names[count] = name_in;
-    sizeTypeArray[count] = sizeType_in;
-    lengthArray[count] = length_in;
+    names.pointer[count] = name_in;
+    sizeTypeArray.pointer[count] = sizeType_in;
+    lengthArray.pointer[count] = length_in;
     count++;
     return count-1;
 }
-void Parameter::Add(unsigned* indexes, std::string* names_in, unsigned* lengthArray_in, unsigned* sizeTypeArray_in, unsigned lengthElements_in){
+void Parameter::Add(Pointer<unsigned> indexes, Pointer<std::string> names_in, Pointer<unsigned> lengthArray_in, Pointer<unsigned> sizeTypeArray_in, unsigned lengthElements_in){
     unsigned index = 0u;
     for(unsigned i = 0; i < lengthElements_in; i++){
-        index = Add(names_in[i], lengthArray_in[i],sizeTypeArray_in[i]);
-        if(indexes != NULL){
-            indexes[i] = index;
+        index = Add(names_in.pointer[i], lengthArray_in.pointer[i],sizeTypeArray_in.pointer[i]);
+        if(indexes.pointer != NULL){
+            indexes.pointer[i] = index;
         }
     }
 }
-void Parameter::Initialize(){
-    if(pointer != NULL){
-        delete[] (char*)pointer;
+void Parameter::Initialize(PointerType type_in, PointerContext context_in){
+    if(pointer.pointer != NULL){
+        MemoryHandler::Free(pointer);
     }
     for(unsigned i = 0u; i < count; i++){
-        length += lengthArray[i] * sizeTypeArray[i];
+        length += lengthArray.pointer[i] * sizeTypeArray.pointer[i];
     }
-    pointer = (void*)new(std::nothrow) char[length];
-    if(pointer == NULL){
+    pointer = MemoryHandler::Alloc<void>(length,type_in,context_in);
+    if(pointer.pointer == NULL){
         std::cout << "Error: Initialization wasn't successful.";
         return;
     }
     unsigned offset_aux = 0u;
     for(unsigned i = 0u; i < count; i++){
-        offsetPointer[i] = (void*)((char*)pointer + offset_aux);
-        offset_aux += lengthArray[i] * sizeTypeArray[i];
+        offset.pointer[i] = Pointer<void>((void*)((char*)pointer.pointer + offset_aux),type_in,context_in);
+        offset_aux += lengthArray.pointer[i] * sizeTypeArray.pointer[i];
     }
     isValid = true;
 }
@@ -91,17 +91,17 @@ unsigned Parameter::GetLength(unsigned index){
         std::cout << "Error: Length of pointer is not initialized.";
         return 0u;
     }
-    return lengthArray[index];
+    return lengthArray.pointer[index];
 }
 bool Parameter::GetValidation(){
     return isValid;
 }
 Parameter::~Parameter(){
-    if(pointer != NULL){
-        delete[] (char*)pointer;
+    if(pointer.pointer != NULL){
+        MemoryHandler::Free(pointer);
     }
-    delete[] offsetPointer;
-    delete[] lengthArray;
-    delete[] sizeTypeArray;
-    delete[] names;
+    MemoryHandler::Free(offset);
+    MemoryHandler::Free(lengthArray);
+    MemoryHandler::Free(sizeTypeArray);
+    MemoryHandler::Free(names);
 }

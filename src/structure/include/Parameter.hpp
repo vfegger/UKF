@@ -76,7 +76,7 @@ void Parameter::LoadData(unsigned index_in, Pointer<T> array_in, unsigned length
     }
     for (unsigned i = 0; i < length_in; i++)
     {
-        ((T *)(offsetPointer[index_in]))[i] = array_in[i];
+        ((T *)(offset.pointer[index_in]))[i] = array_in[i];
     }
 }
 
@@ -85,7 +85,7 @@ void Parameter::LoadData(Pointer<unsigned> indexes_in, Pointer<Pointer<T>> array
 {
     for (unsigned i = 0u; i < lengthElements_in; i++)
     {
-        LoadData(indexes_in[i], array_in.pointer[i], lengthArray_in[i]);
+        LoadData(indexes_in.pointer[i], array_in.pointer[i], lengthArray_in.pointer[i]);
     }
 }
 
@@ -97,7 +97,7 @@ Pointer<T> Parameter::GetPointer(unsigned index)
         std::cout << "Error: Pointer is not initialized.";
         return NULL;
     }
-    return (T *)(offsetPointer[index]);
+    return (T *)(offset.pointer[index]);
 }
 
 #endif

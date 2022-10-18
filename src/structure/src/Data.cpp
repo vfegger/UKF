@@ -52,7 +52,7 @@ Data::Data(const Data &data_in)
     {
         names.pointer[i] = data_in.names.pointer[i];
         lengthOffset.pointer[i] = data_in.lengthOffset.pointer[i];
-        offset.pointer[i].pointer = NULL;
+        offset.pointer[i] = Pointer<double>(data_in.offset.type, data_in.offset.context);
     }
     pointer = Pointer<double>();
     length = 0u;

@@ -21,6 +21,16 @@ enum PointerContext
     GPU_Aware,
 };
 
+enum PointerDataTransfer
+{
+    HostToHost,
+    HostToDevice,
+    DeviceToHost,
+    HostAwareToDevice,
+    DeviceToHostAware,
+    DeviceToDevice,
+};
+
 template <typename T>
 struct Pointer
 {
@@ -184,7 +194,7 @@ public:
             switch (context_in)
             {
             case PointerContext::CPU_Only:
-                output.pointer = new (std::nothrow) T[size];
+                output.pointer = new (std::nothrow) T[size_in];
                 break;
             case PointerContext::GPU_Aware:
                 cudaMallocHost(&(output.pointer), sizeof(T) * size_in);
@@ -206,7 +216,7 @@ public:
     template <typename T>
     static void Free(Pointer<T> pointer_in)
     {
-        if (pointer_in == NULL)
+        if (pointer_in.pointer == NULL)
         {
             std::cout << "Error: freeing null pointer.\n";
             return;
@@ -220,14 +230,14 @@ public:
                 delete[] pointer_in.pointer;
                 break;
             case PointerContext::GPU_Aware:
-                cudaFreeHost(output.pointer);
+                cudaFreeHost(pointer_in.pointer);
             default:
                 std::cout << "Error: Behavior of this context is not defined for this type.\n";
                 break;
             }
             break;
         case PointerType::GPU:
-            cudaFree(output.pointer);
+            cudaFree(pointer_in.pointer);
             break;
         default:
             std::cout << "Error: Behavior of this type is not defined.\n";
@@ -236,34 +246,90 @@ public:
         pointer_in.pointer = NULL;
     }
 
+    static PointerDataTransfer TransferType(PointerType outputType_in, PointerContext outputContext_in, PointerType inputType_in, PointerContext inputContext_in)
+    {
+        PointerDataTransfer transfer = PointerDataTransfer::HostToHost;
+        switch (inputType_in)
+        {
+        case PointerType::CPU:
+            if (outputType_in == inputType_in)
+            {
+                transfer = PointerDataTransfer::HostToHost;
+            }
+            else
+            {
+                if (inputContext_in == PointerContext::CPU_Only)
+                {
+                    transfer = PointerDataTransfer::HostToDevice;
+                }
+                else if (inputContext_in == PointerContext::GPU_Aware)
+                {
+                    transfer = PointerDataTransfer::HostAwareToDevice;
+                }
+                else
+                {
+                    std::cout << "Error: Behavior of this type is not defined.\n";
+                }
+            }
+            break;
+        case PointerType::GPU:
+            if (outputType_in == inputType_in)
+            {
+                transfer = PointerDataTransfer::DeviceToDevice;
+            }
+            else
+            {
+                if (outputContext_in == PointerContext::CPU_Only)
+                {
+                    transfer = PointerDataTransfer::DeviceToHost;
+                }
+                else if (outputContext_in == PointerContext::GPU_Aware)
+                {
+                    transfer = PointerDataTransfer::DeviceToHostAware;
+                }
+                else
+                {
+                    std::cout << "Error: Behavior of this type is not defined.\n";
+                }
+            }
+            break;
+        default:
+            std::cout << "Error: Behavior of this type is not defined.\n";
+            break;
+        }
+        return transfer;
+    }
+
     template <typename T>
     static void Copy(Pointer<T> pointerTo_out, Pointer<T> pointerFrom_in, unsigned length_in)
     {
-        if (pointerTo_out == NULL || pointerFrom_in == NULL)
+        if (pointerTo_out.pointer == NULL || pointerFrom_in.pointer == NULL)
         {
             std::cout << "Error: copying null pointers.\n";
             return;
         }
-        switch (pointer_in.type)
+        PointerDataTransfer transfer = TransferType(pointerTo_out.type, pointerTo_out.context, pointerFrom_in.type, pointerFrom_in.context);
+        switch (transfer)
         {
-        case PointerType::CPU:
-            switch (pointer_in.context)
+        case PointerDataTransfer::HostToHost:
+            for (unsigned i = 0u; i < length_in; i++)
             {
-            case PointerContext::CPU_Only:
-                delete[] pointer_in.pointer;
-                break;
-            case PointerContext::GPU_Aware:
-                cudaFreeHost(output.pointer);
-            default:
-                std::cout << "Error: Behavior of this context is not defined for this type.\n";
-                break;
+                pointerTo_out.pointer[i] = pointerFrom_in.pointer[i];
             }
             break;
-        case PointerType::GPU:
-            cudaFree(output.pointer);
+        case PointerDataTransfer::HostToDevice:
+            cudaMemcpy(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(T) * length_in, cudaMemcpyHostToDevice);
+            break;
+        case PointerDataTransfer::DeviceToHost:
+            cudaMemcpy(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(T) * length_in, cudaMemcpyDeviceToHost);
+            break;
+        case PointerDataTransfer::HostAwareToDevice:
+            cudaMemcpyAsync(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(T) * length_in, cudaMemcpyHostToDevice);
+            break;
+        case PointerDataTransfer::DeviceToHostAware:
+            cudaMemcpyAsync(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(T) * length_in, cudaMemcpyDeviceToHost);
             break;
         default:
-            std::cout << "Error: Behavior of this type is not defined.\n";
             break;
         }
     }
@@ -276,21 +342,21 @@ public:
             std::cout << "Error: set null pointer.\n";
             return;
         }
-        switch (pointer_in.type)
+        switch (pointer_inout.type)
         {
         case PointerType::CPU:
-            switch (pointer_in.context)
+            switch (pointer_inout.context)
             {
             case PointerContext::CPU_Only:
                 for (unsigned i = start; i < end; i++)
                 {
-                    pointer_inout[i] = value;
+                    pointer_inout.pointer[i] = value;
                 }
                 break;
             case PointerContext::GPU_Aware:
                 for (unsigned i = start; i < end; i++)
                 {
-                    pointer_inout[i] = value;
+                    pointer_inout.pointer[i] = value;
                 }
             default:
                 std::cout << "Error: Behavior of this context is not defined for this type.\n";
@@ -306,5 +372,75 @@ public:
         }
     }
 };
+
+
+// Void explicit specialization
+template <>
+Pointer<void> MemoryHandler::Alloc<void>(unsigned size_in, PointerType type_in, PointerContext context_in){
+    if (size_in == 0u)
+    {
+        std::cout << "Error: size equals to 0.\n";
+        return Pointer<void>();
+    }
+    Pointer<void> output;
+    output.type = type_in;
+    output.context = context_in;
+    switch (type_in)
+    {
+    case PointerType::CPU:
+        switch (context_in)
+        {
+        case PointerContext::CPU_Only:
+            output.pointer = (void*)(new (std::nothrow) char[size_in]);
+            break;
+        case PointerContext::GPU_Aware:
+            cudaMallocHost(&(output.pointer), sizeof(char) * size_in);
+        default:
+            std::cout << "Error: Behavior of this context is not defined for this type.\n";
+            break;
+        }
+        break;
+    case PointerType::GPU:
+        cudaMalloc(&(output.pointer), sizeof(char) * size_in);
+        break;
+    default:
+        std::cout << "Error: Behavior of this type is not defined.\n";
+        break;
+    }
+    return output;
+}
+
+template <>
+void MemoryHandler::Free(Pointer<void> pointer_in)
+{
+    if (pointer_in.pointer == NULL)
+    {
+        std::cout << "Error: freeing null pointer.\n";
+        return;
+    }
+    switch (pointer_in.type)
+    {
+    case PointerType::CPU:
+        switch (pointer_in.context)
+        {
+        case PointerContext::CPU_Only:
+            delete[] (char*)(pointer_in.pointer);
+            break;
+        case PointerContext::GPU_Aware:
+            cudaFreeHost((char*)(pointer_in.pointer));
+        default:
+            std::cout << "Error: Behavior of this context is not defined for this type.\n";
+            break;
+        }
+        break;
+    case PointerType::GPU:
+        cudaFree((char*)(pointer_in.pointer));
+        break;
+    default:
+        std::cout << "Error: Behavior of this type is not defined.\n";
+        break;
+    }
+    pointer_in.pointer = NULL;
+}
 
 #endif

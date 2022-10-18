@@ -53,7 +53,7 @@ public:
     // Add Multiple Data Covariance Entries to Data Covariance Class
     void Add(Pointer<unsigned> indexes, Pointer<std::string> names_in, Pointer<unsigned> lengthArray_in, unsigned lengthElements_in);
     // Initialize Data Pointers
-    void Initialize();
+    void Initialize(PointerType type_in, PointerContext context_in);
     // Load data by index
     void LoadData(unsigned index_in, Pointer<double> array_in, unsigned length_in, DataCovarianceMode mode_in);
     // Load multiple data by index

@@ -2,6 +2,7 @@
 
 DEBUG=$1
 CLEAN=false
+BUILD_ONLY=$1
 
 FILE_PATH="$BASH_SOURCE"
 DIR_PATH="$(dirname "$BASH_SOURCE")"
@@ -35,6 +36,13 @@ fi
 
 cmake -S $SOURCE_PATH -B $BUILD_PATH $BUILD_OPTIONS
 cmake --build $BUILD_PATH
+
+if [ "$BUILD_ONLY" = "-b" ] || [ "$BUILD_ONLY" = "-build" ];
+then
+    echo "Exit before running cases"
+    exit 1
+fi
+
 LX_REF=24
 LY_REF=24
 LZ_REF=6

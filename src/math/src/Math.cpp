@@ -213,14 +213,15 @@ void Math::MatrixMultiplication(Pointer<double> matrix_out,
 // In-Place Operator Distribution
 void Math::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in),
                      Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                     unsigned strideOut_in = 1u, unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                     unsigned offsetOut_in = 0u, unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u)
+                     unsigned strideOut_in, unsigned strideLeft_in, unsigned strideRight_in,
+                     unsigned offsetOut_in, unsigned offsetLeft_in, unsigned offsetRight_in)
 {
     vector_out.pointer += offsetOut_in;
     vectorLeft_in.pointer += offsetLeft_in;
     vectorRight_in.pointer += offsetRight_in;
-    for(unsigned i = 0u; i < iteration_in; i++){
-        operation_in(vector_out,vectorLeft_in,vectorRight_in,length_in);
+    for (unsigned i = 0u; i < iteration_in; i++)
+    {
+        operation_in(vector_out, vectorLeft_in, vectorRight_in, length_in);
         vector_out.pointer += strideOut_in;
         vectorLeft_in.pointer += strideLeft_in;
         vectorRight_in.pointer += strideRight_in;
@@ -228,14 +229,15 @@ void Math::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<do
 }
 void Math::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, double valueRight_in, unsigned length_in),
                      Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                     unsigned strideOut_in = 1u, unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                     unsigned offsetOut_in = 0u, unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u)
+                     unsigned strideOut_in, unsigned strideLeft_in, unsigned strideRight_in,
+                     unsigned offsetOut_in, unsigned offsetLeft_in, unsigned offsetRight_in)
 {
     vector_out.pointer += offsetOut_in;
     vectorLeft_in.pointer += offsetLeft_in;
     vectorRight_in.pointer += offsetRight_in;
-    for(unsigned i = 0u; i < iteration_in; i++){
-        operation_in(vector_out,vectorLeft_in,*vectorRight_in.pointer,length_in);
+    for (unsigned i = 0u; i < iteration_in; i++)
+    {
+        operation_in(vector_out, vectorLeft_in, *vectorRight_in.pointer, length_in);
         vector_out.pointer += strideOut_in;
         vectorLeft_in.pointer += strideLeft_in;
         vectorRight_in.pointer += strideRight_in;
@@ -244,35 +246,37 @@ void Math::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<do
 // Out-Place Operator Distribution
 void Math::Operation(void (*operation_in)(Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in),
                      Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                     unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                     unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u)
+                     unsigned strideLeft_in, unsigned strideRight_in,
+                     unsigned offsetLeft_in, unsigned offsetRight_in)
 {
     vector_inout.pointer += offsetLeft_in;
     vectorRight_in.pointer += offsetRight_in;
-    for(unsigned i = 0u; i < iteration_in; i++){
-        operation_in(vector_inout,vectorRight_in,length_in);
+    for (unsigned i = 0u; i < iteration_in; i++)
+    {
+        operation_in(vector_inout, vectorRight_in, length_in);
         vector_inout.pointer += strideLeft_in;
         vectorRight_in.pointer += strideRight_in;
     }
 }
 void Math::Operation(void (*operation_in)(Pointer<double> vector_inout, double valueRight_in, unsigned length_in),
                      Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                     unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                     unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u)
+                     unsigned strideLeft_in, unsigned strideRight_in,
+                     unsigned offsetLeft_in, unsigned offsetRight_in)
 {
     vector_inout.pointer += offsetLeft_in;
     vectorRight_in.pointer += offsetRight_in;
-    for(unsigned i = 0u; i < iteration_in; i++){
-        operation_in(vector_inout,*vectorRight_in.pointer,length_in);
+    for (unsigned i = 0u; i < iteration_in; i++)
+    {
+        operation_in(vector_inout, *vectorRight_in.pointer, length_in);
         vector_inout.pointer += strideLeft_in;
         vectorRight_in.pointer += strideRight_in;
     }
 }
 
 // Reducibles Operations
-void Math::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in = Pointer<double>())
+void Math::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in)
 {
-    if ((!CheckType(vector_out.type, matrix_in.type)) || (weight_in.pointer != NULL && (!CheckType(vector_out.type,weight_in.type))))
+    if ((!CheckType(vector_out.type, matrix_in.type)) || (weight_in.pointer != NULL && (!CheckType(vector_out.type, weight_in.type))))
     {
         return;
     }
@@ -296,19 +300,19 @@ void Math::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned 
 // Helper Functions
 
 // Wrapper Methods
-void Math::Decomposition(Pointer<double> decomposition_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out = Pointer<double>())
+void Math::Decomposition(Pointer<double> decomposition_out, DecompositionType decompositionType_in, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out)
 {
-    if ((!CheckType(decomposition_out.type, matrix_in.type)) || (pivot_out.pointer != NULL && (!CheckType(decomposition_out.type,pivot_out.type))))
+    if ((!CheckType(decomposition_out.type, matrix_in.type)) || (pivot_out.pointer != NULL && (!CheckType(decomposition_out.type, pivot_out.type))))
     {
         return;
     }
     switch (decomposition_out.type)
     {
     case PointerType::CPU:
-        MathCPU::Decomposition(decomposition_out, matrix_in, lengthX_in, lengthY_in, pivot_out);
+        MathCPU::Decomposition(decomposition_out, decompositionType_in, matrix_in, lengthX_in, lengthY_in, pivot_out);
         break;
     case PointerType::GPU:
-        MathGPU::Decomposition(decomposition_out, matrix_in, lengthX_in, lengthY_in, pivot_out);
+        MathGPU::Decomposition(decomposition_out, decompositionType_in, matrix_in, lengthX_in, lengthY_in, pivot_out);
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -321,7 +325,7 @@ void Math::Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOp
                  Pointer<double> A_in, unsigned lengthAX_in, unsigned lengthAY_in,
                  Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in)
 {
-    if ((!CheckType(X_out.type, A_in.type)) || (!CheckType(X_out.type,B_in.type)))
+    if ((!CheckType(X_out.type, A_in.type)) || (!CheckType(X_out.type, B_in.type)))
     {
         return;
     }
