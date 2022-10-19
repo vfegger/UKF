@@ -177,6 +177,43 @@ public:
         delete[] cublasHandles;
     }
 
+    template <typename T, typename S>
+    static Pointer<T> AllocValue(const S& value_in, PointerType type_in, PointerContext context_in)
+    {
+        Pointer<T> output;
+        output.type = type_in;
+        output.context = context_in;
+        T* pointer_aux;
+        switch (type_in)
+        {
+        case PointerType::CPU:
+            switch (context_in)
+            {
+            case PointerContext::CPU_Only:
+                output.pointer = new (std::nothrow) T[1];
+                output.pointer[0u] = T(value_in);
+                break;
+            case PointerContext::GPU_Aware:
+                cudaMallocHost(&(output.pointer), sizeof(T));
+                output.pointer[0u] = T(value_in);
+            default:
+                std::cout << "Error: Behavior of this context is not defined for this type.\n";
+                break;
+            }
+            break;
+        case PointerType::GPU:
+            pointer_aux = new T(value_in);
+            cudaMalloc(&(output.pointer), sizeof(T));
+            cudaMemcpy(output.pointer,&pointer_aux,sizeof(T),cudaMemcpyHostToDevice);
+            delete pointer_aux;
+            break;
+        default:
+            std::cout << "Error: Behavior of this type is not defined.\n";
+            break;
+        }
+        return output;
+    }
+
     template <typename T>
     static Pointer<T> Alloc(unsigned size_in, PointerType type_in, PointerContext context_in)
     {
@@ -335,7 +372,7 @@ public:
     }
 
     template <typename T>
-    static void Set(Pointer<T> pointer_inout, T &value, unsigned start, unsigned end)
+    static void Set(Pointer<T> pointer_inout, const T &value, unsigned start, unsigned end)
     {
         if (pointer_inout.pointer == NULL)
         {

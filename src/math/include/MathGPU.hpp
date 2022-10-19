@@ -28,10 +28,11 @@ namespace MathGPU {
     //Vector Element-wise Multiplication
     void Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in);
 
-    //Matrix Multiplication TDOD
-    void MatrixMultiplication(Pointer<double> matrix_out,
+    //Matrix Multiplication TODO
+    void MatrixMultiplication(Pointer<double> matrix_out, double alpha, double beta,
                               Pointer<double> matrixLeft_in, MatrixStructure matrixLeftStructure_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
-                              Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in);
+                              Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
+                              Pointer<double> weight_in = Pointer<double>());
 
     //Operators
 

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <random>
+#include "../../structure/include/MemoryHandler.hpp"
 
 class HeatFluxGenerator
 {
@@ -10,8 +11,8 @@ private:
     unsigned Lx, Ly, Lz, Lt;
     double Sx, Sy, Sz, St;
     double dx, dy, dz, dt;
-    double* Q;
-    double* T;
+    Pointer<double> Q;
+    Pointer<double> T;
     double Amp;
     
     double K(double T_in);
@@ -23,7 +24,7 @@ public:
     void Generate(double mean_in, double sigma_in);
     void AddError(double mean_in, double sigma_in);
     void SetFlux(double t_in);
-    double* GetTemperature(unsigned t_in);
+    Pointer<double> GetTemperature(unsigned t_in);
     ~HeatFluxGenerator();
 };
 

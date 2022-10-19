@@ -3,8 +3,9 @@
 
 #include "../../ukf/include/UKFMemory.hpp"
 
-class HeatFluxEstimationMemory : public UKFMemory{
+class HeatFluxEstimationMemory : public UKFMemory {
 public:
+    HeatFluxEstimationMemory();
     HeatFluxEstimationMemory(Data& a, DataCovariance&b, DataCovariance&c, Data&d, DataCovariance&e, Parameter&f);
 
     inline double C(double T);

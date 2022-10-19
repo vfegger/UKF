@@ -12,12 +12,12 @@ class UKF
 private:
 
 protected:
-    UKFMemory* memory;
+    Pointer<UKFMemory> memory;
 
     double alpha, beta, kappa;
     double lambda;
 public:
-    UKF(UKFMemory* memory_in, double alpha_in, double beta_in, double kappa_in);
+    UKF(Pointer<UKFMemory> memory_in, double alpha_in, double beta_in, double kappa_in);
     void Iterate(Timer& timer);
 };
 

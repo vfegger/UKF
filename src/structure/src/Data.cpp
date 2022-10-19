@@ -181,10 +181,9 @@ void Data::InstantiateMultiple(Pointer<Data> &dataArray_out, const Data &data_in
 
     if (resetValues)
     {
-        double value = 0.0;
         for (unsigned i = 0u; i < length_in; i++)
         {
-            MemoryHandler::Set<double>(dataArray_out.pointer[i].pointer, value, 0u, dataArray_out.pointer[i].length);
+            MemoryHandler::Set<double>(dataArray_out.pointer[i].pointer, 0.0, 0u, dataArray_out.pointer[i].length);
             dataArray_out.pointer[i].isValid = true;
             dataArray_out.pointer[i].multipleIndex = i;
             dataArray_out.pointer[i].multipleLenght = length_in;

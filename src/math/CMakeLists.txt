@@ -11,6 +11,8 @@ list(FILTER source EXCLUDE REGEX ".*MathTest\\.cpp$")
 
 add_library(${target} ${source})
 
+add_executable(${target_exe} src/MathTest.cpp ${source})
+
 target_include_directories(${target} PUBLIC ${include_path})
 target_link_libraries(${target} PUBLIC Structure)
 
@@ -18,3 +20,6 @@ find_package(OpenMP REQUIRED)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(${target} PUBLIC OpenMP::OpenMP_CXX)
 endif()
+
+target_include_directories(${target_exe} PUBLIC ${include_path})
+target_link_libraries(${target_exe} PUBLIC Structure)

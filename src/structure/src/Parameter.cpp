@@ -1,5 +1,17 @@
 #include "../include/Parameter.hpp"
 
+Parameter::Parameter()
+{
+    lengthElements = 0;
+    names = Pointer<std::string>(PointerType::CPU, PointerContext::CPU_Only);
+    lengthArray = Pointer<unsigned>(PointerType::CPU, PointerContext::CPU_Only);
+    sizeTypeArray = Pointer<unsigned>(PointerType::CPU,PointerContext::CPU_Only);
+    offset = Pointer<Pointer<void>>(PointerType::CPU, PointerContext::CPU_Only);
+    pointer = Pointer<void>();
+    length = 0u;
+    isValid = false;
+    count = 0u;
+}
 Parameter::Parameter(unsigned lengthElements_in){
     lengthElements = lengthElements_in;
     names = MemoryHandler::Alloc<std::string>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);

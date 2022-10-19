@@ -4,39 +4,41 @@
 #include "../../structure/include/Data.hpp"
 #include "../../structure/include/DataCovariance.hpp"
 #include "../../structure/include/Parameter.hpp"
+#include "../../structure/include/MemoryHandler.hpp"
 
 class UKFMemory
 {
 private:
-    Parameter* parameter;
+    Pointer<Parameter> parameter;
 
-    Data* state;
-    DataCovariance* stateCovariance;
-    DataCovariance* stateNoise;
+    Pointer<Data> state;
+    Pointer<DataCovariance> stateCovariance;
+    Pointer<DataCovariance> stateNoise;
 
-    Data* measureData;
-    DataCovariance* measureDataNoise;
+    Pointer<Data> measureData;
+    Pointer<DataCovariance> measureDataNoise;
 protected:
 
 public:
+    UKFMemory();
     UKFMemory(Data& inputData_in, DataCovariance& inputDataCovariance_in, DataCovariance& inputDataNoise_in, Data& measureData_in, DataCovariance& measureDataNoise_in, Parameter& inputParameter_in);
     virtual ~UKFMemory();
 
-    Parameter* GetParameter();
+    Pointer<Parameter> GetParameter();
 
-    Data* GetState();
-    DataCovariance* GetStateCovariance();
-    DataCovariance* GetStateNoise();
+    Pointer<Data> GetState();
+    Pointer<DataCovariance> GetStateCovariance();
+    Pointer<DataCovariance> GetStateNoise();
 
-    Data* GetMeasure();
+    Pointer<Data> GetMeasure();
     void UpdateMeasure(Data& measureData_in);
-    DataCovariance* GetMeasureNoise();
+    Pointer<DataCovariance> GetMeasureNoise();
 
     virtual void Evolution(Data& data_inout, Parameter& parameter_in) = 0;
     virtual void Observation(Data& data_in, Parameter& parameter_in, Data& data_out) = 0;
 
-    double* GetWeightMean();
-    double* GetWeightCovariance();
+    Pointer<double> GetWeightMean();
+    Pointer<double> GetWeightCovariance();
 };
 
 

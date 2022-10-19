@@ -184,10 +184,11 @@ void Math::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointe
     return;
 }
 
-// Matrix Multiplication TODO
-void Math::MatrixMultiplication(Pointer<double> matrix_out,
+// Matrix Multiplication: alpha*A*B + beta*C => C
+void Math::MatrixMultiplication(Pointer<double> matrix_out, double alpha, double beta,
                                 Pointer<double> matrixLeft_in, MatrixStructure matrixLeftStructure_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
-                                Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in)
+                                Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
+                                Pointer<double> weight_in)
 {
     if ((!CheckType(matrix_out.type, matrixLeft_in.type)) || (!CheckType(matrix_out.type, matrixRight_in.type)))
     {
@@ -196,10 +197,10 @@ void Math::MatrixMultiplication(Pointer<double> matrix_out,
     switch (matrix_out.type)
     {
     case PointerType::CPU:
-        MathCPU::MatrixMultiplication(matrix_out, matrixLeft_in, matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, matrixRight_in, matrixRightStructure_in, lengthRightX_in, lengthRightY_in);
+        MathCPU::MatrixMultiplication(matrix_out, alpha, beta, matrixLeft_in, matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, matrixRight_in, matrixRightStructure_in, lengthRightX_in, lengthRightY_in, weight_in);
         break;
     case PointerType::GPU:
-        MathGPU::MatrixMultiplication(matrix_out, matrixLeft_in, matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, matrixRight_in, matrixRightStructure_in, lengthRightX_in, lengthRightY_in);
+        MathGPU::MatrixMultiplication(matrix_out, alpha, beta, matrixLeft_in, matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, matrixRight_in, matrixRightStructure_in, lengthRightX_in, lengthRightY_in, weight_in);
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";

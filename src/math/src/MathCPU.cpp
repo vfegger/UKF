@@ -93,9 +93,10 @@ void GetIndexBoundaries(MatrixStructure matrixStructure_in, unsigned lengthX_in,
     }
 }
 
-void MathCPU::MatrixMultiplication(Pointer<double> matrix_out,
+void MathCPU::MatrixMultiplication(Pointer<double> matrix_out, double alpha, double beta,
                                    Pointer<double> matrixLeft_in, MatrixStructure matrixLeftStructure_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
-                                   Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in)
+                                   Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
+                                   Pointer<double> weight_in)
 {
     double *pA, *pB, *pC;
     unsigned M, N, KL, KR, K;
@@ -370,16 +371,16 @@ void MathCPU::CholeskySolver(Pointer<double> X_out, MatrixOperationSide operatio
                             workspace, MatrixStructure_Natural, lengthAX_in, lengthAY_in,
                             B_in, MatrixStructure_Natural, lengthBX_in, lengthBY_in);
         BackwardSubstitution(X_out, MatrixStructure_Natural, lengthAY_in, lengthBY_in,
-                            workspace, MatrixStructure_Transposed, lengthAX_in, lengthAY_in,
-                            X_out, MatrixStructure_Natural, lengthBX_in, lengthBY_in);
+                             workspace, MatrixStructure_Transposed, lengthAX_in, lengthAY_in,
+                             X_out, MatrixStructure_Natural, lengthBX_in, lengthBY_in);
         break;
     case MatrixOperationSide_Right:
         ForwardSubstitution(X_out, MatrixStructure_Transposed, lengthAY_in, lengthBY_in,
                             workspace, MatrixStructure_Transposed, lengthAX_in, lengthAY_in,
                             B_in, MatrixStructure_Transposed, lengthBX_in, lengthBY_in);
         BackwardSubstitution(X_out, MatrixStructure_Transposed, lengthAY_in, lengthBY_in,
-                            workspace, MatrixStructure_Natural, lengthAX_in, lengthAY_in,
-                            X_out, MatrixStructure_Transposed, lengthBX_in, lengthBY_in);
+                             workspace, MatrixStructure_Natural, lengthAX_in, lengthAY_in,
+                             X_out, MatrixStructure_Transposed, lengthBX_in, lengthBY_in);
         break;
 
     default:
@@ -393,7 +394,7 @@ void MathCPU::Decomposition(Pointer<double> decomposition_out, DecompositionType
     switch (decompositionType_in)
     {
     case DecompositionType_Cholesky:
-        CholeskyDecomposition(decomposition_out,matrix_in,lengthX_in,lengthY_in);
+        CholeskyDecomposition(decomposition_out, matrix_in, lengthX_in, lengthY_in);
         break;
     default:
         break;
@@ -408,7 +409,7 @@ void MathCPU::Solve(Pointer<double> X_out, LinearSolverType solverType_in, Matri
     switch (solverType_in)
     {
     case LinearSolverType_Cholesky:
-        CholeskySolver(X_out,operationSide_in,A_in,lengthAX_in,lengthAY_in,B_in,lengthBX_in,lengthBY_in);
+        CholeskySolver(X_out, operationSide_in, A_in, lengthAX_in, lengthAY_in, B_in, lengthBX_in, lengthBY_in);
         break;
     default:
         break;

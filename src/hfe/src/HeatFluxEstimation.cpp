@@ -1,101 +1,118 @@
 #include "../include/HeatFluxEstimation.hpp"
 
-
-HeatFluxEstimationMemory* HeatFluxEstimation::GetMemory(){
+Pointer<HeatFluxEstimationMemory> HeatFluxEstimation::GetMemory()
+{
     return memory;
 }
 
 HeatFluxEstimation::HeatFluxEstimation(
     unsigned Lx, unsigned Ly, unsigned Lz, unsigned Lt,
-    double Sx, double Sy, double Sz, double St){
-        std::cout << "Parameter Initialization\n";
-        parameter = new Parameter(4u);
-        unsigned indexL, indexD, indexS, indexAmp;
-        indexL = parameter->Add("Length",4u,sizeof(unsigned));
-        indexD = parameter->Add("Delta",4u,sizeof(double));
-        indexS = parameter->Add("Size",4u,sizeof(double));
-        indexAmp = parameter->Add("Amp",1u,sizeof(double));
-        parameter->Initialize();
-        unsigned L[4] = {Lx,Ly,Lz,Lt};
-        parameter->LoadData(indexL, L, 4u);
-        double D[4] = {Sx/Lx,Sy/Ly,Sz/Lz,St/Lt};
-        parameter->LoadData(indexD, D, 4u);
-        double S[4] = {Sx,Sy,Sz,St};
-        parameter->LoadData(indexS, S, 4u);
-        double Amp[1] = {5e4};
-        parameter->LoadData(indexAmp, Amp, 1u);
-        std::cout << "Input Initialization\n";
-        input = new Data(2u);
-        unsigned indexT, indexQ;
-        indexT = input->Add("Temperature",Lx*Ly*Lz);
-        indexQ = input->Add("Heat Flux",Lx*Ly);
-        input->Initialize();
-        double* T = new double[Lx*Ly*Lz];
-        double* sigmaT = new double[Lx*Ly*Lz];
-        for(unsigned i = 0u; i < Lx*Ly*Lz; i++){
-            T[i] = 300.0;
-            sigmaT[i] = 1.0;
-        }
-        double* Q = new double[Lx*Ly];
-        double* sigmaQ = new double[Lx*Ly];
-        for(unsigned i = 0u; i < Lx*Ly; i++){
-            Q[i] = 0.0;
-            sigmaQ[i] = 1.25;
-        }
-        input->LoadData(indexT, T, Lx*Ly*Lz);
-        input->LoadData(indexQ, Q, Lx*Ly);
-        inputCovariance = new DataCovariance(*input);
-        inputNoise = new DataCovariance(*input);
-        inputCovariance->LoadData(indexT, sigmaT, Lx*Ly*Lz, DataCovarianceMode::Compact);
-        inputCovariance->LoadData(indexQ, sigmaQ, Lx*Ly, DataCovarianceMode::Compact);
-        inputNoise->LoadData(indexT, sigmaT, Lx*Ly*Lz, DataCovarianceMode::Compact);
-        inputNoise->LoadData(indexQ, sigmaQ, Lx*Ly, DataCovarianceMode::Compact);
-        
-        delete[] sigmaQ;
-        delete[] Q;
-        delete[] sigmaT;
-        delete[] T;
+    double Sx, double Sy, double Sz, double St)
+{
+    std::cout << "Parameter Initialization\n";
+    PointerType type_in = PointerType::CPU;
+    PointerContext context_in = PointerContext::CPU_Only;
+    parameter = MemoryHandler::AllocValue<Parameter, unsigned>(4u, type_in, context_in);
+    unsigned indexL, indexD, indexS, indexAmp;
+    indexL = parameter.pointer[0u].Add("Length", 4u, sizeof(unsigned));
+    indexD = parameter.pointer[0u].Add("Delta", 4u, sizeof(double));
+    indexS = parameter.pointer[0u].Add("Size", 4u, sizeof(double));
+    indexAmp = parameter.pointer[0u].Add("Amp", 1u, sizeof(double));
+    parameter.pointer[0u].Initialize(type_in, context_in);
+    Pointer<unsigned> L = MemoryHandler::Alloc<unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
+    L.pointer[0u] = Lx;
+    L.pointer[1u] = Ly;
+    L.pointer[2u] = Lz;
+    L.pointer[3u] = Lt;
+    Pointer<double> D = MemoryHandler::Alloc<double>(4u, PointerType::CPU, PointerContext::CPU_Only);
+    L.pointer[0u] = Sx / Lx;
+    L.pointer[1u] = Sy / Ly;
+    L.pointer[2u] = Sz / Lz;
+    L.pointer[3u] = St / Lt;
+    Pointer<double> S = MemoryHandler::Alloc<double>(4u, PointerType::CPU, PointerContext::CPU_Only);
+    L.pointer[0u] = Sx;
+    L.pointer[1u] = Sy;
+    L.pointer[2u] = Sz;
+    L.pointer[3u] = St;
+    Pointer<double> Amp = MemoryHandler::Alloc<double>(4u, PointerType::CPU, PointerContext::CPU_Only);
+    Amp.pointer[0u] = 5e4;
 
-        std::cout << "Measure Initialization\n";
-        measure = new Data(1u);
-        unsigned indexT_meas;
-        indexT_meas = measure->Add("Temperature",Lx*Ly);
-        measure->Initialize();
-        double* T_meas = new double[Lx*Ly];
-        double* sigmaT_meas = new double[Lx*Ly];
-        for(unsigned i = 0u; i < Lx*Ly; i++){
-            T_meas[i] = 300.0;
-            sigmaT_meas[i] = 1.5;
-        }
-        measure->LoadData(indexT_meas, T_meas, Lx*Ly);
-        measureNoise = new DataCovariance(*measure);
-        measureNoise->LoadData(indexT_meas, sigmaT_meas, Lx*Ly, DataCovarianceMode::Compact);
+    parameter.pointer[0u].LoadData(indexL, L, 4u);
+    parameter.pointer[0u].LoadData(indexD, D, 4u);
+    parameter.pointer[0u].LoadData(indexS, S, 4u);
+    parameter.pointer[0u].LoadData(indexAmp, Amp, 1u);
+    std::cout << "Input Initialization\n";
+    input = MemoryHandler::AllocValue<Data, unsigned>(2u, type_in, context_in);
+    unsigned indexT, indexQ;
+    indexT = input.pointer[0u].Add("Temperature", Lx * Ly * Lz);
+    indexQ = input.pointer[0u].Add("Heat Flux", Lx * Ly);
+    input.pointer[0u].Initialize(type_in, context_in);
+    Pointer<double> T = MemoryHandler::Alloc<double>(Lx * Ly * Lz, type_in, context_in);
+    Pointer<double> sigmaT = MemoryHandler::Alloc<double>(Lx * Ly * Lz, type_in, context_in);
+    Pointer<double> Q = MemoryHandler::Alloc<double>(Lx * Ly, type_in, context_in);
+    Pointer<double> sigmaQ = MemoryHandler::Alloc<double>(Lx * Ly, type_in, context_in);
+    MemoryHandler::Set<double>(T, 300.0, 0, Lx * Ly * Lz);
+    MemoryHandler::Set<double>(sigmaT, 1.0, 0, Lx * Ly * Lz);
+    MemoryHandler::Set<double>(T, 0.0, 0, Lx * Ly);
+    MemoryHandler::Set<double>(sigmaT, 1.25, 0, Lx * Ly);
+    input.pointer[0u].LoadData(indexT, T, Lx * Ly * Lz);
+    input.pointer[0u].LoadData(indexQ, Q, Lx * Ly);
+    inputCovariance = MemoryHandler::AllocValue<DataCovariance, Data>(input.pointer[0], type_in, context_in);
+    inputNoise = MemoryHandler::AllocValue<DataCovariance, Data>(input.pointer[0], type_in, context_in);
+    inputCovariance.pointer[0].LoadData(indexT, sigmaT, Lx * Ly * Lz, DataCovarianceMode::Compact);
+    inputCovariance.pointer[0].LoadData(indexQ, sigmaQ, Lx * Ly, DataCovarianceMode::Compact);
+    inputNoise.pointer[0].LoadData(indexT, sigmaT, Lx * Ly * Lz, DataCovarianceMode::Compact);
+    inputNoise.pointer[0].LoadData(indexQ, sigmaQ, Lx * Ly, DataCovarianceMode::Compact);
 
-        delete[] sigmaT_meas;
-        delete[] T_meas;
+    MemoryHandler::Free<double>(sigmaQ);
+    MemoryHandler::Free<double>(Q);
+    MemoryHandler::Free<double>(sigmaT);
+    MemoryHandler::Free<double>(T);
 
-        std::cout << "Memory Initialization\n";
-        memory = new HeatFluxEstimationMemory(*input,*inputCovariance,*inputNoise,*measure,*measureNoise,*parameter);
-        
-        std::cout << "End Initialization\n";
-}
-
-void HeatFluxEstimation::UpdateMeasure(double* T_in, unsigned Lx, unsigned Ly){
-    Data* measure_aux = new Data(1u);
+    std::cout << "Measure Initialization\n";
+    measure = MemoryHandler::AllocValue<Data, unsigned>(1u, PointerType::CPU, PointerContext::CPU_Only);
     unsigned indexT_meas;
-    indexT_meas = measure_aux->Add("Temperature",Lx*Ly);
-    measure_aux->Initialize();
-    measure_aux->LoadData(indexT_meas, T_in, Lx*Ly); 
-    memory->UpdateMeasure(*measure_aux);
-    delete measure_aux;
+    indexT_meas = measure.pointer[0u].Add("Temperature", Lx * Ly);
+    measure.pointer[0u].Initialize(type_in, context_in);
+
+    Pointer<double> T_meas = MemoryHandler::Alloc<double>(Lx * Ly, PointerType::CPU, PointerContext::CPU_Only);
+    Pointer<double> sigmaT_meas = MemoryHandler::Alloc<double>(Lx * Ly, PointerType::CPU, PointerContext::CPU_Only);
+    MemoryHandler::Set<double>(T_meas, 300.0, 0, Lx * Ly);
+    MemoryHandler::Set<double>(sigmaT_meas, 1.5, 0, Lx * Ly);
+    measure.pointer[0u].LoadData(indexT_meas, T_meas, Lx * Ly);
+    measureNoise = MemoryHandler::AllocValue<DataCovariance, Data>(measure.pointer[0u], PointerType::CPU, PointerContext::CPU_Only);
+    measureNoise.pointer[0u].LoadData(indexT_meas, sigmaT_meas, Lx * Ly, DataCovarianceMode::Compact);
+
+    MemoryHandler::Free<double>(sigmaT_meas);
+    MemoryHandler::Free<double>(T_meas);
+
+    std::cout << "Memory Initialization\n";
+    memory = MemoryHandler::Alloc<HeatFluxEstimationMemory>(1u,PointerType::CPU,PointerContext::CPU_Only);
+    memory.pointer[0u] = HeatFluxEstimationMemory(input.pointer[0u], inputCovariance.pointer[0u], inputNoise.pointer[0u], measure.pointer[0u], measureNoise.pointer[0u], parameter.pointer[0u]);
+
+    std::cout << "End Initialization\n";
 }
 
-HeatFluxEstimation::~HeatFluxEstimation(){
-    delete memory;
-    delete parameter;
-    delete input;
-    delete inputCovariance;
-    delete inputNoise;
-    delete measure;
-    delete measureNoise;
+void HeatFluxEstimation::UpdateMeasure(Pointer<double> T_in, unsigned Lx, unsigned Ly)
+{
+    PointerType type_in = PointerType::CPU;
+    PointerContext context_in = PointerContext::CPU_Only;
+    Pointer<Data> measure_aux = MemoryHandler::AllocValue<Data, unsigned>(1u,type_in,context_in);
+    unsigned indexT_meas;
+    indexT_meas = measure_aux.pointer[0u].Add("Temperature", Lx * Ly);
+    measure_aux.pointer[0u].Initialize(type_in,context_in);
+    measure_aux.pointer[0u].LoadData(indexT_meas, T_in, Lx * Ly);
+    memory.pointer[0u].UpdateMeasure(measure_aux.pointer[0u]);
+    MemoryHandler::Free<Data>(measure_aux);
+}
+
+HeatFluxEstimation::~HeatFluxEstimation()
+{
+    MemoryHandler::Free(memory);
+    MemoryHandler::Free(parameter);
+    MemoryHandler::Free(input);
+    MemoryHandler::Free(inputCovariance);
+    MemoryHandler::Free(inputNoise);
+    MemoryHandler::Free(measure);
+    MemoryHandler::Free(measureNoise);
 }

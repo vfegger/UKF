@@ -1,167 +1,170 @@
 #include "../include/UKF.hpp"
 
-UKF::UKF(UKFMemory* memory_in, double alpha_in, double beta_in, double kappa_in){
+UKF::UKF(Pointer<UKFMemory> memory_in, double alpha_in, double beta_in, double kappa_in)
+{
     memory = memory_in;
     bool isValid =
-    memory->GetState()->GetValidation() &&
-    memory->GetStateCovariance()->GetValidation() &&
-    memory->GetStateNoise()->GetValidation() &&
-    memory->GetMeasure()->GetValidation() &&
-    memory->GetMeasureNoise()->GetValidation();
-    if(!isValid){
+        memory.pointer[0u].GetState().pointer[0u].GetValidation() &&
+        memory.pointer[0u].GetStateCovariance().pointer[0u].GetValidation() &&
+        memory.pointer[0u].GetStateNoise().pointer[0u].GetValidation() &&
+        memory.pointer[0u].GetMeasure().pointer[0u].GetValidation() &&
+        memory.pointer[0u].GetMeasureNoise().pointer[0u].GetValidation();
+    if (!isValid)
+    {
         std::cout << "Error: Memory is not properly initialized.\n";
     }
     alpha = alpha_in;
     beta = beta_in;
     kappa = kappa_in;
-    unsigned L = memory->GetState()->GetLength();
-    lambda = alpha*alpha*(L+kappa)-L;
+    unsigned L = memory.pointer[0u].GetState().pointer[0u].GetLength();
+    lambda = alpha * alpha * (L + kappa) - L;
 }
-//UKF Iteration
-void UKF::Iterate(Timer& timer){
+// UKF Iteration
+void UKF::Iterate(Timer &timer)
+{
     timer.Reset();
     timer.Start();
-    //Initialization of variables
-    Parameter* parameter = memory->GetParameter();
+    // Initialization of variables
+    Pointer<Parameter> parameter = memory.pointer[0u].GetParameter();
 
-    Data* state = memory->GetState();
-    double* statePointer = state->GetPointer();
-    DataCovariance* stateCovariance = memory->GetStateCovariance();
-    double* stateCovariancePointer = stateCovariance->GetPointer();
-    DataCovariance* stateNoise = memory->GetStateNoise();
-    double* stateNoisePointer = stateNoise->GetPointer();
+    Pointer<Data> state = memory.pointer[0u].GetState();
+    Pointer<double> statePointer = state.pointer[0u].GetPointer();
+    Pointer<DataCovariance> stateCovariance = memory.pointer[0u].GetStateCovariance();
+    Pointer<double> stateCovariancePointer = stateCovariance.pointer[0u].GetPointer();
+    Pointer<DataCovariance> stateNoise = memory.pointer[0u].GetStateNoise();
+    Pointer<double> stateNoisePointer = stateNoise.pointer[0u].GetPointer();
 
-    Data* measure = new Data(*(memory->GetMeasure()));
-    double* measurePointer = measure->GetPointer();
-    DataCovariance* measureNoise = memory->GetMeasureNoise();
-    double* measureNoisePointer = measureNoise->GetPointer();
+    Pointer<Data> measure = MemoryHandler::AllocValue<Data, Data>(memory.pointer[0u].GetMeasure().pointer[0u], memory.pointer[0u].GetMeasure().type, memory.pointer[0u].GetMeasure().context);
+    Pointer<double> measurePointer = measure.pointer[0u].GetPointer();
+    Pointer<DataCovariance> measureNoise = memory.pointer[0u].GetMeasureNoise();
+    Pointer<double> measureNoisePointer = measureNoise.pointer[0u].GetPointer();
 
-    Data* observation = new Data(*measure);
-    double* observationPointer = observation->GetPointer();
-    DataCovariance* observationCovariance = new DataCovariance(*observation);
-    double* observationCovariancePointer = observationCovariance->GetPointer();
+    Pointer<Data> observation = MemoryHandler::AllocValue<Data, Data>(measure.pointer[0u], measure.type, measure.context);
+    Pointer<double> observationPointer = observation.pointer[0u].GetPointer();
+    Pointer<DataCovariance> observationCovariance = MemoryHandler::AllocValue<DataCovariance, Data>(observation.pointer[0u], observation.type, observation.context);
+    Pointer<double> observationCovariancePointer = observationCovariance.pointer[0u].GetPointer();
 
-    unsigned lengthState = state->GetLength();
-    unsigned lengthObservation = observation->GetLength();
+    unsigned lengthState = state.pointer[0u].GetLength();
+    unsigned lengthObservation = observation.pointer[0u].GetLength();
+
+    PointerType stateType = statePointer.type;
+    PointerContext stateContext = statePointer.context;
 
     std::cout << "State length: " << lengthState << "; Observation length: " << lengthObservation << "\n";
 
-    double* crossCovariancePointer = new(std::nothrow) double[lengthState * lengthObservation];
-    double* kalmanGainPointer = new(std::nothrow) double[lengthState*lengthObservation];
-    for(unsigned i = 0u; i < lengthState * lengthObservation; i++){
-        crossCovariancePointer[i] = 0.0;
-        kalmanGainPointer[i] = 0.0;
-    }
+    Pointer<double> crossCovariancePointer = MemoryHandler::Alloc<double>(lengthState * lengthObservation, stateType, stateContext);
+    Pointer<double> kalmanGainPointer = MemoryHandler::Alloc<double>(lengthState * lengthObservation, stateType, stateContext);
+    MemoryHandler::Set(crossCovariancePointer, 0.0, 0u, lengthState * lengthObservation);
     timer.Save();
 
-    //Methods
+    // Methods
     std::cout << "Calculate Cholesky Decomposition\n";
-    double* chol = new(std::nothrow) double[lengthState * lengthState];
-    for(unsigned i = 0u; i < lengthState*lengthState; i++){
-        chol[i] = 0.0;
+    Pointer<double> chol = MemoryHandler::Alloc<double>(lengthState * lengthState, stateType, stateContext);
+    for (unsigned i = 0u; i < lengthState * lengthState; i++)
+    {
+        chol.pointer[i] = 0.0;
     }
-    Math::Mul(stateCovariancePointer,lengthState+lambda,lengthState*lengthState);
-    Math::Decomposition(chol,stateCovariancePointer,lengthState,lengthState);
+    Math::Mul(stateCovariancePointer, lengthState + lambda, lengthState * lengthState);
+    Math::Decomposition(chol, DecompositionType_Cholesky, stateCovariancePointer, lengthState, lengthState);
     timer.Save();
 
     std::cout << "Generate Sigma Points based on Cholesky Decompostion\n";
-    unsigned sigmaPointsLength = 2u*lengthState + 1u;
-    double* WeightMean = new(std::nothrow) double[sigmaPointsLength];
-    double* WeightCovariance = new(std::nothrow) double[sigmaPointsLength];
-    for(unsigned i = 0; i < sigmaPointsLength; i++){
-        if(i == 0u){
-            WeightMean[i] = lambda/(lengthState+lambda);
-            WeightCovariance[i] = lambda/(lengthState+lambda) + (1.0-alpha*alpha+beta);
-        } else {
-            WeightMean[i] = 0.5/(lengthState+lambda);
-            WeightCovariance[i] = 0.5/(lengthState+lambda);
-        }
-    }
-    Data* sigmaPointsState = NULL;
-    Data* sigmaPointsObservation = NULL;
-    Data::InstantiateMultiple(sigmaPointsState,*state,sigmaPointsLength);
-    Data::InstantiateMultiple(sigmaPointsObservation,*measure,sigmaPointsLength);
-    MathUKF::DistributeOperation(MathUKF::AddInPlace,sigmaPointsState->GetPointer(), chol, lengthState, lengthState, lengthState, lengthState, lengthState, 0u);
-    MathUKF::DistributeOperation(MathUKF::SubInPlace,sigmaPointsState->GetPointer(), chol, lengthState, lengthState, lengthState, lengthState, (lengthState+1u)*lengthState, 0u);
-    delete[] chol;
+    unsigned sigmaPointsLength = 2u * lengthState + 1u;
+    Pointer<double> WeightMean = MemoryHandler::Alloc<double>(sigmaPointsLength, stateType, stateContext);
+    Pointer<double> WeightCovariance = MemoryHandler::Alloc<double>(sigmaPointsLength, stateType, stateContext);
+
+    MemoryHandler::Set(WeightMean, lambda / (lengthState + lambda), 0u, 1u);
+    MemoryHandler::Set(WeightCovariance, lambda / (lengthState + lambda) + (1.0 - alpha * alpha + beta), 0u, 1u);
+    MemoryHandler::Set(WeightMean, 0.5 / (lengthState + lambda), 1u, sigmaPointsLength);
+    MemoryHandler::Set(WeightCovariance, 0.5 / (lengthState + lambda), 1u, sigmaPointsLength);
+    
+    Pointer<Data> sigmaPointsState = Pointer<Data>(); // TODO
+    Pointer<Data> sigmaPointsObservation = Pointer<Data>(); // TODO
+    Data::InstantiateMultiple(sigmaPointsState, state.pointer[0u], sigmaPointsLength);
+    Data::InstantiateMultiple(sigmaPointsObservation, measure.pointer[0u], sigmaPointsLength);
+    Math::Operation(Math::Add, sigmaPointsState.pointer[0u].GetPointer(), chol, lengthState, lengthState, lengthState, lengthState, lengthState, 0u);
+    Math::Operation(Math::Sub, sigmaPointsState.pointer[0u].GetPointer(), chol, lengthState, lengthState, lengthState, lengthState, (lengthState + 1u) * lengthState, 0u);
+    MemoryHandler::Free(chol);
     timer.Save();
 
     std::cout << "Observation Step\n";
-    for(unsigned i = 0u; i < sigmaPointsLength; i++){
-        memory->Observation(sigmaPointsState[i], *parameter, sigmaPointsObservation[i]);
+    for (unsigned i = 0u; i < sigmaPointsLength; i++)
+    {
+        memory.pointer[0u].Observation(sigmaPointsState.pointer[i], parameter.pointer[0u], sigmaPointsObservation.pointer[i]);
     }
     timer.Save();
 
     std::cout << "Evolution Step\n";
-    for(unsigned i = 0u; i < sigmaPointsLength; i++){
-        memory->Evolution(sigmaPointsState[i], *parameter);
+    for (unsigned i = 0u; i < sigmaPointsLength; i++)
+    {
+        memory.pointer[0u].Evolution(sigmaPointsState.pointer[i], parameter.pointer[0]);
     }
     timer.Save();
-    
+
     std::cout << "Mean\n";
-    MathUKF::Mean(statePointer, sigmaPointsState->GetPointer(), lengthState, sigmaPointsLength, WeightMean);
-    MathUKF::Mean(observationPointer, sigmaPointsObservation->GetPointer(), lengthObservation, sigmaPointsLength, WeightMean);
+    Math::Mean(statePointer, sigmaPointsState.pointer[0u].GetPointer(), lengthState, sigmaPointsLength, WeightMean);
+    Math::Mean(observationPointer, sigmaPointsObservation.pointer[0u].GetPointer(), lengthObservation, sigmaPointsLength, WeightMean);
     timer.Save();
 
     std::cout << "Covariance\n";
-    MathUKF::DistributeOperation(MathUKF::SubInPlace,sigmaPointsState->GetPointer(), statePointer, lengthState, lengthState, 0u, sigmaPointsLength);
-    MathUKF::DistributeOperation(MathUKF::SubInPlace,sigmaPointsObservation->GetPointer(), observationPointer, lengthObservation, lengthObservation, 0u, sigmaPointsLength);
-     
-    MathUKF::MatrixMultiplication(stateCovariancePointer, 1.0, 0.0,
-    sigmaPointsState->GetPointer(), MathUKF::MatrixStructure::Natural, lengthState, sigmaPointsLength,
-    sigmaPointsState->GetPointer(), MathUKF::MatrixStructure::Transposed, lengthState, sigmaPointsLength,
-    WeightCovariance);
-    MathUKF::AddInPlace(stateCovariancePointer,stateNoisePointer,lengthState*lengthState);
-    
-    MathUKF::MatrixMultiplication(observationCovariancePointer, 1.0, 0.0,
-    sigmaPointsObservation->GetPointer(), MathUKF::MatrixStructure::Natural, lengthObservation, sigmaPointsLength,
-    sigmaPointsObservation->GetPointer(), MathUKF::MatrixStructure::Transposed, lengthObservation, sigmaPointsLength,
-    WeightCovariance);
-    MathUKF::AddInPlace(observationCovariancePointer,measureNoisePointer,lengthObservation*lengthObservation);
-    
-    MathUKF::MatrixMultiplication(crossCovariancePointer, 1.0, 0.0,
-    sigmaPointsState->GetPointer(), MathUKF::MatrixStructure::Natural, lengthState, sigmaPointsLength,
-    sigmaPointsObservation->GetPointer(), MathUKF::MatrixStructure::Transposed, lengthObservation, sigmaPointsLength,
-    WeightCovariance);
+    Math::Operation(Math::Sub, sigmaPointsState.pointer[0u].GetPointer(), statePointer, lengthState, lengthState, 0u, sigmaPointsLength);
+    Math::Operation(Math::Sub, sigmaPointsObservation.pointer[0u].GetPointer(), observationPointer, lengthObservation, lengthObservation, 0u, sigmaPointsLength);
+
+    Math::MatrixMultiplication(stateCovariancePointer, 1.0, 0.0,
+                               sigmaPointsState.pointer[0u].GetPointer(), MatrixStructure_Natural, lengthState, sigmaPointsLength,
+                               sigmaPointsState.pointer[0u].GetPointer(), MatrixStructure_Transposed, lengthState, sigmaPointsLength,
+                               WeightCovariance);
+    Math::Add(stateCovariancePointer, stateNoisePointer, lengthState * lengthState);
+
+    Math::MatrixMultiplication(observationCovariancePointer, 1.0, 0.0,
+                               sigmaPointsObservation.pointer[0u].GetPointer(), MatrixStructure_Natural, lengthObservation, sigmaPointsLength,
+                               sigmaPointsObservation.pointer[0u].GetPointer(), MatrixStructure_Transposed, lengthObservation, sigmaPointsLength,
+                               WeightCovariance);
+    Math::Add(observationCovariancePointer, measureNoisePointer, lengthObservation * lengthObservation);
+
+    Math::MatrixMultiplication(crossCovariancePointer, 1.0, 0.0,
+                               sigmaPointsState.pointer[0u].GetPointer(), MatrixStructure_Natural, lengthState, sigmaPointsLength,
+                               sigmaPointsObservation.pointer[0u].GetPointer(), MatrixStructure_Transposed, lengthObservation, sigmaPointsLength,
+                               WeightCovariance);
 
     timer.Save();
 
-    //  RHSolver to find K = Pxy*(Pyy^-1) <=> K * Pyy = Pxy
+    //  RHSolver to find K = Pxy*(Pyy^-1) <=> Pxy = K * Pyy
     std::cout << "Kalman Gain Calulation\n";
-    MathUKF::RHSolver(kalmanGainPointer,observationCovariancePointer,crossCovariancePointer,lengthState,lengthObservation);
+    Math::Solve(kalmanGainPointer, LinearSolverType_Cholesky, MatrixOperationSide_Right, observationCovariancePointer, lengthObservation, lengthObservation, crossCovariancePointer, lengthState, lengthObservation);
     timer.Save();
-    
+
     std::cout << "State Update\n";
     std::cout << "State\n";
-    MathUKF::SubInPlace(measurePointer,observationPointer,lengthObservation);
-    MathUKF::MatrixMultiplication(statePointer, 1.0, 1.0,
-    kalmanGainPointer, MathUKF::MatrixStructure::Natural, lengthState, lengthObservation,
-    measurePointer, MathUKF::MatrixStructure::Natural, lengthObservation, 1u);
+    Math::Sub(measurePointer, observationPointer, lengthObservation);
+    Math::MatrixMultiplication(statePointer, 1.0, 1.0,
+                               kalmanGainPointer, MatrixStructure_Natural, lengthState, lengthObservation,
+                               measurePointer, MatrixStructure_Natural, lengthObservation, 1u);
     timer.Save();
-    
+
     std::cout << "State Covariance\n";
-    MathUKF::MatrixMultiplication(crossCovariancePointer, 1.0, 0.0,
-    kalmanGainPointer, MathUKF::MatrixStructure::Natural, lengthState, lengthObservation,
-    observationCovariancePointer, MathUKF::MatrixStructure::Natural, lengthObservation, lengthObservation);
-    
-    MathUKF::MatrixMultiplication(stateCovariancePointer, -1.0, 1.0,
-    crossCovariancePointer, MathUKF::MatrixStructure::Natural, lengthState, lengthObservation,
-    kalmanGainPointer, MathUKF::MatrixStructure::Transposed, lengthState, lengthObservation);
+    Math::MatrixMultiplication(crossCovariancePointer, 1.0, 0.0,
+                               kalmanGainPointer, MatrixStructure_Natural, lengthState, lengthObservation,
+                               observationCovariancePointer, MatrixStructure_Natural, lengthObservation, lengthObservation);
+
+    Math::MatrixMultiplication(stateCovariancePointer, -1.0, 1.0,
+                               crossCovariancePointer, MatrixStructure_Natural, lengthState, lengthObservation,
+                               kalmanGainPointer, MatrixStructure_Transposed, lengthState, lengthObservation);
     timer.Save();
 
     std::cout << "Delete Auxiliary Structures\n";
-    delete[] WeightMean;
-    delete[] WeightCovariance;
+    MemoryHandler::Free(WeightMean);
+    MemoryHandler::Free(WeightCovariance);
 
-    delete[] crossCovariancePointer;
-    delete[] kalmanGainPointer;
+    MemoryHandler::Free(crossCovariancePointer);
+    MemoryHandler::Free(kalmanGainPointer);
 
-    delete[] sigmaPointsState;
-    delete[] sigmaPointsObservation;
+    MemoryHandler::Free(sigmaPointsState);
+    MemoryHandler::Free(sigmaPointsObservation);
 
-    delete measure;
-    delete observation;
-    delete observationCovariance;
+    MemoryHandler::Free(measure);
+    MemoryHandler::Free(observation);
+    MemoryHandler::Free(observationCovariance);
     timer.Save();
 
     std::cout << "Iteration Ended\n\n";

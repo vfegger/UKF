@@ -24,7 +24,6 @@ private:
     // Total Number of Elements
     unsigned lengthElements;
 
-
     // Vector of Names for each Element
     Pointer<std::string> names;
 
@@ -34,6 +33,8 @@ private:
     unsigned count;
 
 public:
+    // Default Constructor
+    Parameter();
     // Constructor with Maximum Numer of Elements
     Parameter(unsigned lengthElements_in);
     // Constructor to copy an instance of Parameter class
@@ -76,7 +77,7 @@ void Parameter::LoadData(unsigned index_in, Pointer<T> array_in, unsigned length
     }
     for (unsigned i = 0; i < length_in; i++)
     {
-        ((T *)(offset.pointer[index_in]))[i] = array_in[i];
+        ((T *)(offset.pointer[index_in].pointer))[i] = array_in.pointer[i];
     }
 }
 
@@ -95,9 +96,9 @@ Pointer<T> Parameter::GetPointer(unsigned index)
     if (isValid == false)
     {
         std::cout << "Error: Pointer is not initialized.";
-        return NULL;
+        return Pointer<T>();
     }
-    return (T *)(offset.pointer[index]);
+    return Pointer<T>((T *)offset.pointer[index].pointer, offset.pointer[index].type, offset.pointer[index].context);
 }
 
 #endif
