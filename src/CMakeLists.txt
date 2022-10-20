@@ -17,6 +17,7 @@ add_subdirectory(math)
 add_subdirectory(timer)
 add_subdirectory(hfe)
 add_subdirectory(graph)
+add_subdirectory(cuda)
 
 
 # Add the executable

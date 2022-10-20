@@ -6,7 +6,7 @@ set(target_exe Math_Test)
 set(include_path "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(source_path "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-file(GLOB_RECURSE source ${source_path}/*.cpp)
+file(GLOB_RECURSE source ${source_path}/*.cpp ${source_path}/*.cu)
 list(FILTER source EXCLUDE REGEX ".*MathTest\\.cpp$")
 
 add_library(${target} ${source})

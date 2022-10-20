@@ -34,6 +34,7 @@ protected:
     unsigned length_Out;
     unsigned count_Out;
 public:
+    Parser();
     Parser(unsigned length_in);
     unsigned OpenFileIn(std::string path_in, std::string name_in, std::string extension_in, std::ios::openmode mode_in, unsigned index = UINT_MAX_VALUE);
     unsigned OpenFileOut(std::string path_in, std::string name_in, std::string extension_in, std::ios::openmode mode_in, unsigned index = UINT_MAX_VALUE);

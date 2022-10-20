@@ -1,5 +1,14 @@
 #include "../include/Parser.hpp"
 
+Parser::Parser(){
+    length_In = 0u;
+    length_Out = 0u;
+    fileArray_In = NULL;
+    fileArray_Out = NULL;
+    count_In = 0u;
+    count_Out = 0u;
+}
+
 Parser::Parser(unsigned length_in){
     length_In = length_in;
     length_Out = length_in;

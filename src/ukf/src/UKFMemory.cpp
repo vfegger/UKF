@@ -1,5 +1,15 @@
 #include "../include/UKFMemory.hpp"
 
+UKFMemory::UKFMemory(){
+    state = Pointer<Data>();
+    stateCovariance = Pointer<DataCovariance>();
+    stateNoise = Pointer<DataCovariance>();
+    measureData = Pointer<Data>();
+    measureDataNoise = Pointer<DataCovariance>();
+
+    parameter = Pointer<Parameter>();
+}
+
 UKFMemory::UKFMemory(Data& inputData_in, DataCovariance& inputDataCovariance_in, DataCovariance& inputDataNoise_in, Data& measureData_in, DataCovariance& measureDataNoise_in, Parameter& inputParameter_in){
     state = MemoryHandler::AllocValue<Data,Data>(inputData_in,PointerType::CPU, PointerContext::CPU_Only);
     stateCovariance = MemoryHandler::AllocValue<DataCovariance,DataCovariance>(inputDataCovariance_in,PointerType::CPU, PointerContext::CPU_Only);

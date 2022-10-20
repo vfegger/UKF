@@ -20,6 +20,7 @@ private:
     bool isValid;
 
 public:
+    Timer();
     Timer(unsigned length_in);
 
     void Start();

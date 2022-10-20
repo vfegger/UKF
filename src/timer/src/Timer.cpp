@@ -1,5 +1,13 @@
 #include "../include/Timer.hpp"
 
+Timer::Timer() : clock(){
+    startTime = Time::now();
+    length = 0u;
+    duration = NULL;
+    count = 0u;
+    isValid = false;
+}
+
 Timer::Timer(unsigned length_in) : clock(){
     startTime = Time::now();
     length = length_in;
