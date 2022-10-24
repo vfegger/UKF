@@ -40,7 +40,7 @@ cmake --build $BUILD_PATH
 if [ "$BUILD_ONLY" = "-b" ] || [ "$BUILD_ONLY" = "-build" ];
 then
     echo "Exit before running cases"
-    exit 1
+    exit 0
 fi
 
 LX_REF=24

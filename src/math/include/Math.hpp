@@ -9,6 +9,10 @@
 #include "MathGPU.hpp"
 
 namespace Math {
+    // Auxiliary Functions
+    void Print(Pointer<double> vector_in, unsigned length_in);
+    void Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in);
+
     //In-Placed Calculation
 
     //Vector Element-wise Addition
@@ -31,7 +35,7 @@ namespace Math {
     //Vector Element-wise Multiplication
     void Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in);
 
-    //Matrix Multiplication TDOD
+    //Matrix Multiplication TODO
     void MatrixMultiplication(Pointer<double> matrix_out, double alpha, double beta,
                               Pointer<double> matrixLeft_in, MatrixStructure matrixLeftStructure_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
                               Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
@@ -60,6 +64,8 @@ namespace Math {
 
     //Reducibles Operations
     void Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in = Pointer<double>());
+
+    bool Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in);
 
     //Linear System Solvers
 

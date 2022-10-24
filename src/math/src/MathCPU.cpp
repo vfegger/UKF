@@ -1,5 +1,29 @@
 #include "../include/MathCPU.hpp"
 
+// Auxiliary Functions
+void MathCPU::Print(Pointer<double> vector_in, unsigned length_in)
+{
+    std::cout << "Vector -> Size : " << length_in << "\n";
+    for (unsigned i = 0u; i < length_in; i++)
+    {
+        std::cout << " " << vector_in.pointer[i] << "\n";
+    }
+}
+
+void MathCPU::Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in)
+{
+    std::cout << "Matrix -> Size : " << lengthX_in << ":" << lengthY_in << "\n";
+    std::cout << std::scientific;
+    for (unsigned i = 0u; i < lengthX_in; i++)
+    {
+        for (unsigned j = 0u; j < lengthY_in; j++)
+        {
+            std::cout << " " << matrix_in.pointer[j * lengthX_in + i];
+        }
+        std::cout << "\n";
+    }
+}
+
 // In-Placed Calculation
 
 // Vector Element-wise Addition
@@ -131,71 +155,6 @@ void MathCPU::MatrixMultiplication(Pointer<double> matrix_out, double alpha, dou
     }
 }
 
-// Operators
-
-// In-Place Operator Distribution
-void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in),
-                        Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                        unsigned strideOut_in, unsigned strideLeft_in, unsigned strideRight_in,
-                        unsigned offsetOut_in, unsigned offsetLeft_in, unsigned offsetRight_in)
-{
-    vector_out.pointer += offsetOut_in;
-    vectorLeft_in.pointer += offsetLeft_in;
-    vectorRight_in.pointer += offsetRight_in;
-    for (unsigned i = 0u; i < iteration_in; i++)
-    {
-        operation_in(vector_out, vectorLeft_in, vectorRight_in, length_in);
-        vector_out.pointer += strideOut_in;
-        vectorLeft_in.pointer += strideLeft_in;
-        vectorRight_in.pointer += strideRight_in;
-    }
-}
-void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, double valueRight_in, unsigned length_in),
-                        Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                        unsigned strideOut_in, unsigned strideLeft_in, unsigned strideRight_in,
-                        unsigned offsetOut_in, unsigned offsetLeft_in, unsigned offsetRight_in)
-{
-    vector_out.pointer += offsetOut_in;
-    vectorLeft_in.pointer += offsetLeft_in;
-    vectorRight_in.pointer += offsetRight_in;
-    for (unsigned i = 0u; i < iteration_in; i++)
-    {
-        operation_in(vector_out, vectorLeft_in, *vectorRight_in.pointer, length_in);
-        vector_out.pointer += strideOut_in;
-        vectorLeft_in.pointer += strideLeft_in;
-        vectorRight_in.pointer += strideRight_in;
-    }
-}
-// Out-Place Operator Distribution
-void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in),
-                        Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                        unsigned strideLeft_in, unsigned strideRight_in,
-                        unsigned offsetLeft_in, unsigned offsetRight_in)
-{
-    vector_inout.pointer += offsetLeft_in;
-    vectorRight_in.pointer += offsetRight_in;
-    for (unsigned i = 0u; i < iteration_in; i++)
-    {
-        operation_in(vector_inout, vectorRight_in, length_in);
-        vector_inout.pointer += strideLeft_in;
-        vectorRight_in.pointer += strideRight_in;
-    }
-}
-void MathCPU::Operation(void (*operation_in)(Pointer<double> vector_inout, double valueRight_in, unsigned length_in),
-                        Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                        unsigned strideLeft_in, unsigned strideRight_in,
-                        unsigned offsetLeft_in, unsigned offsetRight_in)
-{
-    vector_inout.pointer += offsetLeft_in;
-    vectorRight_in.pointer += offsetRight_in;
-    for (unsigned i = 0u; i < iteration_in; i++)
-    {
-        operation_in(vector_inout, *vectorRight_in.pointer, length_in);
-        vector_inout.pointer += strideLeft_in;
-        vectorRight_in.pointer += strideRight_in;
-    }
-}
-
 // Reducibles Operations
 void MathCPU::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in)
 {
@@ -227,6 +186,18 @@ void MathCPU::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsign
             }
         }
     }
+}
+
+bool MathCPU::Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in)
+{
+    for (unsigned i = 0u; i < length_in; i++)
+    {
+        if (vectorLeft_in.pointer[i] != vectorRight_in.pointer[i])
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 // Linear System Solvers

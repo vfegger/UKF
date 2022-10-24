@@ -7,6 +7,10 @@
 
 namespace MathCPU
 {
+    // Auxiliary Functions
+    void Print(Pointer<double> vector_in, unsigned length_in);
+    void Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in);
+
     // In-Placed Calculation
 
     // Vector Element-wise Addition
@@ -35,29 +39,10 @@ namespace MathCPU
                               Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
                               Pointer<double> weight_in = Pointer<double>());
 
-    // Operators
-
-    // In-Place Operator Distribution
-    void Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in),
-                   Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                   unsigned strideOut_in = 1u, unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                   unsigned offsetOut_in = 0u, unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u);
-    void Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, double valueRight_in, unsigned length_in),
-                   Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                   unsigned strideOut_in = 1u, unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                   unsigned offsetOut_in = 0u, unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u);
-    // Out-Place Operator Distribution
-    void Operation(void (*operation_in)(Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in),
-                   Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                   unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                   unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u);
-    void Operation(void (*operation_in)(Pointer<double> vector_inout, double valueRight_in, unsigned length_in),
-                   Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
-                   unsigned strideLeft_in = 1u, unsigned strideRight_in = 1u,
-                   unsigned offsetLeft_in = 0u, unsigned offsetRight_in = 0u);
-
     // Reducibles Operations
     void Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in = Pointer<double>());
+
+    bool Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in);
 
     // Linear System Solvers
 

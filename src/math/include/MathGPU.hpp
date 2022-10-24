@@ -2,11 +2,18 @@
 #define MATHGPU_HEADER
 
 #include <iostream>
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+#include <cusolverDn.h>
 #include "../include/MathEnum.hpp"
 #include "../../structure/include/MemoryHandler.hpp"
 
 namespace MathGPU
 {
+    // Auxiliary Functions
+    void Print(Pointer<double> vector_in, unsigned length_in);
+    void Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in);
+
     // In-Placed Calculation
 
     // Vector Element-wise Addition
@@ -58,6 +65,8 @@ namespace MathGPU
 
     // Reducibles Operations
     void Mean(Pointer<double> vector_out, Pointer<double> matrixLeft_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in = Pointer<double>());
+
+    bool Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in);
 
     // Linear System Solvers
 

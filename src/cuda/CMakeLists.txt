@@ -10,3 +10,4 @@ file(GLOB_RECURSE source ${source_path}/*.cu)
 add_library(${target} ${source})
 
 target_include_directories(${target} PUBLIC ${include_path})
+set_property(TARGET ${target} PROPERTY CUDA_ARCHITECTURES all)

@@ -235,6 +235,7 @@ public:
                 break;
             case PointerContext::GPU_Aware:
                 cudaMallocHost(&(output.pointer), sizeof(T) * size_in);
+                break;
             default:
                 std::cout << "Error: Behavior of this context is not defined for this type.\n";
                 break;
@@ -268,12 +269,14 @@ public:
                 break;
             case PointerContext::GPU_Aware:
                 cudaFreeHost(pointer_in.pointer);
+                break;
             default:
                 std::cout << "Error: Behavior of this context is not defined for this type.\n";
                 break;
             }
             break;
         case PointerType::GPU:
+            cudaDeviceSynchronize();
             cudaFree(pointer_in.pointer);
             break;
         default:
@@ -401,7 +404,7 @@ public:
             }
             break;
         case PointerType::GPU:
-            HelperCUDA::Initialize((pointer_inout.pointer + start), &value, end - start, sizeof(double));
+            HelperCUDA::Initialize(pointer_inout.pointer + start, &value, end - start, sizeof(T));
             break;
         default:
             std::cout << "Error: Behavior of this type is not defined.\n";

@@ -11,6 +11,37 @@ bool CheckType(PointerType typeLeft, PointerType typeRight)
     return true;
 }
 
+// Auxiliary Functions
+void Math::Print(Pointer<double> vector_in, unsigned length_in){
+    switch (vector_in.type)
+    {
+    case PointerType::CPU:
+        MathCPU::Print(vector_in, length_in);
+        break;
+    case PointerType::GPU:
+        MathGPU::Print(vector_in, length_in);
+        break;
+    default:
+        std::cout << "Error: Type not defined for this operation.\n";
+        break;
+    }
+}
+
+void Math::Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in){
+    switch (matrix_in.type)
+    {
+    case PointerType::CPU:
+        MathCPU::Print(matrix_in, lengthX_in, lengthY_in);
+        break;
+    case PointerType::GPU:
+        MathGPU::Print(matrix_in, lengthX_in, lengthY_in);
+        break;
+    default:
+        std::cout << "Error: Type not defined for this operation.\n";
+        break;
+    }
+}
+
 // In-Placed Calculation
 
 // Vector Element-wise Addition
@@ -295,6 +326,27 @@ void Math::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned 
     }
     return;
 }
+
+bool Math::Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in){
+    if (!CheckType(vectorLeft_in.type, vectorRight_in.type))
+    {
+        return false;
+    }
+    switch (vectorLeft_in.type)
+    {
+    case PointerType::CPU:
+        return MathCPU::Compare(vectorLeft_in, vectorRight_in, length_in);
+        break;
+    case PointerType::GPU:
+        return MathGPU::Compare(vectorLeft_in, vectorRight_in, length_in);
+        break;
+    default:
+        std::cout << "Error: Type not defined for this operation.\n";
+        break;
+    }
+    return false;
+}
+
 
 // Linear System Solvers
 

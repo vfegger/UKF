@@ -61,6 +61,7 @@ void MemoryHandler::Free(Pointer<void> pointer_in)
         }
         break;
     case PointerType::GPU:
+        cudaDeviceSynchronize();
         cudaFree((char*)(pointer_in.pointer));
         break;
     default:
