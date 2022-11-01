@@ -15,7 +15,6 @@ int Test(PointerType type_in, PointerContext context_in)
     B = MemoryHandler::Alloc<double>(X_LENGTH, type_in, context_in);
     MemoryHandler::Set<double>(B, 2.0, 0, X_LENGTH);
 
-
     // Add In-place
     C = MemoryHandler::Alloc<double>(X_LENGTH, type_in, context_in);
     R = MemoryHandler::Alloc<double>(X_LENGTH, type_in, context_in);
@@ -25,7 +24,7 @@ int Test(PointerType type_in, PointerContext context_in)
     std::cout << "\tAdd In-place Result: " << (Math::Compare(R, C, X_LENGTH) ? "True" : "False") << "\n";
     MemoryHandler::Free<double>(C);
     MemoryHandler::Free<double>(R);
-    
+
     // Sub In-place
     C = MemoryHandler::Alloc<double>(X_LENGTH, type_in, context_in);
     R = MemoryHandler::Alloc<double>(X_LENGTH, type_in, context_in);
@@ -35,7 +34,7 @@ int Test(PointerType type_in, PointerContext context_in)
     std::cout << "\tSub In-place Result: " << (Math::Compare(R, C, X_LENGTH) ? "True" : "False") << "\n";
     MemoryHandler::Free<double>(C);
     MemoryHandler::Free<double>(R);
-    
+
     // Mul Value In-place
     C = MemoryHandler::Alloc<double>(X_LENGTH, type_in, context_in);
     R = MemoryHandler::Alloc<double>(X_LENGTH, type_in, context_in);
@@ -45,7 +44,7 @@ int Test(PointerType type_in, PointerContext context_in)
     std::cout << "\tMul Value In-place Result: " << (Math::Compare(R, C, X_LENGTH) ? "True" : "False") << "\n";
     MemoryHandler::Free<double>(C);
     MemoryHandler::Free<double>(R);
-    
+
     // Mul In-place
     C = MemoryHandler::Alloc<double>(X_LENGTH, type_in, context_in);
     R = MemoryHandler::Alloc<double>(X_LENGTH, type_in, context_in);
@@ -55,7 +54,7 @@ int Test(PointerType type_in, PointerContext context_in)
     std::cout << "\tMul In-place Result: " << (Math::Compare(R, C, X_LENGTH) ? "True" : "False") << "\n";
     MemoryHandler::Free<double>(C);
     MemoryHandler::Free<double>(R);
-    
+
     // Add Out-place
     C = MemoryHandler::Alloc<double>(X_LENGTH, type_in, context_in);
     R = MemoryHandler::Alloc<double>(X_LENGTH, type_in, context_in);
@@ -100,23 +99,27 @@ int Test(PointerType type_in, PointerContext context_in)
     MemoryHandler::Free<double>(B);
 
     // Matrix Multiplication
-    A = MemoryHandler::Alloc<double>(X_LENGTH*Y_LENGTH, type_in, context_in);
-    B = MemoryHandler::Alloc<double>(Y_LENGTH*Z_LENGTH, type_in, context_in);
-    C = MemoryHandler::Alloc<double>(X_LENGTH*Z_LENGTH, type_in, context_in);
-    R = MemoryHandler::Alloc<double>(X_LENGTH*Z_LENGTH, type_in, context_in);
-    MemoryHandler::Set(A,1.0,0u,X_LENGTH*Y_LENGTH/2u);
-    MemoryHandler::Set(A,2.0,X_LENGTH*Y_LENGTH/2u,X_LENGTH*Y_LENGTH);
-    MemoryHandler::Set(B,1.0,0u,Y_LENGTH*Z_LENGTH/2u);
-    MemoryHandler::Set(B,3.0,Y_LENGTH*Z_LENGTH/2u,Y_LENGTH*Z_LENGTH);
-    MemoryHandler::Set(C,4.0,0u,X_LENGTH*Z_LENGTH);
-    MemoryHandler::Set(R,4.0,0u,X_LENGTH*Z_LENGTH);
+    A = MemoryHandler::Alloc<double>(X_LENGTH * Y_LENGTH, type_in, context_in);
+    B = MemoryHandler::Alloc<double>(Y_LENGTH * Z_LENGTH, type_in, context_in);
+    C = MemoryHandler::Alloc<double>(X_LENGTH * Z_LENGTH, type_in, context_in);
+    R = MemoryHandler::Alloc<double>(X_LENGTH * Z_LENGTH, type_in, context_in);
+    MemoryHandler::Set(A, 1.0, 0u, X_LENGTH * Y_LENGTH / 2u);
+    MemoryHandler::Set(A, 2.0, X_LENGTH * Y_LENGTH / 2u, X_LENGTH * Y_LENGTH);
+    MemoryHandler::Set(B, 1.0, 0u, Y_LENGTH * Z_LENGTH / 2u);
+    MemoryHandler::Set(B, 3.0, Y_LENGTH * Z_LENGTH / 2u, Y_LENGTH * Z_LENGTH);
+    MemoryHandler::Set(C, 4.0, 0u, X_LENGTH * Z_LENGTH);
+    MemoryHandler::Set(R, 4.0, 0u, X_LENGTH * Z_LENGTH);
 
-    Math::Print(A,X_LENGTH,Y_LENGTH);
-    Math::Print(B,Y_LENGTH,Z_LENGTH);
-    Math::Print(C,X_LENGTH,Z_LENGTH);
+    Math::Print(A, X_LENGTH, Y_LENGTH);
+    Math::Print(B, Y_LENGTH, Z_LENGTH);
+    Math::Print(C, X_LENGTH, Z_LENGTH);
 
+    Math::MatrixMultiplication(1.0,
+                               A, MatrixStructure_Natural, X_LENGTH, Y_LENGTH,
+                               B, MatrixStructure_Natural, Y_LENGTH, Z_LENGTH,
+                               0.0, C, MatrixStructure_Natural, X_LENGTH, Z_LENGTH);
 
-    //Math::MatrixMultiplication(C,1.0,0.0,A,MatrixStructure_Natural,X_LENGTH,Y_LENGTH,B,MatrixStructure_Natural,Y_LENGTH,Z_LENGTH);
+    Math::Print(C, X_LENGTH, Z_LENGTH);
 
     MemoryHandler::Free<double>(A);
     MemoryHandler::Free<double>(B);
@@ -132,11 +135,11 @@ int main()
 
     std::cout << "CPU Math test\n";
 
-    Test(PointerType::CPU,PointerContext::CPU_Only);
+    Test(PointerType::CPU, PointerContext::CPU_Only);
 
     std::cout << "GPU Math test\n";
     cudaDeviceReset();
-    Test(PointerType::GPU,PointerContext::GPU_Aware);
+    Test(PointerType::GPU, PointerContext::GPU_Aware);
 
     std::cout << "\nEnd Math Test Execution\n";
     return 0;

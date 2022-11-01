@@ -117,41 +117,49 @@ void GetIndexBoundaries(MatrixStructure matrixStructure_in, unsigned lengthX_in,
     }
 }
 
-void MathCPU::MatrixMultiplication(Pointer<double> matrix_out, double alpha, double beta,
+void MathCPU::MatrixMultiplication(double alpha,
                                    Pointer<double> matrixLeft_in, MatrixStructure matrixLeftStructure_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
                                    Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
+                                   double beta,
+                                   Pointer<double> matrix_out, MatrixStructure matrixOutStructure_in, unsigned lengthOutX_in, unsigned lengthOutY_in,
                                    Pointer<double> weight_in)
 {
     double *pA, *pB, *pC;
-    unsigned M, N, KL, KR, K;
-    unsigned sA1, sB1;
-    unsigned sA2, sB2;
+    unsigned ML, NR, KL, KR, M, N, K;
+    unsigned sA1, sB1, sC1;
+    unsigned sA2, sB2, sC2;
     pA = matrixLeft_in.pointer;
+    pB = matrixRight_in.pointer;
     pC = matrix_out.pointer;
-    GetIndexBoundaries(matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, M, KL, sA1, sA2);
-    GetIndexBoundaries(matrixRightStructure_in, lengthRightX_in, lengthRightY_in, KR, N, sB1, sB2);
-    if (KL == KR)
+    GetIndexBoundaries(matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, ML, KL, sA1, sA2);
+    GetIndexBoundaries(matrixRightStructure_in, lengthRightX_in, lengthRightY_in, KR, NR, sB1, sB2);
+    GetIndexBoundaries(matrixOutStructure_in, lengthOutX_in, lengthOutY_in, M, N, sC1, sC2);
+    if (KL == KR && M == ML && N == NR)
     {
         K = KL;
     }
     else
     {
         std::cout << "Error: Sizes do not match.\n";
+        std::cout << "M: "<< ML << " " << M << "\n";
+        std::cout << "N: "<< NR << " " << N << "\n";
+        std::cout << "K: "<< KL << " " << KR << "\n";
         return;
     }
-    pB = matrixRight_in.pointer;
+    double auxAlpha = 0.0;
+    double auxBeta = 0.0;
     for (unsigned j = 0; j < N; j++)
     {
-        pA = matrixLeft_in.pointer;
         for (unsigned i = 0; i < M; i++)
         {
+            auxAlpha = 0.0;
+            auxBeta = *(pC + j * sC2 + i * sC1);
             for (unsigned k = 0; k < K; k++)
             {
-                pC[j * M + i] = (*(pA + k * sA1)) * (*(pB + k * sB1));
+                auxAlpha += (*(pA + k * sA2 + i * sA1)) * (*(pB + j * sB2 + k * sB1));
             }
-            pA += sA2;
+            *(pC + j * sC2 + i * sC1) = alpha * auxAlpha + beta * auxBeta;
         }
-        pB += sB2;
     }
 }
 

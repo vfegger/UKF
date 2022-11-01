@@ -172,9 +172,11 @@ void MathGPU::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Poi
     CUDA_Mul<<<B, T>>>(vector_out.pointer, vectorLeft_in.pointer, vectorRight_in.pointer, length_in);
 }
 // Matrix Multiplication TODO
-void MathGPU::MatrixMultiplication(Pointer<double> matrix_out, double alpha, double beta,
+void MathGPU::MatrixMultiplication(double alpha,
                                    Pointer<double> matrixLeft_in, MatrixStructure matrixLeftStructure_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
                                    Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
+                                   double beta,
+                                   Pointer<double> matrix_out, MatrixStructure matrixOutStructure_in, unsigned lengthOutX_in, unsigned lengthOutY_in,
                                    Pointer<double> weight_in)
 {
     unsigned m, n, k;

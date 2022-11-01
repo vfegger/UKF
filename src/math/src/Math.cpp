@@ -12,7 +12,8 @@ bool CheckType(PointerType typeLeft, PointerType typeRight)
 }
 
 // Auxiliary Functions
-void Math::Print(Pointer<double> vector_in, unsigned length_in){
+void Math::Print(Pointer<double> vector_in, unsigned length_in)
+{
     switch (vector_in.type)
     {
     case PointerType::CPU:
@@ -27,7 +28,8 @@ void Math::Print(Pointer<double> vector_in, unsigned length_in){
     }
 }
 
-void Math::Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in){
+void Math::Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in)
+{
     switch (matrix_in.type)
     {
     case PointerType::CPU:
@@ -49,6 +51,7 @@ void Math::Add(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned
 {
     if (!CheckType(vector_inout.type, vector_in.type))
     {
+        std::cout << "Error: Pointer Types do not match.\n";
         return;
     }
     switch (vector_inout.type)
@@ -71,6 +74,7 @@ void Math::Sub(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned
 {
     if (!CheckType(vector_inout.type, vector_in.type))
     {
+        std::cout << "Error: Pointer Types do not match.\n";
         return;
     }
     switch (vector_inout.type)
@@ -111,6 +115,7 @@ void Math::Mul(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned
 {
     if (!CheckType(vector_inout.type, vector_in.type))
     {
+        std::cout << "Error: Pointer Types do not match.\n";
         return;
     }
     switch (vector_inout.type)
@@ -135,6 +140,7 @@ void Math::Add(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointe
 {
     if ((!CheckType(vector_out.type, vectorLeft_in.type)) || (!CheckType(vector_out.type, vectorRight_in.type)))
     {
+        std::cout << "Error: Pointer Types do not match.\n";
         return;
     }
     switch (vector_out.type)
@@ -156,6 +162,7 @@ void Math::Sub(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointe
 {
     if ((!CheckType(vector_out.type, vectorLeft_in.type)) || (!CheckType(vector_out.type, vectorRight_in.type)))
     {
+        std::cout << "Error: Pointer Types do not match.\n";
         return;
     }
     switch (vector_out.type)
@@ -177,6 +184,7 @@ void Math::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, double
 {
     if (!CheckType(vector_out.type, vectorLeft_in.type))
     {
+        std::cout << "Error: Pointer Types do not match.\n";
         return;
     }
     switch (vector_out.type)
@@ -198,6 +206,7 @@ void Math::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointe
 {
     if ((!CheckType(vector_out.type, vectorLeft_in.type)) || (!CheckType(vector_out.type, vectorRight_in.type)))
     {
+        std::cout << "Error: Pointer Types do not match.\n";
         return;
     }
     switch (vector_out.type)
@@ -216,22 +225,25 @@ void Math::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointe
 }
 
 // Matrix Multiplication: alpha*A*B + beta*C => C
-void Math::MatrixMultiplication(Pointer<double> matrix_out, double alpha, double beta,
+void Math::MatrixMultiplication(double alpha,
                                 Pointer<double> matrixLeft_in, MatrixStructure matrixLeftStructure_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
                                 Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
+                                double beta,
+                                Pointer<double> matrix_out, MatrixStructure matrixOutStructure_in, unsigned lengthOutX_in, unsigned lengthOutY_in,
                                 Pointer<double> weight_in)
 {
     if ((!CheckType(matrix_out.type, matrixLeft_in.type)) || (!CheckType(matrix_out.type, matrixRight_in.type)))
     {
+        std::cout << "Error: Pointer Types do not match.\n";
         return;
     }
     switch (matrix_out.type)
     {
     case PointerType::CPU:
-        MathCPU::MatrixMultiplication(matrix_out, alpha, beta, matrixLeft_in, matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, matrixRight_in, matrixRightStructure_in, lengthRightX_in, lengthRightY_in, weight_in);
+        MathCPU::MatrixMultiplication(alpha, matrixLeft_in, matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, matrixRight_in, matrixRightStructure_in, lengthRightX_in, lengthRightY_in, beta, matrix_out, matrixOutStructure_in, lengthOutX_in, lengthOutY_in, weight_in);
         break;
     case PointerType::GPU:
-        MathGPU::MatrixMultiplication(matrix_out, alpha, beta, matrixLeft_in, matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, matrixRight_in, matrixRightStructure_in, lengthRightX_in, lengthRightY_in, weight_in);
+        MathGPU::MatrixMultiplication(alpha, matrixLeft_in, matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, matrixRight_in, matrixRightStructure_in, lengthRightX_in, lengthRightY_in, beta, matrix_out, matrixOutStructure_in, lengthOutX_in, lengthOutY_in, weight_in);
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -327,7 +339,8 @@ void Math::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned 
     return;
 }
 
-bool Math::Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in){
+bool Math::Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in)
+{
     if (!CheckType(vectorLeft_in.type, vectorRight_in.type))
     {
         return false;
@@ -346,7 +359,6 @@ bool Math::Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in
     }
     return false;
 }
-
 
 // Linear System Solvers
 
