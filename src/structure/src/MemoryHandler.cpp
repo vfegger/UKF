@@ -1,9 +1,17 @@
 #include "../include/MemoryHandler.hpp"
 
+// Static variables
+cudaStream_t *MemoryHandler::cudaStreams = NULL;
+cublasHandle_t *MemoryHandler::cublasHandles = NULL;
+cusolverDnHandle_t *MemoryHandler::cusolverHandles = NULL;
+unsigned MemoryHandler::cudaStreams_size = 0u;
+unsigned MemoryHandler::cublasHandles_size = 0u;
+unsigned MemoryHandler::cusolverHandles_size = 0u;
+
 // Void explicit specialization
 
 template <>
-Pointer<void> MemoryHandler::Alloc<void>(unsigned size_in, PointerType type_in, PointerContext context_in){
+Pointer<void> MemoryHandler::Alloc<void>(unsigned size_in, PointerType type_in, PointerContext context_in, cudaStream_t stream_in){
     if (size_in == 0u)
     {
         std::cout << "Error: size equals to 0.\n";
@@ -28,7 +36,7 @@ Pointer<void> MemoryHandler::Alloc<void>(unsigned size_in, PointerType type_in, 
         }
         break;
     case PointerType::GPU:
-        cudaMalloc(&(output.pointer), sizeof(char) * size_in);
+        cudaMallocAsync(&(output.pointer), sizeof(char) * size_in, stream_in);
         break;
     default:
         std::cout << "Error: Behavior of this type is not defined.\n";
@@ -38,7 +46,7 @@ Pointer<void> MemoryHandler::Alloc<void>(unsigned size_in, PointerType type_in, 
 }
 
 template <>
-void MemoryHandler::Free(Pointer<void> pointer_in)
+void MemoryHandler::Free(Pointer<void> pointer_in, cudaStream_t stream_in)
 {
     if (pointer_in.pointer == NULL)
     {
@@ -61,8 +69,8 @@ void MemoryHandler::Free(Pointer<void> pointer_in)
         }
         break;
     case PointerType::GPU:
-        cudaDeviceSynchronize();
-        cudaFree((char*)(pointer_in.pointer));
+        cudaStreamSynchronize(stream_in);
+        cudaFreeAsync((char*)(pointer_in.pointer),stream_in);
         break;
     default:
         std::cout << "Error: Behavior of this type is not defined.\n";

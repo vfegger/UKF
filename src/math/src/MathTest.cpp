@@ -110,16 +110,16 @@ int Test(PointerType type_in, PointerContext context_in)
     MemoryHandler::Set(C, 4.0, 0u, X_LENGTH * Z_LENGTH);
     MemoryHandler::Set(R, 4.0, 0u, X_LENGTH * Z_LENGTH);
 
-    Math::Print(A, X_LENGTH, Y_LENGTH);
-    Math::Print(B, Y_LENGTH, Z_LENGTH);
-    Math::Print(C, X_LENGTH, Z_LENGTH);
+    Math::Print(A, X_LENGTH, Y_LENGTH, 0u);
+    Math::Print(B, Y_LENGTH, Z_LENGTH, 0u);
+    Math::Print(C, X_LENGTH, Z_LENGTH, 0u);
 
     Math::MatrixMultiplication(1.0,
                                A, MatrixStructure_Natural, X_LENGTH, Y_LENGTH,
                                B, MatrixStructure_Natural, Y_LENGTH, Z_LENGTH,
                                0.0, C, MatrixStructure_Natural, X_LENGTH, Z_LENGTH);
 
-    Math::Print(C, X_LENGTH, Z_LENGTH);
+    Math::Print(C, X_LENGTH, Z_LENGTH, 0u);
 
     MemoryHandler::Free<double>(A);
     MemoryHandler::Free<double>(B);
@@ -139,7 +139,9 @@ int main()
 
     std::cout << "GPU Math test\n";
     cudaDeviceReset();
+    MemoryHandler::CreateGPUContext(1u,1u,1u);
     Test(PointerType::GPU, PointerContext::GPU_Aware);
+    MemoryHandler::DestroyGPUContext();
 
     std::cout << "\nEnd Math Test Execution\n";
     return 0;

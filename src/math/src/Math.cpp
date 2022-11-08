@@ -12,7 +12,7 @@ bool CheckType(PointerType typeLeft, PointerType typeRight)
 }
 
 // Auxiliary Functions
-void Math::Print(Pointer<double> vector_in, unsigned length_in)
+void Math::Print(Pointer<double> vector_in, unsigned length_in, unsigned streamIndex_in)
 {
     switch (vector_in.type)
     {
@@ -20,7 +20,7 @@ void Math::Print(Pointer<double> vector_in, unsigned length_in)
         MathCPU::Print(vector_in, length_in);
         break;
     case PointerType::GPU:
-        MathGPU::Print(vector_in, length_in);
+        MathGPU::Print(vector_in, length_in, MemoryHandler::GetStream(streamIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -28,7 +28,7 @@ void Math::Print(Pointer<double> vector_in, unsigned length_in)
     }
 }
 
-void Math::Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in)
+void Math::Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, unsigned streamIndex_in)
 {
     switch (matrix_in.type)
     {
@@ -36,7 +36,7 @@ void Math::Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned length
         MathCPU::Print(matrix_in, lengthX_in, lengthY_in);
         break;
     case PointerType::GPU:
-        MathGPU::Print(matrix_in, lengthX_in, lengthY_in);
+        MathGPU::Print(matrix_in, lengthX_in, lengthY_in, MemoryHandler::GetStream(streamIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -47,7 +47,7 @@ void Math::Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned length
 // In-Placed Calculation
 
 // Vector Element-wise Addition
-void Math::Add(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned length_in)
+void Math::Add(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned length_in, unsigned streamIndex_in)
 {
     if (!CheckType(vector_inout.type, vector_in.type))
     {
@@ -60,7 +60,7 @@ void Math::Add(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned
         MathCPU::Add(vector_inout, vector_in, length_in);
         break;
     case PointerType::GPU:
-        MathGPU::Add(vector_inout, vector_in, length_in);
+        MathGPU::Add(vector_inout, vector_in, length_in, MemoryHandler::GetStream(streamIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -70,7 +70,7 @@ void Math::Add(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned
 }
 
 // Vector Element-wise Subtraction
-void Math::Sub(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned length_in)
+void Math::Sub(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned length_in, unsigned streamIndex_in)
 {
     if (!CheckType(vector_inout.type, vector_in.type))
     {
@@ -83,7 +83,7 @@ void Math::Sub(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned
         MathCPU::Sub(vector_inout, vector_in, length_in);
         break;
     case PointerType::GPU:
-        MathGPU::Sub(vector_inout, vector_in, length_in);
+        MathGPU::Sub(vector_inout, vector_in, length_in, MemoryHandler::GetStream(streamIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -93,7 +93,7 @@ void Math::Sub(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned
 }
 
 // Vector Constant Multiplication
-void Math::Mul(Pointer<double> vector_inout, double value_in, unsigned length_in)
+void Math::Mul(Pointer<double> vector_inout, double value_in, unsigned length_in, unsigned streamIndex_in)
 {
     switch (vector_inout.type)
     {
@@ -101,7 +101,7 @@ void Math::Mul(Pointer<double> vector_inout, double value_in, unsigned length_in
         MathCPU::Mul(vector_inout, value_in, length_in);
         break;
     case PointerType::GPU:
-        MathGPU::Mul(vector_inout, value_in, length_in);
+        MathGPU::Mul(vector_inout, value_in, length_in, MemoryHandler::GetStream(streamIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -111,7 +111,7 @@ void Math::Mul(Pointer<double> vector_inout, double value_in, unsigned length_in
 }
 
 // Vector Element-wise Multiplication
-void Math::Mul(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned length_in)
+void Math::Mul(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned length_in, unsigned streamIndex_in)
 {
     if (!CheckType(vector_inout.type, vector_in.type))
     {
@@ -124,7 +124,7 @@ void Math::Mul(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned
         MathCPU::Mul(vector_inout, vector_in, length_in);
         break;
     case PointerType::GPU:
-        MathGPU::Mul(vector_inout, vector_in, length_in);
+        MathGPU::Mul(vector_inout, vector_in, length_in, MemoryHandler::GetStream(streamIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -136,7 +136,7 @@ void Math::Mul(Pointer<double> vector_inout, Pointer<double> vector_in, unsigned
 // Out-Placed Calculation
 
 // Vector Element-wise Addition
-void Math::Add(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in)
+void Math::Add(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned streamIndex_in)
 {
     if ((!CheckType(vector_out.type, vectorLeft_in.type)) || (!CheckType(vector_out.type, vectorRight_in.type)))
     {
@@ -149,7 +149,7 @@ void Math::Add(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointe
         MathCPU::Add(vector_out, vectorLeft_in, vectorRight_in, length_in);
         break;
     case PointerType::GPU:
-        MathGPU::Add(vector_out, vectorLeft_in, vectorRight_in, length_in);
+        MathGPU::Add(vector_out, vectorLeft_in, vectorRight_in, length_in, MemoryHandler::GetStream(streamIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -158,7 +158,7 @@ void Math::Add(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointe
     return;
 }
 // Vector Element-wise Subtraction
-void Math::Sub(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in)
+void Math::Sub(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned streamIndex_in)
 {
     if ((!CheckType(vector_out.type, vectorLeft_in.type)) || (!CheckType(vector_out.type, vectorRight_in.type)))
     {
@@ -171,7 +171,7 @@ void Math::Sub(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointe
         MathCPU::Sub(vector_out, vectorLeft_in, vectorRight_in, length_in);
         break;
     case PointerType::GPU:
-        MathGPU::Sub(vector_out, vectorLeft_in, vectorRight_in, length_in);
+        MathGPU::Sub(vector_out, vectorLeft_in, vectorRight_in, length_in, MemoryHandler::GetStream(streamIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -180,7 +180,7 @@ void Math::Sub(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointe
     return;
 }
 // Vector Constant Multiplication
-void Math::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, double valueRight_in, unsigned length_in)
+void Math::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, double valueRight_in, unsigned length_in, unsigned streamIndex_in)
 {
     if (!CheckType(vector_out.type, vectorLeft_in.type))
     {
@@ -193,7 +193,7 @@ void Math::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, double
         MathCPU::Mul(vector_out, vectorLeft_in, valueRight_in, length_in);
         break;
     case PointerType::GPU:
-        MathGPU::Mul(vector_out, vectorLeft_in, valueRight_in, length_in);
+        MathGPU::Mul(vector_out, vectorLeft_in, valueRight_in, length_in, MemoryHandler::GetStream(streamIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -202,7 +202,7 @@ void Math::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, double
     return;
 }
 // Vector Element-wise Multiplication
-void Math::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in)
+void Math::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned streamIndex_in)
 {
     if ((!CheckType(vector_out.type, vectorLeft_in.type)) || (!CheckType(vector_out.type, vectorRight_in.type)))
     {
@@ -215,7 +215,7 @@ void Math::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointe
         MathCPU::Mul(vector_out, vectorLeft_in, vectorRight_in, length_in);
         break;
     case PointerType::GPU:
-        MathGPU::Mul(vector_out, vectorLeft_in, vectorRight_in, length_in);
+        MathGPU::Mul(vector_out, vectorLeft_in, vectorRight_in, length_in, MemoryHandler::GetStream(streamIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -230,7 +230,7 @@ void Math::MatrixMultiplication(double alpha,
                                 Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
                                 double beta,
                                 Pointer<double> matrix_out, MatrixStructure matrixOutStructure_in, unsigned lengthOutX_in, unsigned lengthOutY_in,
-                                Pointer<double> weight_in)
+                                Pointer<double> weight_in, unsigned cublasIndex_in, unsigned streamIndex_in)
 {
     if ((!CheckType(matrix_out.type, matrixLeft_in.type)) || (!CheckType(matrix_out.type, matrixRight_in.type)))
     {
@@ -243,7 +243,7 @@ void Math::MatrixMultiplication(double alpha,
         MathCPU::MatrixMultiplication(alpha, matrixLeft_in, matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, matrixRight_in, matrixRightStructure_in, lengthRightX_in, lengthRightY_in, beta, matrix_out, matrixOutStructure_in, lengthOutX_in, lengthOutY_in, weight_in);
         break;
     case PointerType::GPU:
-        MathGPU::MatrixMultiplication(alpha, matrixLeft_in, matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, matrixRight_in, matrixRightStructure_in, lengthRightX_in, lengthRightY_in, beta, matrix_out, matrixOutStructure_in, lengthOutX_in, lengthOutY_in, weight_in);
+        MathGPU::MatrixMultiplication(alpha, matrixLeft_in, matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, matrixRight_in, matrixRightStructure_in, lengthRightX_in, lengthRightY_in, beta, matrix_out, matrixOutStructure_in, lengthOutX_in, lengthOutY_in, MemoryHandler::GetCuBLASHandle(cublasIndex_in), MemoryHandler::GetStream(streamIndex_in), weight_in);
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -255,70 +255,74 @@ void Math::MatrixMultiplication(double alpha,
 // Operators
 
 // In-Place Operator Distribution
-void Math::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in),
+void Math::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned streamIndex_in),
                      Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
                      unsigned strideOut_in, unsigned strideLeft_in, unsigned strideRight_in,
-                     unsigned offsetOut_in, unsigned offsetLeft_in, unsigned offsetRight_in)
+                     unsigned offsetOut_in, unsigned offsetLeft_in, unsigned offsetRight_in,
+                     unsigned streamIndex_in)
 {
     vector_out.pointer += offsetOut_in;
     vectorLeft_in.pointer += offsetLeft_in;
     vectorRight_in.pointer += offsetRight_in;
     for (unsigned i = 0u; i < iteration_in; i++)
     {
-        operation_in(vector_out, vectorLeft_in, vectorRight_in, length_in);
+        operation_in(vector_out, vectorLeft_in, vectorRight_in, length_in, streamIndex_in);
         vector_out.pointer += strideOut_in;
         vectorLeft_in.pointer += strideLeft_in;
         vectorRight_in.pointer += strideRight_in;
     }
 }
-void Math::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, double valueRight_in, unsigned length_in),
+void Math::Operation(void (*operation_in)(Pointer<double> vector_out, Pointer<double> vectorLeft_in, double valueRight_in, unsigned length_in, unsigned streamIndex_in),
                      Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
                      unsigned strideOut_in, unsigned strideLeft_in, unsigned strideRight_in,
-                     unsigned offsetOut_in, unsigned offsetLeft_in, unsigned offsetRight_in)
+                     unsigned offsetOut_in, unsigned offsetLeft_in, unsigned offsetRight_in,
+                     unsigned streamIndex_in)
 {
     vector_out.pointer += offsetOut_in;
     vectorLeft_in.pointer += offsetLeft_in;
     vectorRight_in.pointer += offsetRight_in;
     for (unsigned i = 0u; i < iteration_in; i++)
     {
-        operation_in(vector_out, vectorLeft_in, *vectorRight_in.pointer, length_in);
+        operation_in(vector_out, vectorLeft_in, *vectorRight_in.pointer, length_in, streamIndex_in);
         vector_out.pointer += strideOut_in;
         vectorLeft_in.pointer += strideLeft_in;
         vectorRight_in.pointer += strideRight_in;
     }
 }
 // Out-Place Operator Distribution
-void Math::Operation(void (*operation_in)(Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in),
+void Math::Operation(void (*operation_in)(Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in, unsigned streamIndex_in),
                      Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
                      unsigned strideLeft_in, unsigned strideRight_in,
-                     unsigned offsetLeft_in, unsigned offsetRight_in)
+                     unsigned offsetLeft_in, unsigned offsetRight_in,
+                     unsigned streamIndex_in)
 {
     vector_inout.pointer += offsetLeft_in;
     vectorRight_in.pointer += offsetRight_in;
     for (unsigned i = 0u; i < iteration_in; i++)
     {
-        operation_in(vector_inout, vectorRight_in, length_in);
+        operation_in(vector_inout, vectorRight_in, length_in, streamIndex_in);
         vector_inout.pointer += strideLeft_in;
         vectorRight_in.pointer += strideRight_in;
     }
 }
-void Math::Operation(void (*operation_in)(Pointer<double> vector_inout, double valueRight_in, unsigned length_in),
+void Math::Operation(void (*operation_in)(Pointer<double> vector_inout, double valueRight_in, unsigned length_in, unsigned streamIndex_in),
                      Pointer<double> vector_inout, Pointer<double> vectorRight_in, unsigned length_in, unsigned iteration_in,
                      unsigned strideLeft_in, unsigned strideRight_in,
-                     unsigned offsetLeft_in, unsigned offsetRight_in)
+                     unsigned offsetLeft_in, unsigned offsetRight_in,
+                     unsigned streamIndex_in)
 {
     vector_inout.pointer += offsetLeft_in;
     vectorRight_in.pointer += offsetRight_in;
     for (unsigned i = 0u; i < iteration_in; i++)
     {
-        operation_in(vector_inout, *vectorRight_in.pointer, length_in);
+        operation_in(vector_inout, *vectorRight_in.pointer, length_in, streamIndex_in);
         vector_inout.pointer += strideLeft_in;
         vectorRight_in.pointer += strideRight_in;
     }
 }
 
 // Reducibles Operations
-void Math::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in)
+void Math::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in, unsigned cublasIndex, unsigned streamIndex_in)
 {
     if ((!CheckType(vector_out.type, matrix_in.type)) || (weight_in.pointer != NULL && (!CheckType(vector_out.type, weight_in.type))))
     {
@@ -330,7 +334,7 @@ void Math::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned 
         MathCPU::Mean(vector_out, matrix_in, lengthX_in, lengthY_in, weight_in);
         break;
     case PointerType::GPU:
-        MathGPU::Mean(vector_out, matrix_in, lengthX_in, lengthY_in, weight_in);
+        MathGPU::Mean(vector_out, matrix_in, lengthX_in, lengthY_in, MemoryHandler::GetCuBLASHandle(cublasIndex), MemoryHandler::GetStream(streamIndex_in), weight_in);
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -365,7 +369,7 @@ bool Math::Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in
 // Helper Functions
 
 // Wrapper Methods
-void Math::Decomposition(Pointer<double> decomposition_out, DecompositionType decompositionType_in, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out)
+void Math::Decomposition(Pointer<double> decomposition_out, DecompositionType decompositionType_in, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out, unsigned cusolverIndex_in, unsigned streamIndex_in)
 {
     if ((!CheckType(decomposition_out.type, matrix_in.type)) || (pivot_out.pointer != NULL && (!CheckType(decomposition_out.type, pivot_out.type))))
     {
@@ -377,7 +381,7 @@ void Math::Decomposition(Pointer<double> decomposition_out, DecompositionType de
         MathCPU::Decomposition(decomposition_out, decompositionType_in, matrix_in, lengthX_in, lengthY_in, pivot_out);
         break;
     case PointerType::GPU:
-        MathGPU::Decomposition(decomposition_out, decompositionType_in, matrix_in, lengthX_in, lengthY_in, pivot_out);
+        MathGPU::Decomposition(decomposition_out, decompositionType_in, matrix_in, lengthX_in, lengthY_in, MemoryHandler::GetCuSolverHandle(cusolverIndex_in), MemoryHandler::GetStream(streamIndex_in), pivot_out);
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -388,7 +392,8 @@ void Math::Decomposition(Pointer<double> decomposition_out, DecompositionType de
 
 void Math::Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOperationSide operationSide_in,
                  Pointer<double> A_in, unsigned lengthAX_in, unsigned lengthAY_in,
-                 Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in)
+                 Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in,
+                 unsigned cusolverIndex_in, unsigned streamIndex_in)
 {
     if ((!CheckType(X_out.type, A_in.type)) || (!CheckType(X_out.type, B_in.type)))
     {
@@ -400,7 +405,7 @@ void Math::Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOp
         MathCPU::Solve(X_out, solverType_in, operationSide_in, A_in, lengthAX_in, lengthAY_in, B_in, lengthBX_in, lengthBY_in);
         break;
     case PointerType::GPU:
-        MathGPU::Solve(X_out, solverType_in, operationSide_in, A_in, lengthAX_in, lengthAY_in, B_in, lengthBX_in, lengthBY_in);
+        MathGPU::Solve(X_out, solverType_in, operationSide_in, A_in, lengthAX_in, lengthAY_in, B_in, lengthBX_in, lengthBY_in, MemoryHandler::GetCuSolverHandle(cusolverIndex_in), MemoryHandler::GetStream(streamIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";

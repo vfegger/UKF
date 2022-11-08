@@ -64,29 +64,14 @@ public:
 class MemoryHandler
 {
 private:
-    cudaStream_t *cudaStreams;
-    unsigned cudaStreams_size;
-    cublasHandle_t *cublasHandles;
-    unsigned cublasHandles_size;
-    unsigned cublasHandles_count;
-    cusolverDnHandle_t *cusolverHandles;
-    unsigned cusolverHandles_size;
-    unsigned cusolverHandles_count;
+    static cudaStream_t *cudaStreams;
+    static cublasHandle_t *cublasHandles;
+    static cusolverDnHandle_t *cusolverHandles;
+    static unsigned cudaStreams_size;
+    static unsigned cublasHandles_size;
+    static unsigned cusolverHandles_size;
 
-public:
-    MemoryHandler()
-    {
-        cudaStreams = NULL;
-        cudaStreams_size = 0u;
-        cublasHandles = NULL;
-        cublasHandles_size = 0u;
-        cublasHandles_count = 0u;
-        cusolverHandles = NULL;
-        cusolverHandles_size = 0u;
-        cusolverHandles_count = 0u;
-    }
-
-    void AllocStreams(unsigned size_in)
+    static void AllocStreams(unsigned size_in)
     {
         cudaStreams = new (std::nothrow) cudaStream_t[size_in];
         cudaStreams_size = size_in;
@@ -96,94 +81,97 @@ public:
         }
     }
 
-    void FreeStreams()
+    static void AllocCuBLAS(unsigned size_in)
+    {
+        cublasHandles = new (std::nothrow) cublasHandle_t[size_in];
+        cublasHandles_size = size_in;
+        for (unsigned i = 0; i < cublasHandles_size; i++)
+        {
+            cublasCreate_v2(&(cublasHandles[i]));
+        }
+    }
+
+    static void AllocCuSolverHandles(unsigned size_in)
+    {
+        cusolverHandles = new (std::nothrow) cusolverDnHandle_t[size_in];
+        cusolverHandles_size = size_in;
+        for (unsigned i = 0; i < cusolverHandles_size; i++)
+        {
+            cusolverDnCreate(&(cusolverHandles[i]));
+        }
+    }
+
+    static void FreeStreams()
     {
         for (unsigned i = 0; i < cudaStreams_size; i++)
         {
-            cudaStreamSynchronize(cudaStreams[i]);
             cudaStreamDestroy(cudaStreams[i]);
         }
         cudaStreams_size = 0u;
         delete[] cudaStreams;
     }
 
-    void AllocCuBLASHandles(unsigned size_in)
+    static void FreeCuBLAS()
     {
-        cublasHandles = new (std::nothrow) cublasHandle_t[size_in];
-        cublasHandles_size = size_in;
-        cublasHandles_count = 0u;
-    }
-
-    void CreateCuBLASHandle(unsigned index_in)
-    {
-        if (index_in >= cublasHandles_size)
+        for (unsigned i = 0; i < cublasHandles_size; i++)
         {
-            std::cout << "Error: CuBLAS Handle cannot be created.\n";
-            return;
+            cublasDestroy_v2(cublasHandles[i]);
         }
-        cublasCreate_v2(&(cublasHandles[index_in]));
-        return;
-    }
-
-    void DestroyCuBLASHandle(unsigned index_in)
-    {
-        if (index_in >= cublasHandles_size)
-        {
-            std::cout << "Error: CuBLAS Handle cannot be destroyed.\n";
-            return;
-        }
-        cublasDestroy_v2(cublasHandles[index_in]);
-        return;
-    }
-
-    void FreeCuBLASHandles()
-    {
         cublasHandles_size = 0u;
         delete[] cublasHandles;
     }
 
-    void AllocCuSolverHandles(unsigned size_in)
+    static void FreeCuSolverHandles()
     {
-        cusolverHandles = new (std::nothrow) cusolverDnHandle_t[size_in];
-        cusolverHandles_size = size_in;
-        cusolverHandles_count = 0u;
-    }
-
-    void CreateCuSolverHandle(unsigned index_in)
-    {
-        if (index_in >= cusolverHandles_size)
+        for (unsigned i = 0; i < cusolverHandles_size; i++)
         {
-            std::cout << "Error: CuSolver Handle cannot be created.\n";
-            return;
+            cusolverDnDestroy(cusolverHandles[i]);
         }
-        cusolverDnCreate(&(cusolverHandles[index_in]));
-        return;
+        cusolverHandles_size = 0u;
+        delete[] cusolverHandles;
     }
 
-    void DestroyCuSolverHandle(unsigned index_in)
+public:
+    MemoryHandler()
     {
-        if (index_in >= cublasHandles_size)
-        {
-            std::cout << "Error: CuSolver Handle cannot be destroyed.\n";
-            return;
-        }
-        cusolverDnDestroy(cusolverHandles[index_in]);
-        return;
     }
 
-    void FreeCuSolverHandles()
+    static void CreateGPUContext(unsigned cudaSize_in, unsigned cublasSize_in, unsigned cusolverSize_in)
     {
-        cublasHandles_size = 0u;
-        delete[] cublasHandles;
+        AllocStreams(cudaSize_in);
+        AllocCuBLAS(cublasSize_in);
+        AllocCuSolverHandles(cusolverSize_in);
+    }
+
+    static void DestroyGPUContext()
+    {
+        FreeCuSolverHandles();
+        FreeCuBLAS();
+        FreeStreams();
+    }
+
+    static cudaStream_t GetStream(unsigned index_in)
+    {
+        return MemoryHandler::cudaStreams[index_in];
+    }
+
+    static cublasHandle_t GetCuBLASHandle(unsigned index_in)
+    {
+        return MemoryHandler::cublasHandles[index_in];
+    }
+
+    static cusolverDnHandle_t GetCuSolverHandle(unsigned index_in)
+    {
+        return MemoryHandler::cusolverHandles[index_in];
     }
 
     template <typename T, typename S>
-    static Pointer<T> AllocValue(const S& value_in, PointerType type_in, PointerContext context_in)
+    static Pointer<T> AllocValue(const S &value_in, PointerType type_in, PointerContext context_in)
     {
         Pointer<T> output;
         output.type = type_in;
         output.context = context_in;
-        T* pointer_aux;
+        T *pointer_aux;
         switch (type_in)
         {
         case PointerType::CPU:
@@ -204,7 +192,7 @@ public:
         case PointerType::GPU:
             pointer_aux = new T(value_in);
             cudaMalloc(&(output.pointer), sizeof(T));
-            cudaMemcpy(output.pointer,&pointer_aux,sizeof(T),cudaMemcpyHostToDevice);
+            cudaMemcpy(output.pointer, &pointer_aux, sizeof(T), cudaMemcpyHostToDevice);
             delete pointer_aux;
             break;
         default:
@@ -215,7 +203,7 @@ public:
     }
 
     template <typename T>
-    static Pointer<T> Alloc(unsigned size_in, PointerType type_in, PointerContext context_in)
+    static Pointer<T> Alloc(unsigned size_in, PointerType type_in, PointerContext context_in, cudaStream_t stream_in = cudaStreamDefault)
     {
         if (size_in == 0u)
         {
@@ -252,7 +240,7 @@ public:
     }
 
     template <typename T>
-    static void Free(Pointer<T> pointer_in)
+    static void Free(Pointer<T> pointer_in, cudaStream_t stream_in = cudaStreamDefault)
     {
         if (pointer_in.pointer == NULL)
         {
@@ -276,8 +264,7 @@ public:
             }
             break;
         case PointerType::GPU:
-            cudaDeviceSynchronize();
-            cudaFree(pointer_in.pointer);
+            cudaFreeAsync(pointer_in.pointer,stream_in);
             break;
         default:
             std::cout << "Error: Behavior of this type is not defined.\n";
@@ -341,7 +328,7 @@ public:
     }
 
     template <typename T>
-    static void Copy(Pointer<T> pointerTo_out, Pointer<T> pointerFrom_in, unsigned length_in)
+    static void Copy(Pointer<T> pointerTo_out, Pointer<T> pointerFrom_in, unsigned length_in, cudaStream_t stream_in = cudaStreamDefault)
     {
         if (pointerTo_out.pointer == NULL || pointerFrom_in.pointer == NULL)
         {
@@ -364,10 +351,13 @@ public:
             cudaMemcpy(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(T) * length_in, cudaMemcpyDeviceToHost);
             break;
         case PointerDataTransfer::HostAwareToDevice:
-            cudaMemcpyAsync(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(T) * length_in, cudaMemcpyHostToDevice);
+            cudaMemcpyAsync(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(T) * length_in, cudaMemcpyHostToDevice, stream_in);
             break;
         case PointerDataTransfer::DeviceToHostAware:
-            cudaMemcpyAsync(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(T) * length_in, cudaMemcpyDeviceToHost);
+            cudaMemcpyAsync(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(T) * length_in, cudaMemcpyDeviceToHost, stream_in);
+            break;
+        case PointerDataTransfer::DeviceToDevice:
+            cudaMemcpyAsync(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(T) * length_in, cudaMemcpyDeviceToDevice, stream_in);
             break;
         default:
             break;
@@ -413,9 +403,9 @@ public:
     }
 };
 
-template<>
-Pointer<void> MemoryHandler::Alloc(unsigned size_in, PointerType type_in, PointerContext context_in);
-template<>
-void MemoryHandler::Free(Pointer<void> pointer_in);
+template <>
+Pointer<void> MemoryHandler::Alloc(unsigned size_in, PointerType type_in, PointerContext context_in, cudaStream_t stream_in);
+template <>
+void MemoryHandler::Free(Pointer<void> pointer_in, cudaStream_t stream_in);
 
 #endif
