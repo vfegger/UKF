@@ -94,6 +94,14 @@ void MathCPU::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Poi
     }
 }
 // Matrix Multiplication TODO
+template <typename T>
+void Swap(T &left_inout, T &right_inout)
+{
+    T aux = left_inout;
+    left_inout = right_inout;
+    right_inout = aux;
+}
+
 void GetIndexBoundaries(MatrixStructure matrixStructure_in, unsigned lengthX_in, unsigned lengthY_in, unsigned &sizeX_out, unsigned &sizeY_out, unsigned &strideX_out, unsigned &strideY_out)
 {
     switch (matrixStructure_in)
@@ -117,6 +125,21 @@ void GetIndexBoundaries(MatrixStructure matrixStructure_in, unsigned lengthX_in,
     }
 }
 
+void GetIndexOutBoundaries(MatrixStructure structO_in, unsigned lengthOX_in, unsigned lengthOY_in, unsigned &sizeOX_out, unsigned &sizeOY_out, unsigned &strideOX_out, unsigned &strideOY_out,
+                           double *&L_inout, unsigned &sizeLX_out, unsigned &sizeLY_out, unsigned &strideLX_out, unsigned &strideLY_out,
+                           double *&R_inout, unsigned &sizeRX_out, unsigned &sizeRY_out, unsigned &strideRX_out, unsigned &strideRY_out)
+{
+    GetIndexBoundaries(structO_in, lengthOX_in, lengthOY_in, sizeOX_out, sizeOY_out, strideOX_out, strideOY_out);
+    if (structO_in == MatrixStructure_Transposed)
+    {
+        Swap(L_inout, R_inout);
+        Swap(sizeLX_out, sizeRY_out);
+        Swap(sizeLY_out, sizeRX_out);
+        Swap(strideLX_out, strideRY_out);
+        Swap(strideLY_out, strideRX_out);
+    }
+}
+
 void MathCPU::MatrixMultiplication(double alpha,
                                    Pointer<double> matrixLeft_in, MatrixStructure matrixLeftStructure_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
                                    Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
@@ -133,7 +156,8 @@ void MathCPU::MatrixMultiplication(double alpha,
     pC = matrix_out.pointer;
     GetIndexBoundaries(matrixLeftStructure_in, lengthLeftX_in, lengthLeftY_in, ML, KL, sA1, sA2);
     GetIndexBoundaries(matrixRightStructure_in, lengthRightX_in, lengthRightY_in, KR, NR, sB1, sB2);
-    GetIndexBoundaries(matrixOutStructure_in, lengthOutX_in, lengthOutY_in, M, N, sC1, sC2);
+    GetIndexOutBoundaries(matrixOutStructure_in, lengthOutX_in, lengthOutY_in, M, N, sC1, sC2,
+                          pA, ML, KL, sA1, sA2, pB, KR, NR, sB1, sB2);
     if (KL == KR && M == ML && N == NR)
     {
         K = KL;
@@ -141,25 +165,41 @@ void MathCPU::MatrixMultiplication(double alpha,
     else
     {
         std::cout << "Error: Sizes do not match.\n";
-        std::cout << "M: "<< ML << " " << M << "\n";
-        std::cout << "N: "<< NR << " " << N << "\n";
-        std::cout << "K: "<< KL << " " << KR << "\n";
+        std::cout << "M: " << ML << " " << M << "\n";
+        std::cout << "N: " << NR << " " << N << "\n";
+        std::cout << "K: " << KL << " " << KR << "\n";
         return;
     }
     double auxAlpha = 0.0;
     double auxBeta = 0.0;
+    double *aux = pC;
+    if (matrixOutStructure_in == MatrixStructure_Transposed)
+    {
+        aux = new double[M * N];
+        for (unsigned j = 0; j < N; j++)
+        {
+            for (unsigned i = 0; i < M; i++)
+            {
+                aux[j * M + i] = pC[i * N + j];
+            }
+        }
+    }
     for (unsigned j = 0; j < N; j++)
     {
         for (unsigned i = 0; i < M; i++)
         {
             auxAlpha = 0.0;
-            auxBeta = *(pC + j * sC2 + i * sC1);
+            auxBeta = aux[j * M + i];
             for (unsigned k = 0; k < K; k++)
             {
-                auxAlpha += (*(pA + k * sA2 + i * sA1)) * (*(pB + j * sB2 + k * sB1));
+                auxAlpha += pA[k * sA2 + i * sA1] * pB[j * sB2 + k * sB1];
             }
-            *(pC + j * sC2 + i * sC1) = alpha * auxAlpha + beta * auxBeta;
+            pC[j * M + i] = alpha * auxAlpha + beta * auxBeta;
         }
+    }
+    if (matrixOutStructure_in == MatrixStructure_Transposed)
+    {
+        delete[] aux;
     }
 }
 
@@ -246,9 +286,9 @@ void MathCPU::ForwardSubstitution(Pointer<double> matrix_out, MatrixStructure ma
             double sum = 0.0;
             for (unsigned i = 0u; i < k; i++)
             {
-                sum += (*(A + i * sA2 + k * sA1)) * (*(X + j * sX2 + i * sX1));
+                sum += A[i * sA2 + k * sA1] * X[j * sX2 + i * sX1];
             }
-            *(X + j * sX2 + k * sX1) = (1.0 / (*(A + k * sA2 + k * sA1))) * (*(B + j * sB2 + k * sB1) - sum);
+            X[j * sX2 + k * sX1] = (1.0 / A[k * sA2 + k * sA1]) *(B[j * sB2 + k * sB1] - sum);
         }
     }
 }
@@ -286,11 +326,11 @@ void MathCPU::BackwardSubstitution(Pointer<double> matrix_out, MatrixStructure m
         {
             unsigned kk = K - 1u - k;
             double sum = 0.0;
-            for (unsigned i = k + 1; i < K; i++)
+            for (unsigned i = kk + 1; i < K; i++)
             {
-                sum += (*(A + i * sA2 + kk * sA1)) * (*(X + j * sX2 + i * sX1));
+                sum += A[i * sA2 + kk * sA1] * X[j * sX2 + i * sX1];
             }
-            *(X + j * sX2 + kk * sX1) = (1.0 / (*(A + kk * sA2 + kk * sA1))) * (*(B + j * sB2 + kk * sB1) - sum);
+            X[j * sX2 + kk * sX1] = (1.0 / A[kk * sA2 + kk * sA1]) * (B[j * sB2 + kk * sB1] - sum);
         }
     }
 }
@@ -361,7 +401,6 @@ void MathCPU::CholeskySolver(Pointer<double> X_out, MatrixOperationSide operatio
                              workspace, MatrixStructure_Natural, lengthAX_in, lengthAY_in,
                              X_out, MatrixStructure_Transposed, lengthBX_in, lengthBY_in);
         break;
-
     default:
         break;
     }

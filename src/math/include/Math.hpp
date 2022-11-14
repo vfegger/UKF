@@ -11,8 +11,8 @@
 namespace Math
 {
     // Auxiliary Functions
-    void Print(Pointer<double> vector_in, unsigned length_in, unsigned streamIndex_in);
-    void Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, unsigned streamIndex_in);
+    void PrintVector(Pointer<double> vector_in, unsigned length_in, unsigned streamIndex_in = 0u);
+    void PrintMatrix(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, unsigned streamIndex_in = 0u);
 
     // In-Placed Calculation
 

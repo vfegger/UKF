@@ -180,19 +180,30 @@ void Swap(T &left_inout, T &right_inout)
     right_inout = aux;
 }
 
-void SetCuBLASOperation(double *&auxLeft_out, cublasOperation_t &leftStructure_out, unsigned &lengthXLeft_out, unsigned &lengthYLeft_out,
-                        double *&auxRight_out, cublasOperation_t &rightStructure_out, unsigned &lengthXRight_out, unsigned &lengthYRight_out,
+void SetCuBLASOperation(double *&auxLeft_out, cublasOperation_t &leftStructure_out, unsigned &lengthXLeft_out, unsigned &lengthYLeft_out, unsigned &leadingDimensionLeft_out,
+                        double *&auxRight_out, cublasOperation_t &rightStructure_out, unsigned &lengthXRight_out, unsigned &lengthYRight_out, unsigned &leadingDimensionRight_out,
                         unsigned &lengthXOut_in, unsigned &lengthYOut_in,
                         MatrixStructure matrixOutStructure_in, MatrixStructure matrixLeftStructure_in, MatrixStructure matrixRightStructure_in)
 {
-    leftStructure_out = (matrixLeftStructure_in == MatrixStructure_Natural) ? cublasOperation_t::CUBLAS_OP_N : cublasOperation_t::CUBLAS_OP_T;
-    rightStructure_out = (matrixRightStructure_in == MatrixStructure_Natural) ? cublasOperation_t::CUBLAS_OP_N : cublasOperation_t::CUBLAS_OP_T;
+    leftStructure_out = cublasOperation_t::CUBLAS_OP_N;
+    rightStructure_out = cublasOperation_t::CUBLAS_OP_N;
+    if (matrixLeftStructure_in == MatrixStructure_Transposed)
+    {
+        leftStructure_out = cublasOperation_t::CUBLAS_OP_T;
+        Swap(lengthXLeft_out, lengthYLeft_out);
+    }
+    if (matrixRightStructure_in == MatrixStructure_Transposed)
+    {
+        rightStructure_out = cublasOperation_t::CUBLAS_OP_T;
+        Swap(lengthXRight_out, lengthYRight_out);
+    }
     if (matrixOutStructure_in == MatrixStructure_Transposed)
     {
         Swap(lengthXOut_in, lengthYOut_in);
         Swap(auxLeft_out, auxRight_out);
-        Swap(lengthXLeft_out, lengthXRight_out);
-        Swap(lengthYLeft_out, lengthYRight_out);
+        Swap(lengthXLeft_out, lengthYRight_out);
+        Swap(lengthYLeft_out, lengthXRight_out);
+        Swap(leadingDimensionLeft_out, leadingDimensionRight_out);
         leftStructure_out = (matrixRightStructure_in == MatrixStructure_Transposed) ? cublasOperation_t::CUBLAS_OP_N : cublasOperation_t::CUBLAS_OP_T;
         rightStructure_out = (matrixLeftStructure_in == MatrixStructure_Transposed) ? cublasOperation_t::CUBLAS_OP_N : cublasOperation_t::CUBLAS_OP_T;
     }
@@ -208,10 +219,16 @@ void MathGPU::MatrixMultiplication(double alpha,
 {
     double *aux = NULL;
     double *auxL, *auxR;
+    unsigned ldL, ldR;
     cublasOperation_t opL, opR;
     unsigned ML, MX;
     unsigned NR, NX;
     unsigned KL, KR;
+    unsigned K;
+
+    ldL = lengthLeftX_in;
+    ldR = lengthRightX_in;
+
     ML = lengthLeftX_in;
     MX = lengthOutX_in;
     NR = lengthRightY_in;
@@ -221,33 +238,53 @@ void MathGPU::MatrixMultiplication(double alpha,
     cublasSetStream(handle_in, stream_in);
     auxL = matrixLeft_in.pointer;
     auxR = matrixRight_in.pointer;
-    SetCuBLASOperation(auxL, opL, ML, KL, auxR, opR, KR, NR, MX, NX, matrixOutStructure_in, matrixLeftStructure_in, matrixRightStructure_in);
+
+    SetCuBLASOperation(auxL, opL, ML, KL, ldL, auxR, opR, KR, NR, ldR, MX, NX, matrixOutStructure_in, matrixLeftStructure_in, matrixRightStructure_in);
+
+    if (KL == KR && MX == ML && NX == NR)
+    {
+        K = KL;
+    }
+    else
+    {
+        std::cout << "Error: Sizes do not match.\n";
+        std::cout << "M: " << ML << " " << MX << "\n";
+        std::cout << "N: " << NR << " " << NX << "\n";
+        std::cout << "K: " << KL << " " << KR << "\n";
+        return;
+    }
     if (weight_in.pointer != NULL)
     {
         if (ML < NR)
         {
             cudaMallocAsync(&aux, sizeof(double) * ML * KL, stream_in);
-            for (unsigned i = 0u; i < KL; i++)
+            for (unsigned i = 0u; i < K; i++)
             {
-                cublasDaxpy(handle_in, ML, weight_in.pointer + i, auxL + i * ML, 1, aux + i * ML, 1);
+                unsigned stride1, stride2;
+                stride1 = (opL == CUBLAS_OP_N) ? 1 : ldL;
+                stride2 = (opL == CUBLAS_OP_N) ? ldL : 1;
+                cublasDaxpy(handle_in, ML, weight_in.pointer + i, auxL + i * stride2, stride1, aux + i * stride2, stride1);
             }
-            cublasDgemm(handle_in, opL, opR, MX, NX, KL, &alpha, aux, ML, auxR, KR, &beta, matrix_out.pointer, MX);
+            cublasDgemm(handle_in, opL, opR, MX, NX, K, &alpha, aux, ldL, auxR, ldR, &beta, matrix_out.pointer, MX);
             cudaFreeAsync(aux, stream_in);
         }
         else
         {
             cudaMallocAsync(&aux, sizeof(double) * KR * NR, stream_in);
-            for (unsigned i = 0u; i < KR; i++)
+            for (unsigned i = 0u; i < K; i++)
             {
-                cublasDaxpy(handle_in, NR, weight_in.pointer + i, auxR + i, KR, aux + i, KR);
+                unsigned stride1, stride2;
+                stride1 = (opL == CUBLAS_OP_N) ? ldR : 1;
+                stride2 = (opL == CUBLAS_OP_N) ? 1 : ldR;
+                cublasDaxpy(handle_in, NR, weight_in.pointer + i, auxR + i * stride2, stride1, aux + i, stride1);
             }
-            cublasDgemm(handle_in, opL, opR, MX, NX, KL, &alpha, auxL, ML, aux, KR, &beta, matrix_out.pointer, MX);
+            cublasDgemm(handle_in, opL, opR, MX, NX, K, &alpha, auxL, ldL, aux, ldR, &beta, matrix_out.pointer, MX);
             cudaFreeAsync(aux, stream_in);
         }
     }
     else
     {
-        cublasDgemm(handle_in, opL, opR, MX, NX, KL, &alpha, auxL, ML, auxR, KR, &beta, matrix_out.pointer, MX);
+        cublasDgemm(handle_in, opL, opR, MX, NX, K, &alpha, auxL, ldL, auxR, ldR, &beta, matrix_out.pointer, MX);
     }
 }
 
@@ -303,23 +340,51 @@ bool MathGPU::Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight
 // Wrapper Methods
 void MathGPU::Decomposition(Pointer<double> decomposition_out, DecompositionType decompositionType_in, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, cusolverDnHandle_t handle_in, cudaStream_t stream_in, Pointer<double> pivot_out)
 {
-    size_t size = 0u;
-    double *workspace = NULL;
-    int info = 0;
+    size_t sizeDevice = 0u;
+    size_t sizeHost = 0u;
+    double *workspaceDevice = NULL;
+    double *workspaceHost = NULL;
+    int *infoDevice = NULL;
+    int *infoHost = new int(0);
     cusolverDnParams_t params = NULL;
-    cusolverDnCreateParams(&params);
     cusolverDnSetStream(handle_in, stream_in);
+    cudaMallocAsync(&infoDevice, sizeof(int), stream_in);
     switch (decompositionType_in)
     {
     case DecompositionType_Cholesky:
         MemoryHandler::Copy(decomposition_out, matrix_in, lengthX_in * lengthY_in, stream_in);
-        cusolverDnPotrf_bufferSize(handle_in, params, CUBLAS_FILL_MODE_LOWER, lengthX_in, CUDA_R_64F, matrix_in.pointer, lengthX_in, CUDA_R_64F, &size);
-        cudaMalloc(&workspace, size);
-        cusolverDnPotrf(handle_in, params, CUBLAS_FILL_MODE_LOWER, lengthX_in, CUDA_R_64F, decomposition_out.pointer, lengthX_in, CUDA_R_64F, workspace, size, &info);
+        cusolverDnXpotrf_bufferSize(handle_in, params, CUBLAS_FILL_MODE_LOWER, lengthX_in, CUDA_R_64F, matrix_in.pointer, lengthX_in, CUDA_R_64F, &sizeDevice, &sizeHost);
+        cudaStreamSynchronize(stream_in);
+        if (sizeDevice > 0)
+        {
+            cudaMallocAsync(&workspaceDevice, sizeDevice, stream_in);
+        }
+        if (sizeHost > 0)
+        {
+            cudaMallocHost(&workspaceHost, sizeHost);
+        }
+        cusolverDnXpotrf(handle_in, params, CUBLAS_FILL_MODE_LOWER, lengthX_in, CUDA_R_64F, decomposition_out.pointer, lengthX_in, CUDA_R_64F, workspaceDevice, sizeDevice, workspaceHost, sizeHost, infoDevice);
+        cudaMemcpyAsync(infoHost, infoDevice, sizeof(int), cudaMemcpyDeviceToHost, stream_in);
+        if (sizeDevice > 0)
+        {
+            cudaFreeAsync(workspaceDevice, stream_in);
+        }
+        if (sizeHost > 0)
+        {
+            cudaFreeHost(workspaceHost);
+        }
+        cudaStreamSynchronize(stream_in);
+        if (*infoHost != 0)
+        {
+            std::cout << "Info : " << *infoHost << "\n";
+        }
         break;
     default:
         break;
     }
+
+    cudaFreeAsync(infoDevice, stream_in);
+    delete infoHost;
 }
 
 void MathGPU::Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOperationSide operationSide_in,
@@ -327,20 +392,29 @@ void MathGPU::Solve(Pointer<double> X_out, LinearSolverType solverType_in, Matri
                     Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in,
                     cusolverDnHandle_t handle_in, cudaStream_t stream_in)
 {
-    int info = 0;
+    int *infoDevice = NULL;
+    int *infoHost = new int(0);
     Pointer<double> decomposition = MemoryHandler::Alloc<double>(lengthAX_in * lengthAY_in, PointerType::GPU, PointerContext::GPU_Aware, stream_in);
     cusolverDnParams_t params = NULL;
-    cusolverDnCreateParams(&params);
     cusolverDnSetStream(handle_in, stream_in);
     switch (solverType_in)
     {
     case LinearSolverType_Cholesky:
         MathGPU::Decomposition(decomposition, DecompositionType_Cholesky, A_in, lengthAX_in, lengthAY_in, handle_in, stream_in);
+        MathGPU::Print(decomposition,lengthAX_in,lengthAY_in,stream_in);
         MemoryHandler::Copy(X_out, B_in, lengthBX_in * lengthBY_in, stream_in);
-        cusolverDnPotrs(handle_in, params, CUBLAS_FILL_MODE_LOWER, lengthAX_in, lengthBY_in, CUDA_R_64F, decomposition.pointer, lengthAX_in, CUDA_R_64F, X_out.pointer, lengthBX_in, &info);
+        cusolverDnXpotrs(handle_in, params, CUBLAS_FILL_MODE_LOWER, lengthAX_in, lengthBY_in, CUDA_R_64F, decomposition.pointer, lengthAX_in, CUDA_R_64F, X_out.pointer, lengthBX_in, infoDevice);
+        cudaMemcpyAsync(infoHost, infoDevice, sizeof(int), cudaMemcpyDeviceToHost, stream_in);
+        cudaStreamSynchronize(stream_in);
+        if (*infoHost != 0)
+        {
+            std::cout << "Info : " << *infoHost << "\n";
+        }
         break;
     default:
         break;
     }
     MemoryHandler::Free<double>(decomposition, stream_in);
+    cudaFreeAsync(infoDevice, stream_in);
+    delete infoHost;
 }

@@ -12,7 +12,7 @@ bool CheckType(PointerType typeLeft, PointerType typeRight)
 }
 
 // Auxiliary Functions
-void Math::Print(Pointer<double> vector_in, unsigned length_in, unsigned streamIndex_in)
+void Math::PrintVector(Pointer<double> vector_in, unsigned length_in, unsigned streamIndex_in)
 {
     switch (vector_in.type)
     {
@@ -28,7 +28,7 @@ void Math::Print(Pointer<double> vector_in, unsigned length_in, unsigned streamI
     }
 }
 
-void Math::Print(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, unsigned streamIndex_in)
+void Math::PrintMatrix(Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, unsigned streamIndex_in)
 {
     switch (matrix_in.type)
     {

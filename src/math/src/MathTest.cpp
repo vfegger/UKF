@@ -99,6 +99,7 @@ int Test(PointerType type_in, PointerContext context_in)
     MemoryHandler::Free<double>(B);
 
     // Matrix Multiplication
+    std::cout << "\tMatrix Multiplication Test\n";
     A = MemoryHandler::Alloc<double>(X_LENGTH * Y_LENGTH, type_in, context_in);
     B = MemoryHandler::Alloc<double>(Y_LENGTH * Z_LENGTH, type_in, context_in);
     C = MemoryHandler::Alloc<double>(X_LENGTH * Z_LENGTH, type_in, context_in);
@@ -110,16 +111,44 @@ int Test(PointerType type_in, PointerContext context_in)
     MemoryHandler::Set(C, 4.0, 0u, X_LENGTH * Z_LENGTH);
     MemoryHandler::Set(R, 4.0, 0u, X_LENGTH * Z_LENGTH);
 
-    Math::Print(A, X_LENGTH, Y_LENGTH, 0u);
-    Math::Print(B, Y_LENGTH, Z_LENGTH, 0u);
-    Math::Print(C, X_LENGTH, Z_LENGTH, 0u);
-
     Math::MatrixMultiplication(1.0,
                                A, MatrixStructure_Natural, X_LENGTH, Y_LENGTH,
                                B, MatrixStructure_Natural, Y_LENGTH, Z_LENGTH,
                                0.0, C, MatrixStructure_Natural, X_LENGTH, Z_LENGTH);
 
-    Math::Print(C, X_LENGTH, Z_LENGTH, 0u);
+    Math::MatrixMultiplication(1.0,
+                               A, MatrixStructure_Natural, X_LENGTH, Y_LENGTH,
+                               B, MatrixStructure_Natural, Y_LENGTH, Z_LENGTH,
+                               0.0, C, MatrixStructure_Transposed, X_LENGTH, Z_LENGTH);
+
+    Math::MatrixMultiplication(1.0,
+                               C, MatrixStructure_Natural, Z_LENGTH, X_LENGTH,
+                               C, MatrixStructure_Transposed, Z_LENGTH, X_LENGTH,
+                               0.0, R,MatrixStructure_Natural,Z_LENGTH,Z_LENGTH);
+
+    MemoryHandler::Set(R,1000.0,0,1);
+    MemoryHandler::Set(R,1630.0,Z_LENGTH*Z_LENGTH-1,Z_LENGTH*Z_LENGTH);
+    Math::PrintMatrix(R,Z_LENGTH,Z_LENGTH, 0u);
+
+    std::cout << "\tDecomposition Test\n";
+    Math::Decomposition(C,DecompositionType_Cholesky,R,Z_LENGTH,Z_LENGTH);
+    Math::PrintMatrix(C,Z_LENGTH,Z_LENGTH, 0u);
+
+    std::cout << "\tSolver Test\n";
+    Math::Solve(C,LinearSolverType_Cholesky,MatrixOperationSide_Left,R,Z_LENGTH,Z_LENGTH,B,Z_LENGTH,Y_LENGTH);
+    
+    Math::PrintMatrix(R,Z_LENGTH,Z_LENGTH, 0u);
+    Math::PrintMatrix(C,Z_LENGTH,Y_LENGTH, 0u);
+    Math::PrintMatrix(B,Z_LENGTH,Y_LENGTH, 0u);
+
+    Math::MatrixMultiplication(1.0,
+                               R, MatrixStructure_Natural, Z_LENGTH, Z_LENGTH,
+                               C, MatrixStructure_Natural, Z_LENGTH, Y_LENGTH,
+                               0.0, A,MatrixStructure_Natural,Z_LENGTH,Y_LENGTH);
+    Math::PrintMatrix(A,Z_LENGTH,Y_LENGTH, 0u);
+    
+
+    
 
     MemoryHandler::Free<double>(A);
     MemoryHandler::Free<double>(B);
@@ -139,7 +168,7 @@ int main()
 
     std::cout << "GPU Math test\n";
     cudaDeviceReset();
-    MemoryHandler::CreateGPUContext(1u,1u,1u);
+    MemoryHandler::CreateGPUContext(1u, 1u, 1u);
     Test(PointerType::GPU, PointerContext::GPU_Aware);
     MemoryHandler::DestroyGPUContext();
 
