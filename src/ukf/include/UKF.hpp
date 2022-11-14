@@ -16,6 +16,7 @@ protected:
 
     double alpha, beta, kappa;
     double lambda;
+    bool useGPU;
 public:
     UKF(Pointer<UKFMemory> memory_in, double alpha_in, double beta_in, double kappa_in);
     void Iterate(Timer& timer);

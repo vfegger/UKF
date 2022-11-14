@@ -48,12 +48,10 @@ Parameter::Parameter(const Parameter& parameter_in){
     if(isValid){
         length = parameter_in.length;
         pointer = MemoryHandler::Alloc<void>(length,parameter_in.pointer.type,parameter_in.pointer.context);
-        for(unsigned i = 0u; i < length; i++){
-            ((char*)pointer.pointer)[i] = ((char*)parameter_in.pointer.pointer)[i];
-        }
+        MemoryHandler::Copy(pointer,parameter_in.pointer,length);
         unsigned offset_aux = 0u;
         for(unsigned i = 0; i < lengthElements; i++){
-            offset.pointer[i] = Pointer<void>(((char*)pointer.pointer + offset_aux),parameter_in.pointer.type,parameter_in.pointer.context);
+            offset.pointer[i] = Pointer<void>((void*)((char*)pointer.pointer + offset_aux),parameter_in.pointer.type,parameter_in.pointer.context);
             offset_aux += lengthArray.pointer[i] * sizeTypeArray.pointer[i];
         }
     }

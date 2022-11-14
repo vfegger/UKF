@@ -4,7 +4,7 @@ HeatFluxEstimationMemory::HeatFluxEstimationMemory() : UKFMemory() {
 
 }
 
-HeatFluxEstimationMemory::HeatFluxEstimationMemory(Data& a, DataCovariance&b, DataCovariance&c, Data&d, DataCovariance&e, Parameter&f) : UKFMemory(a,b,c,d,e,f){
+HeatFluxEstimationMemory::HeatFluxEstimationMemory(Data& a, DataCovariance&b, DataCovariance&c, Data&d, DataCovariance&e, Parameter&f, PointerType type_in, PointerContext context_in) : UKFMemory(a,b,c,d,e,f,type_in,context_in){
 
 }
 

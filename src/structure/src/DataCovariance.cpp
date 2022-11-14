@@ -73,10 +73,7 @@ DataCovariance::DataCovariance(const Data &data_in)
         {
             offset.pointer[i] = Pointer<double>(pointer.pointer + offsetArray.pointer[i] * (length + 1u), type, context);
         }
-        for (unsigned i = 0u; i < length * length; i++)
-        {
-            pointer.pointer[i] = 0u;
-        }
+        MemoryHandler::Set(pointer, 0.0, 0, length * length);
     }
 }
 DataCovariance::DataCovariance(const DataCovariance &dataCovariance_in)
@@ -114,10 +111,7 @@ DataCovariance::DataCovariance(const DataCovariance &dataCovariance_in)
         {
             offset.pointer[i] = Pointer<double>(pointer.pointer + offsetArray.pointer[i] * (length + 1u), pointer.type, pointer.context);
         }
-        for (unsigned i = 0u; i < length * length; i++)
-        {
-            pointer.pointer[i] = dataCovariance_in.pointer.pointer[i];
-        }
+        MemoryHandler::Copy(pointer, dataCovariance_in.pointer, length * length);
     }
 }
 unsigned DataCovariance::Add(std::string name_in, unsigned length_in)
@@ -163,10 +157,7 @@ void DataCovariance::Initialize(PointerType type_in, PointerContext context_in)
         std::cout << "Error: Initialization wasn't successful.\n";
         return;
     }
-    for (unsigned i = 0u; i < length; i++)
-    {
-        pointer.pointer[i] = 0u;
-    }
+    MemoryHandler::Set(pointer, 0.0, 0u, length);
     for (unsigned i = 0u; i < count; i++)
     {
         offset.pointer[i] = Pointer<double>(pointer.pointer + offsetArray.pointer[count] * (length + 1u), type_in, context_in);
@@ -188,16 +179,10 @@ void DataCovariance::LoadData(unsigned index_in, Pointer<double> array_in, unsig
     switch (mode_in)
     {
     case DataCovarianceMode::Natural:
-        unsigned ii, jj;
-        for (unsigned j = 0u; j < length_in; j++)
-        {
-            for (unsigned i = 0; i < length_in; i++)
-            {
-                offset.pointer[index_in].pointer[j * length + i] = array_in.pointer[j * length_in + i];
-            }
-        }
+        MemoryHandler::Copy(offset.pointer[index_in], array_in, length_in * length_in);
         break;
     case DataCovarianceMode::Compact:
+        // TODO: URGENT !!!
         for (unsigned i = 0; i < length_in; i++)
         {
             offset.pointer[index_in].pointer[i * length + i] = array_in.pointer[i];
@@ -209,13 +194,7 @@ void DataCovariance::LoadData(unsigned index_in, Pointer<double> array_in, unsig
         {
             std::cout << "Error: The dimensions of the covariance matrix and the covariance matrix input do not match.\n";
         }
-        for (unsigned j = 0u; j < length_in; j++)
-        {
-            for (unsigned i = 0u; i < length_in; i++)
-            {
-                offset.pointer[index_in].pointer[j * length + i] = array_in.pointer[j * length_in + i];
-            }
-        }
+        MemoryHandler::Copy(pointer, array_in, length_in * length_in);
         break;
     default:
         std::cout << "Error: Covariance mode is not implemented.\n";

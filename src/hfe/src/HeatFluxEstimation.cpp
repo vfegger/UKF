@@ -7,11 +7,9 @@ Pointer<HeatFluxEstimationMemory> HeatFluxEstimation::GetMemory()
 
 HeatFluxEstimation::HeatFluxEstimation(
     unsigned Lx, unsigned Ly, unsigned Lz, unsigned Lt,
-    double Sx, double Sy, double Sz, double St)
+    double Sx, double Sy, double Sz, double St, PointerType type_in, PointerContext context_in)
 {
     std::cout << "Parameter Initialization\n";
-    PointerType type_in = PointerType::CPU;
-    PointerContext context_in = PointerContext::CPU_Only;
     parameter = MemoryHandler::AllocValue<Parameter, unsigned>(4u, type_in, context_in);
     unsigned indexL, indexD, indexS, indexAmp;
     indexL = parameter.pointer[0u].Add("Length", 4u, sizeof(unsigned));
@@ -87,8 +85,8 @@ HeatFluxEstimation::HeatFluxEstimation(
     MemoryHandler::Free<double>(T_meas);
 
     std::cout << "Memory Initialization\n";
-    memory = MemoryHandler::Alloc<HeatFluxEstimationMemory>(1u,PointerType::CPU,PointerContext::CPU_Only);
-    memory.pointer[0u] = HeatFluxEstimationMemory(input.pointer[0u], inputCovariance.pointer[0u], inputNoise.pointer[0u], measure.pointer[0u], measureNoise.pointer[0u], parameter.pointer[0u]);
+    memory = MemoryHandler::Alloc<HeatFluxEstimationMemory>(1u, PointerType::CPU, PointerContext::CPU_Only);
+    memory.pointer[0u] = HeatFluxEstimationMemory(input.pointer[0u], inputCovariance.pointer[0u], inputNoise.pointer[0u], measure.pointer[0u], measureNoise.pointer[0u], parameter.pointer[0u], type_in, context_in);
 
     std::cout << "End Initialization\n";
 }
@@ -97,10 +95,10 @@ void HeatFluxEstimation::UpdateMeasure(Pointer<double> T_in, unsigned Lx, unsign
 {
     PointerType type_in = PointerType::CPU;
     PointerContext context_in = PointerContext::CPU_Only;
-    Pointer<Data> measure_aux = MemoryHandler::AllocValue<Data, unsigned>(1u,type_in,context_in);
+    Pointer<Data> measure_aux = MemoryHandler::AllocValue<Data, unsigned>(1u, type_in, context_in);
     unsigned indexT_meas;
     indexT_meas = measure_aux.pointer[0u].Add("Temperature", Lx * Ly);
-    measure_aux.pointer[0u].Initialize(type_in,context_in);
+    measure_aux.pointer[0u].Initialize(type_in, context_in);
     measure_aux.pointer[0u].LoadData(indexT_meas, T_in, Lx * Ly);
     memory.pointer[0u].UpdateMeasure(measure_aux.pointer[0u]);
     MemoryHandler::Free<Data>(measure_aux);

@@ -7,6 +7,7 @@ cusolverDnHandle_t *MemoryHandler::cusolverHandles = NULL;
 unsigned MemoryHandler::cudaStreams_size = 0u;
 unsigned MemoryHandler::cublasHandles_size = 0u;
 unsigned MemoryHandler::cusolverHandles_size = 0u;
+bool MemoryHandler::GPUisEnabled = false;
 
 // Void explicit specialization
 

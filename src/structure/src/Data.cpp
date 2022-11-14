@@ -69,10 +69,7 @@ Data::Data(const Data &data_in)
             std::cout << "Error: Initialization wasn't successful.\n";
             return;
         }
-        for (unsigned i = 0u; i < length; i++)
-        {
-            pointer.pointer[i] = data_in.pointer.pointer[i];
-        }
+        MemoryHandler::Copy(pointer, data_in.pointer, length);
         unsigned offset_aux = 0u;
         for (unsigned i = 0; i < lengthElements; i++)
         {
@@ -123,10 +120,7 @@ void Data::Initialize(PointerType type_in, PointerContext context_in)
         std::cout << "Error: Initialization wasn't successful.\n";
         return;
     }
-    for (unsigned i = 0u; i < length; i++)
-    {
-        pointer.pointer[i] = 0u;
-    }
+    MemoryHandler::Set(pointer, 0.0, 0u, length);
     unsigned offset_aux = 0u;
     for (unsigned i = 0u; i < count; i++)
     {
@@ -166,15 +160,15 @@ void Data::InstantiateMultiple(Pointer<Data> &dataArray_out, const Data &data_in
     }
 
     unsigned length_aux = length_in * data_in.GetLength();
-    double *pointer = new double[length_aux];
+    Pointer<double> pointer = MemoryHandler::Alloc<double>(length_aux,data_in.pointer.type,data_in.pointer.context);
     unsigned offset_aux = 0u;
     for (unsigned i = 0u; i < length_in; i++)
     {
         dataArray_out.pointer[i].length = data_in.GetLength();
-        dataArray_out.pointer[i].pointer = Pointer<double>(pointer + offset_aux, data_in.pointer.type, data_in.pointer.context);
+        dataArray_out.pointer[i].pointer = Pointer<double>(pointer.pointer + offset_aux, data_in.pointer.type, data_in.pointer.context);
         for (unsigned j = 0u; j < data_in.lengthElements; j++)
         {
-            dataArray_out.pointer[i].offset.pointer[j] = Pointer<double>(pointer + offset_aux, data_in.pointer.type, data_in.pointer.context);
+            dataArray_out.pointer[i].offset.pointer[j] = Pointer<double>(pointer.pointer + offset_aux, data_in.pointer.type, data_in.pointer.context);
             offset_aux += dataArray_out.pointer[i].lengthOffset.pointer[j];
         }
     }
@@ -212,10 +206,7 @@ void Data::LoadData(unsigned index_in, Pointer<double> array_in, unsigned length
         std::cout << "Error: Index is out of range.\n";
         return;
     }
-    for (unsigned i = 0; i < length_in; i++)
-    {
-        offset.pointer[index_in].pointer[i] = array_in.pointer[i];
-    }
+    MemoryHandler::Copy(offset.pointer[index_in], array_in, length_in);
 }
 void Data::LoadData(Pointer<unsigned> indexes_in, Pointer<Pointer<double>> array_in, Pointer<unsigned> lengthArray_in, unsigned lengthElements_in)
 {

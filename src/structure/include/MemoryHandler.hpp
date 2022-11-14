@@ -71,6 +71,8 @@ private:
     static unsigned cublasHandles_size;
     static unsigned cusolverHandles_size;
 
+    static bool GPUisEnabled;
+
     static void AllocStreams(unsigned size_in)
     {
         cudaStreams = new (std::nothrow) cudaStream_t[size_in];
@@ -141,6 +143,7 @@ public:
         AllocStreams(cudaSize_in);
         AllocCuBLAS(cublasSize_in);
         AllocCuSolverHandles(cusolverSize_in);
+        GPUisEnabled = true;
     }
 
     static void DestroyGPUContext()
@@ -148,6 +151,7 @@ public:
         FreeCuSolverHandles();
         FreeCuBLAS();
         FreeStreams();
+        GPUisEnabled = false;
     }
 
     static cudaStream_t GetStream(unsigned index_in)

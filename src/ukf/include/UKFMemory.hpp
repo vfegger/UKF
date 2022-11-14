@@ -17,11 +17,14 @@ private:
 
     Pointer<Data> measureData;
     Pointer<DataCovariance> measureDataNoise;
-protected:
 
+    PointerType type;
+    PointerContext context;
+
+protected:
 public:
     UKFMemory();
-    UKFMemory(Data& inputData_in, DataCovariance& inputDataCovariance_in, DataCovariance& inputDataNoise_in, Data& measureData_in, DataCovariance& measureDataNoise_in, Parameter& inputParameter_in);
+    UKFMemory(Data &inputData_in, DataCovariance &inputDataCovariance_in, DataCovariance &inputDataNoise_in, Data &measureData_in, DataCovariance &measureDataNoise_in, Parameter &inputParameter_in, PointerType type_in, PointerContext context_in);
     virtual ~UKFMemory();
 
     Pointer<Parameter> GetParameter();
@@ -31,15 +34,14 @@ public:
     Pointer<DataCovariance> GetStateNoise();
 
     Pointer<Data> GetMeasure();
-    void UpdateMeasure(Data& measureData_in);
+    void UpdateMeasure(Data &measureData_in);
     Pointer<DataCovariance> GetMeasureNoise();
 
-    virtual void Evolution(Data& data_inout, Parameter& parameter_in) = 0;
-    virtual void Observation(Data& data_in, Parameter& parameter_in, Data& data_out) = 0;
+    virtual void Evolution(Data &data_inout, Parameter &parameter_in) = 0;
+    virtual void Observation(Data &data_in, Parameter &parameter_in, Data &data_out) = 0;
 
     Pointer<double> GetWeightMean();
     Pointer<double> GetWeightCovariance();
 };
-
 
 #endif

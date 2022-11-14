@@ -75,10 +75,7 @@ void Parameter::LoadData(unsigned index_in, Pointer<T> array_in, unsigned length
         std::cout << "Error: Index is out of range.";
         return;
     }
-    for (unsigned i = 0; i < length_in; i++)
-    {
-        ((T *)(offset.pointer[index_in].pointer))[i] = array_in.pointer[i];
-    }
+    MemoryHandler::Copy<T>(Pointer<T>(offset.pointer[index_in]), array_in, length_in);
 }
 
 template <typename T>
