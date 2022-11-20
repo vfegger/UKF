@@ -14,7 +14,8 @@ int RunCase(std::string& path_binary, std::string& extension_binary,
     unsigned Lx, unsigned Ly, unsigned Lz, unsigned Lt,
     double Sx, double Sy, double Sz, double St,
     double T0, double Amp, double mean, double sigma,
-    double alpha, double beta, double kappa)
+    double alpha, double beta, double kappa,
+    PointerType type_in, PointerContext context_in)
 {
     Pointer<Parser> parser = MemoryHandler::AllocValue<Parser,unsigned>(4u,PointerType::CPU,PointerContext::CPU_Only);
 
@@ -32,27 +33,32 @@ int RunCase(std::string& path_binary, std::string& extension_binary,
     std::string name_temperature = "Temperature";
     std::string name_temperature_measured = "Temperature_measured";
     std::string name_heatFlux = "HeatFlux";
+    std::string name_type = (type_in == PointerType::CPU) ? "TypeCPU" : "TypeGPU";
 
     std::string name_timer_aux = name_timer 
     + "X" + std::to_string(Lx) 
     + "Y" + std::to_string(Ly) 
     + "Z" + std::to_string(Lz) 
-    + "T" + std::to_string(Lt);
+    + "T" + std::to_string(Lt)
+    + name_type;
     std::string name_temperature_aux = name_temperature
     + "X" + std::to_string(Lx) 
     + "Y" + std::to_string(Ly) 
     + "Z" + std::to_string(Lz) 
-    + "T" + std::to_string(Lt);
+    + "T" + std::to_string(Lt)
+    + name_type;
     std::string name_temperature_measured_aux = name_temperature_measured
     + "X" + std::to_string(Lx) 
     + "Y" + std::to_string(Ly) 
     + "Z" + std::to_string(Lz) 
-    + "T" + std::to_string(Lt);
+    + "T" + std::to_string(Lt)
+    + name_type;
     std::string name_heatFlux_aux = name_heatFlux
     + "X" + std::to_string(Lx) 
     + "Y" + std::to_string(Ly) 
     + "Z" + std::to_string(Lz) 
-    + "T" + std::to_string(Lt);
+    + "T" + std::to_string(Lt)
+    + name_type;
 
     indexTimer = parser.pointer[0u].OpenFileOut(path_binary,name_timer_aux,extension_binary,std::ios::binary);
     indexTemperature = parser.pointer[0u].OpenFileOut(path_binary,name_temperature_aux,extension_binary,std::ios::binary);
@@ -67,7 +73,7 @@ int RunCase(std::string& path_binary, std::string& extension_binary,
     HeatFluxGenerator generator(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,T0,Amp);
     generator.Generate(mean,sigma);
 
-    HeatFluxEstimation problem(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St);
+    HeatFluxEstimation problem(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,type_in,context_in);
 
     problem.UpdateMeasure(generator.GetTemperature(0u),Lx,Ly);
     Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured),Lx*Ly,ParserType::Double,generator.GetTemperature(0u).pointer,positionTemperatureMeasured,0u);
@@ -186,16 +192,19 @@ int main(int argc, char** argv){
         Lx,Ly,Lz,Lt,
         Sx,Sy,Sz,St,
         T0,Amp,mean,sigma,
-        alpha,beta,kappa
+        alpha,beta,kappa,
+        PointerType::CPU, PointerContext::CPU_Only
     );
 
     Parser::ConvertToText(path_binary_out,path_text_out,extension_text);
 
+    std::string name_type = "TypeCPU";
     std::string ok_name = path_text_out +
         "X" + std::to_string(Lx) +
         "Y" + std::to_string(Ly) +
         "Z" + std::to_string(Lz) +
-        "T" + std::to_string(Lt) + ".ok";
+        "T" + std::to_string(Lt) + 
+        name_type + ".ok";
     std::ofstream ok_file(ok_name);
     ok_file.close();
 
