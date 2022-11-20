@@ -411,5 +411,7 @@ template <>
 Pointer<void> MemoryHandler::Alloc(unsigned size_in, PointerType type_in, PointerContext context_in, cudaStream_t stream_in);
 template <>
 void MemoryHandler::Free(Pointer<void> pointer_in, cudaStream_t stream_in);
-
+template <>
+void MemoryHandler::Copy(Pointer<void> pointerTo_out, Pointer<void> pointerFrom_in, unsigned length_in, cudaStream_t stream_in);
+    
 #endif

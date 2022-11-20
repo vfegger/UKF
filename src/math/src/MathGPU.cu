@@ -209,7 +209,7 @@ void SetCuBLASOperation(double *&auxLeft_out, cublasOperation_t &leftStructure_o
     }
 }
 
-// Matrix Multiplication TODO
+// Matrix Multiplication
 void MathGPU::MatrixMultiplication(double alpha,
                                    Pointer<double> matrixLeft_in, MatrixStructure matrixLeftStructure_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
                                    Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
@@ -390,20 +390,28 @@ void MathGPU::Decomposition(Pointer<double> decomposition_out, DecompositionType
 void MathGPU::Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOperationSide operationSide_in,
                     Pointer<double> A_in, unsigned lengthAX_in, unsigned lengthAY_in,
                     Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in,
-                    cusolverDnHandle_t handle_in, cudaStream_t stream_in)
+                    cusolverDnHandle_t solverHandle_in, cudaStream_t stream_in, cublasHandle_t cublasHandle_in)
 {
     int *infoDevice = NULL;
     int *infoHost = new int(0);
+    double alpha = 1.0;
+    double beta = 0.0;
     Pointer<double> decomposition = MemoryHandler::Alloc<double>(lengthAX_in * lengthAY_in, PointerType::GPU, PointerContext::GPU_Aware, stream_in);
     cusolverDnParams_t params = NULL;
-    cusolverDnSetStream(handle_in, stream_in);
+    cusolverDnSetStream(solverHandle_in, stream_in);
+    cublasSetStream(cublasHandle_in, stream_in);
     switch (solverType_in)
     {
     case LinearSolverType_Cholesky:
-        MathGPU::Decomposition(decomposition, DecompositionType_Cholesky, A_in, lengthAX_in, lengthAY_in, handle_in, stream_in);
+        if(operationSide_in == MatrixOperationSide_Right){
+            cublasDgeam(cublasHandle_in, CUBLAS_OP_T, CUBLAS_OP_N, lengthBY_in, lengthBX_in, &alpha, B_in.pointer, lengthBX_in, &beta, X_out.pointer, lengthBY_in, X_out.pointer, lengthBY_in);
+            Swap(lengthBX_in,lengthBY_in);
+        } else {
+            MemoryHandler::Copy(X_out, B_in, lengthBX_in * lengthBY_in, stream_in);
+        }
+        MathGPU::Decomposition(decomposition, DecompositionType_Cholesky, A_in, lengthAX_in, lengthAY_in, solverHandle_in, stream_in);
         MathGPU::Print(decomposition,lengthAX_in,lengthAY_in,stream_in);
-        MemoryHandler::Copy(X_out, B_in, lengthBX_in * lengthBY_in, stream_in);
-        cusolverDnXpotrs(handle_in, params, CUBLAS_FILL_MODE_LOWER, lengthAX_in, lengthBY_in, CUDA_R_64F, decomposition.pointer, lengthAX_in, CUDA_R_64F, X_out.pointer, lengthBX_in, infoDevice);
+        cusolverDnXpotrs(solverHandle_in, params, CUBLAS_FILL_MODE_LOWER, lengthAX_in, lengthBY_in, CUDA_R_64F, decomposition.pointer, lengthAX_in, CUDA_R_64F, X_out.pointer, lengthBX_in, infoDevice);
         cudaMemcpyAsync(infoHost, infoDevice, sizeof(int), cudaMemcpyDeviceToHost, stream_in);
         cudaStreamSynchronize(stream_in);
         if (*infoHost != 0)

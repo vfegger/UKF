@@ -12,7 +12,8 @@ bool MemoryHandler::GPUisEnabled = false;
 // Void explicit specialization
 
 template <>
-Pointer<void> MemoryHandler::Alloc<void>(unsigned size_in, PointerType type_in, PointerContext context_in, cudaStream_t stream_in){
+Pointer<void> MemoryHandler::Alloc<void>(unsigned size_in, PointerType type_in, PointerContext context_in, cudaStream_t stream_in)
+{
     if (size_in == 0u)
     {
         std::cout << "Error: size equals to 0.\n";
@@ -27,7 +28,7 @@ Pointer<void> MemoryHandler::Alloc<void>(unsigned size_in, PointerType type_in, 
         switch (context_in)
         {
         case PointerContext::CPU_Only:
-            output.pointer = (void*)(new (std::nothrow) char[size_in]);
+            output.pointer = (void *)(new (std::nothrow) char[size_in]);
             break;
         case PointerContext::GPU_Aware:
             cudaMallocHost(&(output.pointer), sizeof(char) * size_in);
@@ -60,10 +61,10 @@ void MemoryHandler::Free(Pointer<void> pointer_in, cudaStream_t stream_in)
         switch (pointer_in.context)
         {
         case PointerContext::CPU_Only:
-            delete[] (char*)(pointer_in.pointer);
+            delete[](char *)(pointer_in.pointer);
             break;
         case PointerContext::GPU_Aware:
-            cudaFreeHost((char*)(pointer_in.pointer));
+            cudaFreeHost((char *)(pointer_in.pointer));
         default:
             std::cout << "Error: Behavior of this context is not defined for this type.\n";
             break;
@@ -71,11 +72,48 @@ void MemoryHandler::Free(Pointer<void> pointer_in, cudaStream_t stream_in)
         break;
     case PointerType::GPU:
         cudaStreamSynchronize(stream_in);
-        cudaFreeAsync((char*)(pointer_in.pointer),stream_in);
+        cudaFreeAsync((char *)(pointer_in.pointer), stream_in);
         break;
     default:
         std::cout << "Error: Behavior of this type is not defined.\n";
         break;
     }
     pointer_in.pointer = NULL;
+}
+
+template <>
+void MemoryHandler::Copy(Pointer<void> pointerTo_out, Pointer<void> pointerFrom_in, unsigned length_in, cudaStream_t stream_in)
+{
+    if (pointerTo_out.pointer == NULL || pointerFrom_in.pointer == NULL)
+    {
+        std::cout << "Error: copying null pointers.\n";
+        return;
+    }
+    PointerDataTransfer transfer = TransferType(pointerTo_out.type, pointerTo_out.context, pointerFrom_in.type, pointerFrom_in.context);
+    switch (transfer)
+    {
+    case PointerDataTransfer::HostToHost:
+        for (unsigned i = 0u; i < length_in; i++)
+        {
+            ((char*)pointerTo_out.pointer)[i] = ((char*)pointerFrom_in.pointer)[i];
+        }
+        break;
+    case PointerDataTransfer::HostToDevice:
+        cudaMemcpy(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(char) * length_in, cudaMemcpyHostToDevice);
+        break;
+    case PointerDataTransfer::DeviceToHost:
+        cudaMemcpy(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(char) * length_in, cudaMemcpyDeviceToHost);
+        break;
+    case PointerDataTransfer::HostAwareToDevice:
+        cudaMemcpyAsync(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(char) * length_in, cudaMemcpyHostToDevice, stream_in);
+        break;
+    case PointerDataTransfer::DeviceToHostAware:
+        cudaMemcpyAsync(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(char) * length_in, cudaMemcpyDeviceToHost, stream_in);
+        break;
+    case PointerDataTransfer::DeviceToDevice:
+        cudaMemcpyAsync(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(char) * length_in, cudaMemcpyDeviceToDevice, stream_in);
+        break;
+    default:
+        break;
+    }
 }

@@ -147,6 +147,8 @@ int Test(PointerType type_in, PointerContext context_in)
                                0.0, A,MatrixStructure_Natural,Z_LENGTH,Y_LENGTH);
     Math::PrintMatrix(A,Z_LENGTH,Y_LENGTH, 0u);
     
+    Math::Solve(C,LinearSolverType_Cholesky,MatrixOperationSide_Right,R,Z_LENGTH,Z_LENGTH,B,Z_LENGTH,Y_LENGTH);
+    
 
     
 

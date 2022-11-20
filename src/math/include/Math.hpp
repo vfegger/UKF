@@ -36,7 +36,7 @@ namespace Math
     // Vector Element-wise Multiplication
     void Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, unsigned streamIndex_in = 0u);
 
-    // Matrix Multiplication TODO
+    // Matrix Multiplication
     void MatrixMultiplication(double alpha,
                               Pointer<double> matrixLeft_in, MatrixStructure matrixLeftStructure_in, unsigned lengthLeftX_in, unsigned lengthLeftY_in,
                               Pointer<double> matrixRight_in, MatrixStructure matrixRightStructure_in, unsigned lengthRightX_in, unsigned lengthRightY_in,
@@ -84,7 +84,7 @@ namespace Math
     void Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOperationSide operationSide_in,
                Pointer<double> A_in, unsigned lengthAX_in, unsigned lengthAY_in,
                Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in,
-               unsigned cusolverIndex_in = 0u, unsigned streamIndex_in = 0u);
+               unsigned cusolverIndex_in = 0u, unsigned streamIndex_in = 0u, unsigned cublasIndex_in = 0u);
 
 };
 

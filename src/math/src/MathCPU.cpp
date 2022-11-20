@@ -93,7 +93,7 @@ void MathCPU::Mul(Pointer<double> vector_out, Pointer<double> vectorLeft_in, Poi
         vector_out.pointer[i] = vectorLeft_in.pointer[i] * vectorRight_in.pointer[i];
     }
 }
-// Matrix Multiplication TODO
+// Matrix Multiplication
 template <typename T>
 void Swap(T &left_inout, T &right_inout)
 {
