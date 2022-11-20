@@ -387,15 +387,13 @@ void MathGPU::Decomposition(Pointer<double> decomposition_out, DecompositionType
     delete infoHost;
 }
 
-void MathGPU::Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOperationSide operationSide_in,
+void MathGPU::Solve(Pointer<double> X_out, LinearSolverType solverType_in,
                     Pointer<double> A_in, unsigned lengthAX_in, unsigned lengthAY_in,
                     Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in,
                     cusolverDnHandle_t solverHandle_in, cudaStream_t stream_in, cublasHandle_t cublasHandle_in)
 {
     int *infoDevice = NULL;
     int *infoHost = new int(0);
-    double alpha = 1.0;
-    double beta = 0.0;
     Pointer<double> decomposition = MemoryHandler::Alloc<double>(lengthAX_in * lengthAY_in, PointerType::GPU, PointerContext::GPU_Aware, stream_in);
     cusolverDnParams_t params = NULL;
     cusolverDnSetStream(solverHandle_in, stream_in);
@@ -403,12 +401,7 @@ void MathGPU::Solve(Pointer<double> X_out, LinearSolverType solverType_in, Matri
     switch (solverType_in)
     {
     case LinearSolverType_Cholesky:
-        if(operationSide_in == MatrixOperationSide_Right){
-            cublasDgeam(cublasHandle_in, CUBLAS_OP_T, CUBLAS_OP_N, lengthBY_in, lengthBX_in, &alpha, B_in.pointer, lengthBX_in, &beta, X_out.pointer, lengthBY_in, X_out.pointer, lengthBY_in);
-            Swap(lengthBX_in,lengthBY_in);
-        } else {
-            MemoryHandler::Copy(X_out, B_in, lengthBX_in * lengthBY_in, stream_in);
-        }
+        MemoryHandler::Copy(X_out, B_in, lengthAY_in * lengthBY_in, stream_in);
         MathGPU::Decomposition(decomposition, DecompositionType_Cholesky, A_in, lengthAX_in, lengthAY_in, solverHandle_in, stream_in);
         MathGPU::Print(decomposition,lengthAX_in,lengthAY_in,stream_in);
         cusolverDnXpotrs(solverHandle_in, params, CUBLAS_FILL_MODE_LOWER, lengthAX_in, lengthBY_in, CUDA_R_64F, decomposition.pointer, lengthAX_in, CUDA_R_64F, X_out.pointer, lengthBX_in, infoDevice);

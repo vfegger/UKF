@@ -390,7 +390,7 @@ void Math::Decomposition(Pointer<double> decomposition_out, DecompositionType de
     return;
 }
 
-void Math::Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOperationSide operationSide_in,
+void Math::Solve(Pointer<double> X_out, LinearSolverType solverType_in,
                  Pointer<double> A_in, unsigned lengthAX_in, unsigned lengthAY_in,
                  Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in,
                  unsigned cusolverIndex_in, unsigned streamIndex_in, unsigned cublasIndex_in)
@@ -402,10 +402,10 @@ void Math::Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOp
     switch (X_out.type)
     {
     case PointerType::CPU:
-        MathCPU::Solve(X_out, solverType_in, operationSide_in, A_in, lengthAX_in, lengthAY_in, B_in, lengthBX_in, lengthBY_in);
+        MathCPU::Solve(X_out, solverType_in, A_in, lengthAX_in, lengthAY_in, B_in, lengthBX_in, lengthBY_in);
         break;
     case PointerType::GPU:
-        MathGPU::Solve(X_out, solverType_in, operationSide_in, A_in, lengthAX_in, lengthAY_in, B_in, lengthBX_in, lengthBY_in, MemoryHandler::GetCuSolverHandle(cusolverIndex_in), MemoryHandler::GetStream(streamIndex_in), MemoryHandler::GetCuBLASHandle(cublasIndex_in));
+        MathGPU::Solve(X_out, solverType_in, A_in, lengthAX_in, lengthAY_in, B_in, lengthBX_in, lengthBY_in, MemoryHandler::GetCuSolverHandle(cusolverIndex_in), MemoryHandler::GetStream(streamIndex_in), MemoryHandler::GetCuBLASHandle(cublasIndex_in));
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";

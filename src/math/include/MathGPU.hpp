@@ -60,7 +60,7 @@ namespace MathGPU
     // Wrapper Methods
     void Decomposition(Pointer<double> decomposition_out, DecompositionType decompositionType_in, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, cusolverDnHandle_t handle_in, cudaStream_t stream_in = cudaStreamDefault, Pointer<double> pivot_out = Pointer<double>());
 
-    void Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOperationSide operationSide_in,
+    void Solve(Pointer<double> X_out, LinearSolverType solverType_in,
                Pointer<double> A_in, unsigned lengthAX_in, unsigned lengthAY_in,
                Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in,
                cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in, cublasHandle_t cublasHandle_in);

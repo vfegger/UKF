@@ -64,7 +64,7 @@ namespace MathCPU
 
     void CholeskyDecomposition(Pointer<double> decomposition_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in);
 
-    void CholeskySolver(Pointer<double> X_out, MatrixOperationSide operationSide_in,
+    void CholeskySolver(Pointer<double> X_out,
                         Pointer<double> A_in, unsigned lengthAX_in, unsigned lengthAY_in,
                         Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in);
 
@@ -73,7 +73,7 @@ namespace MathCPU
     // Wrapper Methods
     void Decomposition(Pointer<double> decomposition_out, DecompositionType decompositionType_in, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> pivot_out = Pointer<double>());
 
-    void Solve(Pointer<double> X_out, LinearSolverType solverType_in, MatrixOperationSide operationSide_in,
+    void Solve(Pointer<double> X_out, LinearSolverType solverType_in,
                Pointer<double> A_in, unsigned lengthAX_in, unsigned lengthAY_in,
                Pointer<double> B_in, unsigned lengthBX_in, unsigned lengthBY_in);
 

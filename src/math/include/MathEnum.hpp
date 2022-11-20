@@ -26,9 +26,4 @@ enum LinearSolverType{
     LinearSolverType_SOR,
 };
 
-enum MatrixOperationSide{
-    MatrixOperationSide_Left,
-    MatrixOperationSide_Right,
-};
-
 #endif

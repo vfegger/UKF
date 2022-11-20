@@ -135,19 +135,20 @@ int Test(PointerType type_in, PointerContext context_in)
     Math::PrintMatrix(C,Z_LENGTH,Z_LENGTH, 0u);
 
     std::cout << "\tSolver Test\n";
-    Math::Solve(C,LinearSolverType_Cholesky,MatrixOperationSide_Left,R,Z_LENGTH,Z_LENGTH,B,Z_LENGTH,Y_LENGTH);
+    Math::Solve(C,LinearSolverType_Cholesky,R,Z_LENGTH,Z_LENGTH,B,Z_LENGTH,Y_LENGTH);
     
     Math::PrintMatrix(R,Z_LENGTH,Z_LENGTH, 0u);
     Math::PrintMatrix(C,Z_LENGTH,Y_LENGTH, 0u);
     Math::PrintMatrix(B,Z_LENGTH,Y_LENGTH, 0u);
 
-    Math::MatrixMultiplication(1.0,
-                               R, MatrixStructure_Natural, Z_LENGTH, Z_LENGTH,
-                               C, MatrixStructure_Natural, Z_LENGTH, Y_LENGTH,
-                               0.0, A,MatrixStructure_Natural,Z_LENGTH,Y_LENGTH);
-    Math::PrintMatrix(A,Z_LENGTH,Y_LENGTH, 0u);
-    
-    Math::Solve(C,LinearSolverType_Cholesky,MatrixOperationSide_Right,R,Z_LENGTH,Z_LENGTH,B,Z_LENGTH,Y_LENGTH);
+    //Math::MatrixMultiplication(1.0,
+    //                           R, MatrixStructure_Natural, Z_LENGTH, Z_LENGTH,
+    //                           C, MatrixStructure_Natural, Z_LENGTH, Y_LENGTH,
+    //                           0.0, A,MatrixStructure_Natural,Z_LENGTH,Y_LENGTH);
+    //Math::PrintMatrix(A,Z_LENGTH,Y_LENGTH, 0u);
+
+    Math::Solve(C,LinearSolverType_Cholesky,R,Z_LENGTH,Z_LENGTH,B,Z_LENGTH,Y_LENGTH);
+    Math::PrintMatrix(C,Y_LENGTH,Z_LENGTH, 0u);
     
 
     
