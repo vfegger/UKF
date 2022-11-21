@@ -676,6 +676,7 @@ unsigned Parser::OpenFileIn(std::string path_in, std::string name_in, std::strin
         fileArray_In[count_In] = std::ifstream(path_in + name_in + extension_in, mode_in);
         if(!fileArray_In[count_In].is_open()){
             std::cout << "Error: Failed to open file.\n";
+            return UINT_MAX_VALUE;
         }
         count_In++;
         std::cout << "\tFile opened successefully!\n";

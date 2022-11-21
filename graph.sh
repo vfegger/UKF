@@ -9,9 +9,15 @@ LX=$2
 LY=$3
 LZ=$4
 LT=$5
+CPU=$6
 
 rm $GRAPH_PATH/data/*
-rm $GRAPH_PATH/output/*X${LX}Y${LY}Z${LZ}T${LT}*
+if [ $CPU = 1 ];
+then
+    rm $GRAPH_PATH/output/*X${LX}Y${LY}Z${LZ}T${LT}_CPU*
+else
+    rm $GRAPH_PATH/output/*X${LX}Y${LY}Z${LZ}T${LT}_GPU*
+fi
 
 echo "Running Parser for GNUPlot" 
 $BUILD_PATH_GRAPH/graph/Graph_UKF

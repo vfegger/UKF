@@ -69,43 +69,83 @@ then
     valgrind $MEMORY_CHECK_OPTIONS $BUILD_PATH/UKF_1 $LX_REF $LY_REF $LZ_REF $LT_REF
 fi
 for i in $(seq $LX_LOWER $LX_STRIDE $LX_UPPER); do
-    FILE_OK=$DATA_PATH/text/out/X${i}Y${LY_REF}Z${LZ_REF}T${LT_REF}.ok
+    FILE_OK=$DATA_PATH/text/out/X${i}Y${LY_REF}Z${LZ_REF}T${LT_REF}_CPU.ok
     if [ ! -f "$FILE_OK" ]; then
         echo "Run case ("$i $LY_REF $LZ_REF $LT_REF")"
         rm $DATA_PATH/binary/in/*.bin
         rm $DATA_PATH/binary/out/*.bin
-        $BUILD_PATH/UKF_1 $i $LY_REF $LZ_REF $LT_REF
-        . $DIR_PATH/graph.sh $BUILD_PATH $i $LY_REF $LZ_REF $LT_REF
+        $BUILD_PATH/UKF_1 $i $LY_REF $LZ_REF $LT_REF 0 0
+        . $DIR_PATH/graph.sh $BUILD_PATH $i $LY_REF $LZ_REF $LT_REF 0
     fi
 done
 for i in $(seq $LY_LOWER $LY_STRIDE $LY_UPPER); do
-    FILE_OK=$DATA_PATH/text/out/X${LX_REF}Y${i}Z${LZ_REF}T${LT_REF}.ok
+    FILE_OK=$DATA_PATH/text/out/X${LX_REF}Y${i}Z${LZ_REF}T${LT_REF}_CPU.ok
     if [ ! -f "$FILE_OK" ]; then
         echo "Run case ("$LX_REF $i $LZ_REF $LT_REF")"
         rm $DATA_PATH/binary/in/*.bin
         rm $DATA_PATH/binary/out/*.bin
-        $BUILD_PATH/UKF_1 $LX_REF $i $LZ_REF $LT_REF
-        . $DIR_PATH/graph.sh $BUILD_PATH $LX_REF $i $LZ_REF $LT_REF
+        $BUILD_PATH/UKF_1 $LX_REF $i $LZ_REF $LT_REF 0 0
+        . $DIR_PATH/graph.sh $BUILD_PATH $LX_REF $i $LZ_REF $LT_REF 0
     fi
 done
 for i in $(seq $LZ_LOWER $LZ_STRIDE $LZ_UPPER); do
-    FILE_OK=$DATA_PATH/text/out/X${LX_REF}Y${LY_REF}Z${i}T${LT_REF}.ok
+    FILE_OK=$DATA_PATH/text/out/X${LX_REF}Y${LY_REF}Z${i}T${LT_REF}_CPU.ok
     if [ ! -f "$FILE_OK" ]; then
         echo "Run case ("$LX_REF $LY_REF $i $LT_REF")"
         rm $DATA_PATH/binary/in/*.bin
         rm $DATA_PATH/binary/out/*.bin
-        $BUILD_PATH/UKF_1 $LX_REF $LY_REF $i $LT_REF
-        . $DIR_PATH/graph.sh $BUILD_PATH $LX_REF $LY_REF $i $LT_REF
+        $BUILD_PATH/UKF_1 $LX_REF $LY_REF $i $LT_REF 0 0
+        . $DIR_PATH/graph.sh $BUILD_PATH $LX_REF $LY_REF $i $LT_REF 0
     fi
 done
 for i in $(seq $LT_LOWER $LT_STRIDE $LT_UPPER); do
-    FILE_OK=$DATA_PATH/text/out/X${LX_REF}Y${LY_REF}Z${LZ_REF}T${i}.ok
+    FILE_OK=$DATA_PATH/text/out/X${LX_REF}Y${LY_REF}Z${LZ_REF}T${i}_CPU.ok
     if [ ! -f "$FILE_OK" ]; then
         echo "Run case ("$LX_REF $LY_REF $LZ_REF $i")"
         rm $DATA_PATH/binary/in/*.bin
         rm $DATA_PATH/binary/out/*.bin
-        $BUILD_PATH/UKF_1 $LX_REF $LY_REF $LZ_REF $i
-        . $DIR_PATH/graph.sh $BUILD_PATH $LX_REF $LY_REF $LZ_REF $i
+        $BUILD_PATH/UKF_1 $LX_REF $LY_REF $LZ_REF $i 0 0
+        . $DIR_PATH/graph.sh $BUILD_PATH $LX_REF $LY_REF $LZ_REF $i 0
+    fi
+done
+for i in $(seq $LX_LOWER $LX_STRIDE $LX_UPPER); do
+    FILE_OK=$DATA_PATH/text/out/X${i}Y${LY_REF}Z${LZ_REF}T${LT_REF}_GPU.ok
+    if [ ! -f "$FILE_OK" ]; then
+        echo "Run case ("$i $LY_REF $LZ_REF $LT_REF")"
+        rm $DATA_PATH/binary/in/*.bin
+        rm $DATA_PATH/binary/out/*.bin
+        $BUILD_PATH/UKF_1 $i $LY_REF $LZ_REF $LT_REF 1 1
+        . $DIR_PATH/graph.sh $BUILD_PATH $i $LY_REF $LZ_REF $LT_REF 1
+    fi
+done
+for i in $(seq $LY_LOWER $LY_STRIDE $LY_UPPER); do
+    FILE_OK=$DATA_PATH/text/out/X${LX_REF}Y${i}Z${LZ_REF}T${LT_REF}_GPU.ok
+    if [ ! -f "$FILE_OK" ]; then
+        echo "Run case ("$LX_REF $i $LZ_REF $LT_REF")"
+        rm $DATA_PATH/binary/in/*.bin
+        rm $DATA_PATH/binary/out/*.bin
+        $BUILD_PATH/UKF_1 $LX_REF $i $LZ_REF $LT_REF 1 1
+        . $DIR_PATH/graph.sh $BUILD_PATH $LX_REF $i $LZ_REF $LT_REF 1
+    fi
+done
+for i in $(seq $LZ_LOWER $LZ_STRIDE $LZ_UPPER); do
+    FILE_OK=$DATA_PATH/text/out/X${LX_REF}Y${LY_REF}Z${i}T${LT_REF}_GPU.ok
+    if [ ! -f "$FILE_OK" ]; then
+        echo "Run case ("$LX_REF $LY_REF $i $LT_REF")"
+        rm $DATA_PATH/binary/in/*.bin
+        rm $DATA_PATH/binary/out/*.bin
+        $BUILD_PATH/UKF_1 $LX_REF $LY_REF $i $LT_REF 1 1
+        . $DIR_PATH/graph.sh $BUILD_PATH $LX_REF $LY_REF $i $LT_REF 1
+    fi
+done
+for i in $(seq $LT_LOWER $LT_STRIDE $LT_UPPER); do
+    FILE_OK=$DATA_PATH/text/out/X${LX_REF}Y${LY_REF}Z${LZ_REF}T${i}_GPU.ok
+    if [ ! -f "$FILE_OK" ]; then
+        echo "Run case ("$LX_REF $LY_REF $LZ_REF $i")"
+        rm $DATA_PATH/binary/in/*.bin
+        rm $DATA_PATH/binary/out/*.bin
+        $BUILD_PATH/UKF_1 $LX_REF $LY_REF $LZ_REF $i 1 1
+        . $DIR_PATH/graph.sh $BUILD_PATH $LX_REF $LY_REF $LZ_REF $i 1
     fi
 done
 

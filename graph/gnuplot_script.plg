@@ -2,12 +2,15 @@ x = ARG1
 y = ARG2
 z = ARG3
 t = ARG4
+isGPU = ARG5
 
 file_path = "data/"
 output_path = "output/"
-if(ARGC > 4) file_path = ARG5
-if(ARGC > 5) output_path = ARG6
+if(ARGC > 5) file_path = ARG6
+if(ARGC > 6) output_path = ARG7
 
+typeName = "_CPU"
+if(isCPU > 0) typeName = "_GPU"
 
 timer_file = "Timer"
 temperature_file = "Temperature"
@@ -22,8 +25,8 @@ mod(x,y) = x-(floor(x/y)*y)
 
 output_name = "TimeSteps"
 
-id_name = "X".x."Y".y."Z".z."T".t
-title_name = "Time"." X".x." Y".y." Z".z." T".t 
+id_name = "X".x."Y".y."Z".z."T".t.typeName
+title_name = "Time"." X".x." Y".y." Z".z." T".t.typeName
 
 set output output_path.output_name.id_name.output_extension
 plot file_path.timer_file.id_name.extension every 12::8 title title_name

@@ -112,11 +112,16 @@ int main(int argc, char** argv){
     unsigned Lz;
     unsigned Lt;
 
-    if(argc == 1 + 4) {
+    PointerType pointerType;
+    PointerContext pointerContext;
+
+    if(argc == 1 + 4 + 2) {
         Lx = (unsigned)std::stoi(argv[1u]);
         Ly = (unsigned)std::stoi(argv[2u]);
         Lz = (unsigned)std::stoi(argv[3u]);
         Lt = (unsigned)std::stoi(argv[4u]);
+        pointerType = (PointerType)std::stoi(argv[5u]);
+        pointerContext = (PointerContext)std::stoi(argv[6u]);
     } else {
         std::cout << "Error: Wrong number of parameters: " << argc << "\n";
         return 1;
@@ -193,12 +198,12 @@ int main(int argc, char** argv){
         Sx,Sy,Sz,St,
         T0,Amp,mean,sigma,
         alpha,beta,kappa,
-        PointerType::CPU, PointerContext::CPU_Only
+        pointerType, pointerContext
     );
 
     Parser::ConvertToText(path_binary_out,path_text_out,extension_text);
 
-    std::string name_type = "TypeCPU";
+    std::string name_type = (pointerType == PointerType::GPU) ? "_GPU" : "_CPU";
     std::string ok_name = path_text_out +
         "X" + std::to_string(Lx) +
         "Y" + std::to_string(Ly) +
