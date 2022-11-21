@@ -12,7 +12,7 @@ LT=$5
 CPU=$6
 
 rm $GRAPH_PATH/data/*
-if [ $CPU = 1 ];
+if [ $CPU > 0 ];
 then
     rm $GRAPH_PATH/output/*X${LX}Y${LY}Z${LZ}T${LT}_CPU*
 else
@@ -25,6 +25,6 @@ echo "Finished GNUPlot Parser Execution"
 
 echo "Running GNUPlot for graph generation"
 cd $GRAPH_PATH
-gnuplot -c gnuplot_script.plg $LX $LY $LZ $LT
+gnuplot -c gnuplot_script.plg $LX $LY $LZ $LT $CPU
 cd $CURRENT_PATH
 echo "Finished GNUPlot Execution"

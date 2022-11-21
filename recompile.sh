@@ -108,6 +108,9 @@ for i in $(seq $LT_LOWER $LT_STRIDE $LT_UPPER); do
         . $DIR_PATH/graph.sh $BUILD_PATH $LX_REF $LY_REF $LZ_REF $i 0
     fi
 done
+
+exit
+
 for i in $(seq $LX_LOWER $LX_STRIDE $LX_UPPER); do
     FILE_OK=$DATA_PATH/text/out/X${i}Y${LY_REF}Z${LZ_REF}T${LT_REF}_GPU.ok
     if [ ! -f "$FILE_OK" ]; then

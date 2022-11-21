@@ -182,7 +182,8 @@ public:
             switch (context_in)
             {
             case PointerContext::CPU_Only:
-                output.pointer = new (std::nothrow) T[1];
+                output.pointer = new T[1u];
+                std::cout << output.pointer << "\n";
                 output.pointer[0u] = T(value_in);
                 break;
             case PointerContext::GPU_Aware:

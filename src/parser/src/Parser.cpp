@@ -667,7 +667,7 @@ void Parser::ConvertToText(std::string path_in, std::string path_out, std::strin
         if(!out.is_open()){
             std::cout << "\tError: Failed to open file output file.\n";
         }
-        
+
         std::streampos iterationPosition;
         unsigned iteration = 0u;
         
@@ -721,7 +721,9 @@ unsigned Parser::OpenFileOut(std::string path_in, std::string name_in, std::stri
             std::cout << "\tError: Too many files are open at the moment. Use old indexes to reopen in the same place or close all files.";
             return UINT_MAX_VALUE;
         }
-        fileArray_Out[count_Out] = std::ofstream(path_in + name_in + extension_in, mode_in);
+        std::cout << count_Out << " of " << length_Out << "\n";
+        fileArray_Out[count_Out].open(path_in + name_in + extension_in, mode_in);
+        std::cout << count_Out << " of " << length_Out << "\n";
         if(!fileArray_Out[count_Out].is_open()){
             std::cout << "\tError: Failed to open file.\n";
             std::cout << "\tPath: " << path_in + name_in + extension_in << "\n";
