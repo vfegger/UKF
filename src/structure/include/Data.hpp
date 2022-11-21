@@ -45,6 +45,8 @@ public:
     Data(unsigned lengthElements_in);
     // Constructor to copy an instance of Data class
     Data(const Data &data_in);
+    // Copy assignment of an instance of Data class
+    Data& operator=(const Data &data_in);
     // Add Data Entry to Data Class
     unsigned Add(std::string name_in, unsigned length_in);
     // Add Multiple Data Entries to Data Class

@@ -39,6 +39,8 @@ public:
     Parameter(unsigned lengthElements_in);
     // Constructor to copy an instance of Parameter class
     Parameter(const Parameter &parameter_in);
+    // Copy assignment of an instance of Parameter class
+    Parameter& operator=(const Parameter &parameter_in);
     // Add Parameter Entry to Parameter Class
     unsigned Add(std::string name_in, unsigned length_in, unsigned sizeType_in);
     // Add Multiple Parameter Entries to Data Class

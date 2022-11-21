@@ -36,6 +36,8 @@ protected:
 public:
     Parser();
     Parser(unsigned length_in);
+    Parser(const Parser& parser_in);
+    Parser& operator=(const Parser& parser_in);
     unsigned OpenFileIn(std::string path_in, std::string name_in, std::string extension_in, std::ios::openmode mode_in, unsigned index = UINT_MAX_VALUE);
     unsigned OpenFileOut(std::string path_in, std::string name_in, std::string extension_in, std::ios::openmode mode_in, unsigned index = UINT_MAX_VALUE);
     std::ifstream& GetStreamIn(unsigned index_in);

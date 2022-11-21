@@ -114,6 +114,44 @@ DataCovariance::DataCovariance(const DataCovariance &dataCovariance_in)
         MemoryHandler::Copy(pointer, dataCovariance_in.pointer, length * length);
     }
 }
+DataCovariance& DataCovariance::operator=(const DataCovariance &dataCovariance_in)
+{
+    pointer = Pointer<double>();
+    length = 0u;
+    lengthElements = dataCovariance_in.lengthElements;
+    names = MemoryHandler::Alloc<std::string>(lengthElements, PointerType::CPU, PointerContext::CPU_Only);
+    lengthOffset = MemoryHandler::Alloc<unsigned>(lengthElements, PointerType::CPU, PointerContext::CPU_Only);
+    offset = MemoryHandler::Alloc<Pointer<double>>(lengthElements, PointerType::CPU, PointerContext::CPU_Only);
+    offsetArray = MemoryHandler::Alloc<unsigned>(lengthElements, PointerType::CPU, PointerContext::CPU_Only);
+    if (offset.pointer == NULL || lengthOffset.pointer == NULL || offset.pointer == NULL || names.pointer == NULL)
+    {
+        std::cout << "Error: Data covariance could not alloc all needed memory.\n";
+    }
+    count = dataCovariance_in.count;
+    for (unsigned i = 0u; i < lengthElements; i++)
+    {
+        offset.pointer[i] = Pointer<double>(dataCovariance_in.pointer.type, dataCovariance_in.pointer.context);
+        names.pointer[i] = dataCovariance_in.names.pointer[i];
+        lengthOffset.pointer[i] = dataCovariance_in.lengthOffset.pointer[i];
+        offsetArray.pointer[i] = dataCovariance_in.offsetArray.pointer[i];
+    }
+    isValid = dataCovariance_in.isValid;
+    if (isValid)
+    {
+        length = dataCovariance_in.length;
+        pointer = MemoryHandler::Alloc<double>(length * length, dataCovariance_in.pointer.type, dataCovariance_in.pointer.context);
+        if (pointer.pointer == NULL)
+        {
+            std::cout << "Error: Initialization wasn't successful.\n";
+            return;
+        }
+        for (unsigned i = 0u; i < count; i++)
+        {
+            offset.pointer[i] = Pointer<double>(pointer.pointer + offsetArray.pointer[i] * (length + 1u), pointer.type, pointer.context);
+        }
+        MemoryHandler::Copy(pointer, dataCovariance_in.pointer, length * length);
+    }
+}
 unsigned DataCovariance::Add(std::string name_in, unsigned length_in)
 {
     isValid = false;

@@ -1,6 +1,6 @@
 #!
 
-DEBUG=$1
+DEBUG=$2
 CLEAN=true
 BUILD_ONLY=$1
 
@@ -20,8 +20,8 @@ if [ "$DEBUG" = "-d" ] || [ "$DEBUG" = "-debug" ] || [ "$DEBUG" = "-DEBUG" ] || 
 then
     echo "Debug Mode"
     BUILD_PATH=$DIR_PATH/$BUILD_DIR"-debug"
-    BUILD_OPTIONS+="-DCMAKE_BUILD_TYPE=Debug"
-    MEMORY_CHECK_OPTIONS+=" --leak-check=full --track-origins=yes"
+    BUILD_OPTIONS=$BUILD_OPTIONS"-DCMAKE_BUILD_TYPE=Debug"
+    MEMORY_CHECK_OPTIONS=$MEMORY_CHECK_OPTIONS"--leak-check=full --track-origins=yes"
 else
     echo "Normal Mode"
     BUILD_PATH=$DIR_PATH/$BUILD_DIR

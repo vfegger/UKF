@@ -78,6 +78,46 @@ Data::Data(const Data &data_in)
         }
     }
 }
+Data& Data::operator=(const Data &data_in)
+{
+    lengthElements = data_in.lengthElements;
+    names = MemoryHandler::Alloc<std::string>(lengthElements, PointerType::CPU, PointerContext::CPU_Only);
+    lengthOffset = MemoryHandler::Alloc<unsigned>(lengthElements, PointerType::CPU, PointerContext::CPU_Only);
+    offset = MemoryHandler::Alloc<Pointer<double>>(lengthElements, PointerType::CPU, PointerContext::CPU_Only);
+    if (offset.pointer == NULL || lengthOffset.pointer == NULL || names.pointer == NULL)
+    {
+        std::cout << "Error: Data covariance could not alloc all needed memory.\n";
+    }
+    for (unsigned i = 0; i < lengthElements; i++)
+    {
+        names.pointer[i] = data_in.names.pointer[i];
+        lengthOffset.pointer[i] = data_in.lengthOffset.pointer[i];
+        offset.pointer[i] = Pointer<double>(data_in.offset.type, data_in.offset.context);
+    }
+    pointer = Pointer<double>();
+    length = 0u;
+    count = data_in.count;
+    isValid = data_in.isValid;
+    multipleIndex = 0u;
+    multipleLenght = 0u;
+    if (isValid)
+    {
+        length = data_in.length;
+        pointer = MemoryHandler::Alloc<double>(length, data_in.pointer.type, data_in.pointer.context);
+        if (pointer.pointer == NULL)
+        {
+            std::cout << "Error: Initialization wasn't successful.\n";
+            return;
+        }
+        MemoryHandler::Copy(pointer, data_in.pointer, length);
+        unsigned offset_aux = 0u;
+        for (unsigned i = 0; i < lengthElements; i++)
+        {
+            offset.pointer[i] = Pointer<double>(pointer.pointer + offset_aux, data_in.pointer.type, data_in.pointer.context);
+            offset_aux += lengthOffset.pointer[i];
+        }
+    }
+}
 unsigned Data::Add(std::string name_in, unsigned length_in)
 {
     isValid = false;

@@ -56,6 +56,33 @@ Parameter::Parameter(const Parameter& parameter_in){
         }
     }
 }
+Parameter& Parameter::operator=(const Parameter& parameter_in){
+    lengthElements = parameter_in.lengthElements;
+    names = MemoryHandler::Alloc<std::string>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
+    sizeTypeArray = MemoryHandler::Alloc<unsigned>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
+    lengthArray = MemoryHandler::Alloc<unsigned>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
+    offset = MemoryHandler::Alloc<Pointer<void>>(lengthElements,PointerType::CPU,PointerContext::CPU_Only);
+    for(unsigned i = 0; i < lengthElements; i++){
+        names.pointer[i] = parameter_in.names.pointer[i];
+        sizeTypeArray.pointer[i] = parameter_in.sizeTypeArray.pointer[i];
+        lengthArray.pointer[i] = parameter_in.lengthArray.pointer[i];
+        offset.pointer[i] = Pointer<void>(parameter_in.offset.type, parameter_in.offset.context);
+    }
+    pointer = Pointer<void>();
+    length = 0u;
+    count = parameter_in.count;
+    isValid = parameter_in.isValid;
+    if(isValid){
+        length = parameter_in.length;
+        pointer = MemoryHandler::Alloc<void>(length,parameter_in.pointer.type,parameter_in.pointer.context);
+        MemoryHandler::Copy(pointer,parameter_in.pointer,length);
+        unsigned offset_aux = 0u;
+        for(unsigned i = 0; i < lengthElements; i++){
+            offset.pointer[i] = Pointer<void>((void*)((char*)pointer.pointer + offset_aux),parameter_in.pointer.type,parameter_in.pointer.context);
+            offset_aux += lengthArray.pointer[i] * sizeTypeArray.pointer[i];
+        }
+    }
+}
 unsigned Parameter::Add(std::string name_in, unsigned length_in, unsigned sizeType_in){
     isValid = false;
     if(count >= lengthElements){
