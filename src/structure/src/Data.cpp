@@ -47,6 +47,7 @@ Data::Data(const Data &data_in)
     if (offset.pointer == NULL || lengthOffset.pointer == NULL || names.pointer == NULL)
     {
         std::cout << "Error: Data covariance could not alloc all needed memory.\n";
+        return;
     }
     for (unsigned i = 0; i < lengthElements; i++)
     {
@@ -87,6 +88,7 @@ Data& Data::operator=(const Data &data_in)
     if (offset.pointer == NULL || lengthOffset.pointer == NULL || names.pointer == NULL)
     {
         std::cout << "Error: Data covariance could not alloc all needed memory.\n";
+        return *this;
     }
     for (unsigned i = 0; i < lengthElements; i++)
     {
@@ -107,7 +109,7 @@ Data& Data::operator=(const Data &data_in)
         if (pointer.pointer == NULL)
         {
             std::cout << "Error: Initialization wasn't successful.\n";
-            return;
+            return *this;
         }
         MemoryHandler::Copy(pointer, data_in.pointer, length);
         unsigned offset_aux = 0u;
@@ -117,6 +119,7 @@ Data& Data::operator=(const Data &data_in)
             offset_aux += lengthOffset.pointer[i];
         }
     }
+    return *this;
 }
 unsigned Data::Add(std::string name_in, unsigned length_in)
 {

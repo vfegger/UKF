@@ -82,6 +82,7 @@ Parameter& Parameter::operator=(const Parameter& parameter_in){
             offset_aux += lengthArray.pointer[i] * sizeTypeArray.pointer[i];
         }
     }
+    return *this;
 }
 unsigned Parameter::Add(std::string name_in, unsigned length_in, unsigned sizeType_in){
     isValid = false;

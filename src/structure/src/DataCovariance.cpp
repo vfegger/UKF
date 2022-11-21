@@ -126,6 +126,7 @@ DataCovariance& DataCovariance::operator=(const DataCovariance &dataCovariance_i
     if (offset.pointer == NULL || lengthOffset.pointer == NULL || offset.pointer == NULL || names.pointer == NULL)
     {
         std::cout << "Error: Data covariance could not alloc all needed memory.\n";
+        return *this;
     }
     count = dataCovariance_in.count;
     for (unsigned i = 0u; i < lengthElements; i++)
@@ -143,7 +144,7 @@ DataCovariance& DataCovariance::operator=(const DataCovariance &dataCovariance_i
         if (pointer.pointer == NULL)
         {
             std::cout << "Error: Initialization wasn't successful.\n";
-            return;
+            return *this;
         }
         for (unsigned i = 0u; i < count; i++)
         {
@@ -151,6 +152,7 @@ DataCovariance& DataCovariance::operator=(const DataCovariance &dataCovariance_i
         }
         MemoryHandler::Copy(pointer, dataCovariance_in.pointer, length * length);
     }
+    return *this;
 }
 unsigned DataCovariance::Add(std::string name_in, unsigned length_in)
 {
