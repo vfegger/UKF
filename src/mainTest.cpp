@@ -33,7 +33,7 @@ int RunCase(std::string& path_binary, std::string& extension_binary,
     std::string name_temperature = "Temperature";
     std::string name_temperature_measured = "Temperature_measured";
     std::string name_heatFlux = "HeatFlux";
-    std::string name_type = (type_in == PointerType::CPU) ? "TypeCPU" : "TypeGPU";
+    std::string name_type = (type_in == PointerType::CPU) ? "_CPU" : "_GPU";
 
     std::string name_timer_aux = name_timer 
     + "X" + std::to_string(Lx) 

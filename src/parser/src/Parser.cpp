@@ -613,12 +613,21 @@ void Parser::ConvertToBinary(std::string path_in, std::string path_out, std::str
     void* values;
     std::string name_in;
     std::string name_out;
+    std::cout << "Converting to Binary: \n";
     for(const auto & entry : std::filesystem::directory_iterator(path_in)){
         name_in = path_in + entry.path().filename().string();
         name_out = path_out + entry.path().stem().string() + extension_in;
-        
+
+        std::cout << "\t" << name_in << " >> " << name_out << "\n";
         std::ifstream in(name_in);
         std::ofstream out(name_out, std::ios::binary | std::ios::trunc);
+
+        if(!in.is_open()){
+            std::cout << "\tError: Failed to open file input file.\n";
+        }
+        if(!out.is_open()){
+            std::cout << "\tError: Failed to open file output file.\n";
+        }
 
         std::streampos iterationPosition;
         unsigned iteration = 0u;
@@ -643,13 +652,22 @@ void Parser::ConvertToText(std::string path_in, std::string path_out, std::strin
     void* values = NULL;
     std::string name_in;
     std::string name_out;
+    std::cout << "Converting to Text: \n";
     for(const auto & entry : std::filesystem::directory_iterator(path_in)){
         name_in = path_in + entry.path().filename().string();
         name_out = path_out + entry.path().stem().string() + extension_in;
         
+        std::cout << "\t" << name_in << " >> " << name_out << "\n";
         std::ifstream in(name_in, std::ios::binary);
         std::ofstream out(name_out, std::ios::trunc);
 
+        if(!in.is_open()){
+            std::cout << "\tError: Failed to open file input file.\n";
+        }
+        if(!out.is_open()){
+            std::cout << "\tError: Failed to open file output file.\n";
+        }
+        
         std::streampos iterationPosition;
         unsigned iteration = 0u;
         

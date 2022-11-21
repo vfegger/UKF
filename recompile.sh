@@ -1,7 +1,7 @@
 #!
 
 DEBUG=$1
-CLEAN=false
+CLEAN=true
 BUILD_ONLY=$1
 
 FILE_PATH="$BASH_SOURCE"
