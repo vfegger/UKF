@@ -670,12 +670,13 @@ unsigned Parser::OpenFileIn(std::string path_in, std::string name_in, std::strin
     std::cout << "Trying to open file with name: " << name_in << "\n";
     if(index_in == UINT_MAX_VALUE){
         if(count_In >= length_In){
-            std::cout << "Error: Too many files are open at the moment. Use old indexes to reopen in the same place or close all files.";
+            std::cout << "\tError: Too many files are open at the moment. Use old indexes to reopen in the same place or close all files.";
             return UINT_MAX_VALUE;
         }
         fileArray_In[count_In] = std::ifstream(path_in + name_in + extension_in, mode_in);
         if(!fileArray_In[count_In].is_open()){
-            std::cout << "Error: Failed to open file.\n";
+            std::cout << "\tError: Failed to open file.\n";
+            std::cout << "\tPath: " << path_in + name_in + extension_in << "\n";
             return UINT_MAX_VALUE;
         }
         count_In++;
@@ -683,7 +684,7 @@ unsigned Parser::OpenFileIn(std::string path_in, std::string name_in, std::strin
         return count_In-1;
     } else {
         if(index_in >= length_In){
-            std::cout << "Error: Index is out of range.";
+            std::cout << "\tError: Index is out of range.";
             return UINT_MAX_VALUE;
         }
         if(fileArray_In[index_in].is_open()){
@@ -699,19 +700,21 @@ unsigned Parser::OpenFileOut(std::string path_in, std::string name_in, std::stri
     std::cout << "Trying to open file with name: " << name_in << "\n";
     if(index_in == UINT_MAX_VALUE){
         if(count_Out >= length_Out){
-            std::cout << "Error: Too many files are open at the moment. Use old indexes to reopen in the same place or close all files.";
+            std::cout << "\tError: Too many files are open at the moment. Use old indexes to reopen in the same place or close all files.";
             return UINT_MAX_VALUE;
         }
         fileArray_Out[count_Out] = std::ofstream(path_in + name_in + extension_in, mode_in);
         if(!fileArray_Out[count_Out].is_open()){
-            std::cout << "Error: Failed to open file.\n";
+            std::cout << "\tError: Failed to open file.\n";
+            std::cout << "\tPath: " << path_in + name_in + extension_in << "\n";
+            return UINT_MAX_VALUE;
         }
         count_Out++;
         std::cout << "\tFile opened successefully!\n";
         return count_Out-1;
     } else {
         if(index_in >= length_Out){
-            std::cout << "Error: Index is out of range.";
+            std::cout << "\tError: Index is out of range.";
             return UINT_MAX_VALUE;
         }
         if(fileArray_Out[index_in].is_open()){
