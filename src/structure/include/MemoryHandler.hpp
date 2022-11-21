@@ -183,7 +183,6 @@ public:
             {
             case PointerContext::CPU_Only:
                 output.pointer = new T[1u];
-                std::cout << output.pointer << "\n";
                 output.pointer[0u] = T(value_in);
                 break;
             case PointerContext::GPU_Aware:

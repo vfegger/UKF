@@ -49,7 +49,7 @@ public:
     // Constructor to copy an instance of Data Covariance class
     DataCovariance(const DataCovariance& dataCovariance_in);
     // Copy assignment of an instance of Data Covariance class
-    DataCovariance(const DataCovariance& dataCovariance_in);
+    DataCovariance& operator=(const DataCovariance& dataCovariance_in);
     // Add Data Covariance Entry to Data Covariance Class
     unsigned Add(std::string name_in, unsigned length_in);
     // Add Multiple Data Covariance Entries to Data Covariance Class

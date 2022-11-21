@@ -38,6 +38,7 @@ Parser& Parser::operator=(const Parser &parser_in)
     fileArray_Out = new std::ofstream[length_Out];
     count_In = 0u;
     count_Out = 0u;
+    return *this;
 }
 
 void Parser::ImportConfiguration(std::ifstream &file_in, std::string &name_out, unsigned &length_out, ParserType &type_out, unsigned &iteration_out)
@@ -777,10 +778,7 @@ unsigned Parser::OpenFileOut(std::string path_in, std::string name_in, std::stri
             std::cout << "\tError: Too many files are open at the moment. Use old indexes to reopen in the same place or close all files.";
             return UINT_MAX_VALUE;
         }
-        std::cout << count_Out << " of " << length_Out << "\n";
-        std::string complete_name = path_in + name_in + extension_in;
-        fileArray_Out[count_Out].open(complete_name, mode_in);
-        std::cout << count_Out << " of " << length_Out << "\n";
+        fileArray_Out[count_Out].open(path_in + name_in + extension_in, mode_in);
         if (!fileArray_Out[count_Out].is_open())
         {
             std::cout << "\tError: Failed to open file.\n";
