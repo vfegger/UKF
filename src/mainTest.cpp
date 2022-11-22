@@ -70,7 +70,7 @@ int RunCase(std::string& path_binary, std::string& extension_binary,
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured),"Temperature Measured",Lx*Ly,ParserType::Double,positionTemperatureMeasured);
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexHeatFlux),"Heat Flux",Lx*Ly,ParserType::Double,positionHeatFlux);
 
-    HeatFluxGenerator generator(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,T0,Amp);
+    HeatFluxGenerator generator(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,T0,Amp,type_in,context_in);
     generator.Generate(mean,sigma);
 
     HeatFluxEstimation problem(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,type_in,context_in);
