@@ -8,7 +8,8 @@ UKF::UKF(Pointer<UKFMemory> memory_in, double alpha_in, double beta_in, double k
         memory.pointer[0u].GetStateCovariance().pointer[0u].GetValidation() &&
         memory.pointer[0u].GetStateNoise().pointer[0u].GetValidation() &&
         memory.pointer[0u].GetMeasure().pointer[0u].GetValidation() &&
-        memory.pointer[0u].GetMeasureNoise().pointer[0u].GetValidation();
+        memory.pointer[0u].GetMeasureNoise().pointer[0u].GetValidation() &&
+        memory.pointer[0u].GetParameter().pointer[0u].GetValidation();
     if (!isValid)
     {
         std::cout << "Error: Memory is not properly initialized.\n";
@@ -81,7 +82,7 @@ void UKF::Iterate(Timer &timer)
     Pointer<Data> sigmaPointsState = Pointer<Data>();       // TODO
     Pointer<Data> sigmaPointsObservation = Pointer<Data>(); // TODO
     Data::InstantiateMultiple(sigmaPointsState, state.pointer[0u], sigmaPointsLength);
-    Data::InstantiateMultiple(sigmaPointsObservation, measure.pointer[0u], sigmaPointsLength);
+    Data::InstantiateMultiple(sigmaPointsObservation, observation.pointer[0u], sigmaPointsLength);
     Math::Operation(Math::Add, sigmaPointsState.pointer[0u].GetPointer(), chol, lengthState, lengthState, lengthState, lengthState, lengthState, 0u);
     Math::Operation(Math::Sub, sigmaPointsState.pointer[0u].GetPointer(), chol, lengthState, lengthState, lengthState, lengthState, (lengthState + 1u) * lengthState, 0u);
     MemoryHandler::Free(chol);

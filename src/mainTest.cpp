@@ -13,7 +13,7 @@
 int RunCase(std::string& path_binary, std::string& extension_binary,
     unsigned Lx, unsigned Ly, unsigned Lz, unsigned Lt,
     double Sx, double Sy, double Sz, double St,
-    double T0, double Amp, double mean, double sigma,
+    double T0, double sT0, double sTm0, double Q0, double sQ0, double Amp, double mean, double sigma,
     double alpha, double beta, double kappa,
     PointerType type_in, PointerContext context_in)
 {
@@ -73,7 +73,7 @@ int RunCase(std::string& path_binary, std::string& extension_binary,
     HeatFluxGenerator generator(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,T0,Amp,type_in,context_in);
     generator.Generate(mean,sigma);
 
-    HeatFluxEstimation problem(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,type_in,context_in);
+    HeatFluxEstimation problem(Lx,Ly,Lz,Lt,Sx,Sy,Sz,St,T0,sT0,sTm0,Q0,sQ0,type_in,context_in);
 
     problem.UpdateMeasure(generator.GetTemperature(0u),Lx,Ly);
     Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured),Lx*Ly,ParserType::Double,generator.GetTemperature(0u).pointer,positionTemperatureMeasured,0u);
@@ -179,9 +179,13 @@ int main(int argc, char** argv){
     double St = S[3u];
 
     double T0 = HPParm[0u];
-    double Amp = HPParm[1u];
-    double mean = HPParm[2u];
-    double sigma = HPParm[3u];
+    double sT0 = HPParm[1u];
+    double sTm0 = HPParm[2u];
+    double Q0 = HPParm[3u];
+    double sQ0 = HPParm[4u];
+    double Amp = HPParm[5u];
+    double mean = HPParm[6u];
+    double sigma = HPParm[7u];
     
     double alpha = UKFParm[0u];
     double beta = UKFParm[1u];
@@ -196,7 +200,7 @@ int main(int argc, char** argv){
     RunCase(path_binary_out,extension_binary,
         Lx,Ly,Lz,Lt,
         Sx,Sy,Sz,St,
-        T0,Amp,mean,sigma,
+        T0,sT0,sTm0,Q0,sQ0,Amp,mean,sigma,
         alpha,beta,kappa,
         pointerType, pointerContext
     );
