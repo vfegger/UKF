@@ -32,7 +32,7 @@ HeatFluxEstimation::HeatFluxEstimation(
     L.pointer[1u] = Sy;
     L.pointer[2u] = Sz;
     L.pointer[3u] = St;
-    Pointer<double> Amp = MemoryHandler::Alloc<double>(4u, PointerType::CPU, PointerContext::CPU_Only);
+    Pointer<double> Amp = MemoryHandler::Alloc<double>(1u, PointerType::CPU, PointerContext::CPU_Only);
     Amp.pointer[0u] = 5e4;
 
     parameter.pointer[0u].LoadData(indexL, L, 4u);
@@ -51,8 +51,8 @@ HeatFluxEstimation::HeatFluxEstimation(
     Pointer<double> sigmaQ = MemoryHandler::Alloc<double>(Lx * Ly, type_in, context_in);
     MemoryHandler::Set<double>(T, 300.0, 0, Lx * Ly * Lz);
     MemoryHandler::Set<double>(sigmaT, 1.0, 0, Lx * Ly * Lz);
-    MemoryHandler::Set<double>(T, 0.0, 0, Lx * Ly);
-    MemoryHandler::Set<double>(sigmaT, 1.25, 0, Lx * Ly);
+    MemoryHandler::Set<double>(Q, 0.0, 0, Lx * Ly);
+    MemoryHandler::Set<double>(sigmaQ, 1.25, 0, Lx * Ly);
     input.pointer[0u].LoadData(indexT, T, Lx * Ly * Lz);
     input.pointer[0u].LoadData(indexQ, Q, Lx * Ly);
     inputCovariance = MemoryHandler::AllocValue<DataCovariance, Data>(input.pointer[0], type_in, context_in);

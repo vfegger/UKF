@@ -114,7 +114,7 @@ DataCovariance::DataCovariance(const DataCovariance &dataCovariance_in)
         MemoryHandler::Copy(pointer, dataCovariance_in.pointer, length * length);
     }
 }
-DataCovariance& DataCovariance::operator=(const DataCovariance &dataCovariance_in)
+DataCovariance &DataCovariance::operator=(const DataCovariance &dataCovariance_in)
 {
     pointer = Pointer<double>();
     length = 0u;
@@ -311,7 +311,10 @@ Pointer<double> DataCovariance::operator[](unsigned index)
 }
 DataCovariance::~DataCovariance()
 {
-    MemoryHandler::Free(pointer);
+    if (isValid)
+    {
+        MemoryHandler::Free(pointer);
+    }
     MemoryHandler::Free(offset);
     MemoryHandler::Free(lengthOffset);
     MemoryHandler::Free(offsetArray);

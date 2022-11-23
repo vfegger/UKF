@@ -312,7 +312,7 @@ Pointer<double> &Data::operator[](unsigned index)
 }
 Data::~Data()
 {
-    if (multipleIndex == 0u)
+    if (multipleIndex == 0u && isValid)
     {
         MemoryHandler::Free(pointer);
     }

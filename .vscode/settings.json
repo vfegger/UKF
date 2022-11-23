@@ -63,6 +63,11 @@
         "__threading_support": "cpp",
         "__hash_table": "cpp",
         "__split_buffer": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "__bit_reference": "cpp",
+        "__functional_03": "cpp",
+        "__mutex_base": "cpp",
+        "__node_handle": "cpp",
+        "__tuple": "cpp"
     }
 }

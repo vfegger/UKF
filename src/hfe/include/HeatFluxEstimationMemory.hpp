@@ -8,6 +8,8 @@ class HeatFluxEstimationMemory : public UKFMemory
 public:
     HeatFluxEstimationMemory();
     HeatFluxEstimationMemory(Data &a, DataCovariance &b, DataCovariance &c, Data &d, DataCovariance &e, Parameter &f, PointerType type_in, PointerContext context_in);
+    HeatFluxEstimationMemory(const HeatFluxEstimationMemory& memory_in);
+
 
     inline double C(double T);
     inline double K(double T);

@@ -8,6 +8,10 @@ HeatFluxEstimationMemory::HeatFluxEstimationMemory(Data& a, DataCovariance&b, Da
 
 }
 
+HeatFluxEstimationMemory::HeatFluxEstimationMemory(const HeatFluxEstimationMemory& memory_in) : UKFMemory(memory_in){
+
+}
+
 inline double HeatFluxEstimationMemory::C(double T){
         return 1324.75*T+3557900.0;
 }

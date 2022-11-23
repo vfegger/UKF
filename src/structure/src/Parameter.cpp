@@ -135,11 +135,15 @@ bool Parameter::GetValidation(){
     return isValid;
 }
 Parameter::~Parameter(){
-    if(pointer.pointer != NULL){
+    if(isValid){
         MemoryHandler::Free(pointer);
     }
     MemoryHandler::Free(offset);
     MemoryHandler::Free(lengthArray);
     MemoryHandler::Free(sizeTypeArray);
     MemoryHandler::Free(names);
+    length = 0u;
+    lengthElements = 0u;
+    isValid = false;
+    count = 0u;
 }

@@ -184,17 +184,35 @@ void MathCPU::MatrixMultiplication(double alpha,
             }
         }
     }
-    for (unsigned j = 0; j < N; j++)
+    if (weight_in.pointer == NULL)
     {
-        for (unsigned i = 0; i < M; i++)
+        for (unsigned j = 0; j < N; j++)
         {
-            auxAlpha = 0.0;
-            auxBeta = aux[j * M + i];
-            for (unsigned k = 0; k < K; k++)
+            for (unsigned i = 0; i < M; i++)
             {
-                auxAlpha += pA[k * sA2 + i * sA1] * pB[j * sB2 + k * sB1];
+                auxAlpha = 0.0;
+                auxBeta = aux[j * M + i];
+                for (unsigned k = 0; k < K; k++)
+                {
+                    auxAlpha += pA[k * sA2 + i * sA1] * pB[j * sB2 + k * sB1];
+                }
+                pC[j * M + i] = alpha * auxAlpha + beta * auxBeta;
             }
-            pC[j * M + i] = alpha * auxAlpha + beta * auxBeta;
+        }
+    } else 
+    {
+        for (unsigned j = 0; j < N; j++)
+        {
+            for (unsigned i = 0; i < M; i++)
+            {
+                auxAlpha = 0.0;
+                auxBeta = aux[j * M + i];
+                for (unsigned k = 0; k < K; k++)
+                {
+                    auxAlpha += weight_in.pointer[k] * pA[k * sA2 + i * sA1] * pB[j * sB2 + k * sB1];
+                }
+                pC[j * M + i] = alpha * auxAlpha + beta * auxBeta;
+            }
         }
     }
     if (matrixOutStructure_in == MatrixStructure_Transposed)
@@ -230,7 +248,7 @@ void MathCPU::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsign
         {
             for (unsigned i = 0u; i < lengthX_in; i++)
             {
-                vector_out.pointer[j * lengthX_in + i] = matrix_in.pointer[j * lengthX_in + i] * weight_in.pointer[j];
+                vector_out.pointer[i] += matrix_in.pointer[j * lengthX_in + i] * weight_in.pointer[j];
             }
         }
     }
@@ -288,7 +306,7 @@ void MathCPU::ForwardSubstitution(Pointer<double> matrix_out, MatrixStructure ma
             {
                 sum += A[i * sA2 + k * sA1] * X[j * sX2 + i * sX1];
             }
-            X[j * sX2 + k * sX1] = (1.0 / A[k * sA2 + k * sA1]) *(B[j * sB2 + k * sB1] - sum);
+            X[j * sX2 + k * sX1] = (1.0 / A[k * sA2 + k * sA1]) * (B[j * sB2 + k * sB1] - sum);
         }
     }
 }

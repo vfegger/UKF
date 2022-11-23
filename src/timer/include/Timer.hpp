@@ -22,6 +22,8 @@ private:
 public:
     Timer();
     Timer(unsigned length_in);
+    Timer(const Timer& timer_in);
+    Timer& operator=(const Timer& timer_in);
 
     void Start();
     void Save();

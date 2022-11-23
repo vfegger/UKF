@@ -107,8 +107,8 @@ void UKF::Iterate(Timer &timer)
     timer.Save();
 
     std::cout << "Covariance\n";
-    Math::Operation(Math::Sub, sigmaPointsState.pointer[0u].GetPointer(), statePointer, lengthState, lengthState, 0u, sigmaPointsLength);
-    Math::Operation(Math::Sub, sigmaPointsObservation.pointer[0u].GetPointer(), observationPointer, lengthObservation, lengthObservation, 0u, sigmaPointsLength);
+    Math::Operation(Math::Sub, sigmaPointsState.pointer[0u].GetPointer(), statePointer, lengthState, sigmaPointsLength, lengthState, 0u);
+    Math::Operation(Math::Sub, sigmaPointsObservation.pointer[0u].GetPointer(), observationPointer, lengthObservation, sigmaPointsLength, lengthObservation, 0u);
 
     Math::MatrixMultiplication(1.0,
                                sigmaPointsState.pointer[0u].GetPointer(), MatrixStructure_Natural, lengthState, sigmaPointsLength,
@@ -142,20 +142,20 @@ void UKF::Iterate(Timer &timer)
     std::cout << "State\n";
     Math::Sub(measurePointer, observationPointer, lengthObservation);
     Math::MatrixMultiplication(1.0,
-                               kalmanGainPointer, MatrixStructure_Transposed, lengthState, lengthObservation,
+                               kalmanGainPointer, MatrixStructure_Transposed, lengthObservation, lengthState,
                                measurePointer, MatrixStructure_Natural, lengthObservation, 1u,
                                1.0, statePointer, MatrixStructure_Natural, lengthState, 1u);
     timer.Save();
 
     std::cout << "State Covariance\n";
     Math::MatrixMultiplication(1.0,
-                               kalmanGainPointer, MatrixStructure_Transposed, lengthState, lengthObservation,
+                               kalmanGainPointer, MatrixStructure_Transposed, lengthObservation, lengthState,
                                observationCovariancePointer, MatrixStructure_Natural, lengthObservation, lengthObservation,
                                0.0, crossCovariancePointer, MatrixStructure_Natural, lengthState, lengthObservation);
 
     Math::MatrixMultiplication(-1.0,
                                crossCovariancePointer, MatrixStructure_Natural, lengthState, lengthObservation,
-                               kalmanGainPointer, MatrixStructure_Natural, lengthState, lengthObservation,
+                               kalmanGainPointer, MatrixStructure_Natural, lengthObservation, lengthState,
                                1.0, stateCovariancePointer, MatrixStructure_Natural, lengthState, lengthState);
     timer.Save();
 
