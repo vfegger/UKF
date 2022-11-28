@@ -16,7 +16,7 @@ add_library(${target} ${source})
 add_executable(${target_exe} src/MathTest.cpp ${source})
 
 target_include_directories(${target} PUBLIC ${include_path})
-target_link_libraries(${target} PUBLIC Structure PRIVATE CUDA::cudart CUDA::cublas PRIVATE CUDA::cusolver)
+target_link_libraries(${target} PUBLIC Structure PRIVATE CUDA::cudart PRIVATE CUDA::cublas PRIVATE CUDA::cusolver)
 set_property(TARGET ${target} PROPERTY CUDA_ARCHITECTURES all)
 
 target_include_directories(${target_exe} PUBLIC ${include_path})
