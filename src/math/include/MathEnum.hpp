@@ -1,13 +1,15 @@
 #ifndef MATH_ENUM_HEADER
 #define MATH_ENUM_HEADER
 
-enum MatrixStructure{
+enum MatrixStructure
+{
     MatrixStructure_None,
     MatrixStructure_Natural,
     MatrixStructure_Transposed,
 };
 
-enum DecompositionType{
+enum DecompositionType
+{
     DecompositionType_Default,
     DecompositionType_LU,
     DecompositionType_LUP,
@@ -15,7 +17,8 @@ enum DecompositionType{
     DecompositionType_QR,
 };
 
-enum LinearSolverType{
+enum LinearSolverType
+{
     LinearSolverType_Default,
     LinearSolverType_LU,
     LinearSolverType_LUP,

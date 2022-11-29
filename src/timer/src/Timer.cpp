@@ -30,27 +30,33 @@ Timer::Timer(const Timer &timer_in) : clock()
     if (length > 0)
     {
         duration = new (std::nothrow) double[length];
-        for(unsigned i = 0u; i < length; i++){
+        for (unsigned i = 0u; i < length; i++)
+        {
             duration[i] = timer_in.duration[i];
         }
-    } else {
+    }
+    else
+    {
         duration = NULL;
     }
     count = timer_in.count;
     isValid = timer_in.isValid;
 }
 
-Timer& Timer::operator=(const Timer &timer_in)
+Timer &Timer::operator=(const Timer &timer_in)
 {
     startTime = timer_in.startTime;
     length = timer_in.length;
     if (length > 0)
     {
         duration = new (std::nothrow) double[length];
-        for(unsigned i = 0u; i < length; i++){
+        for (unsigned i = 0u; i < length; i++)
+        {
             duration[i] = timer_in.duration[i];
         }
-    } else {
+    }
+    else
+    {
         duration = NULL;
     }
     count = timer_in.count;

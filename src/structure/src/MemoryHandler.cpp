@@ -95,7 +95,7 @@ void MemoryHandler::Copy(Pointer<void> pointerTo_out, Pointer<void> pointerFrom_
     case PointerDataTransfer::HostToHost:
         for (unsigned i = 0u; i < length_in; i++)
         {
-            ((char*)pointerTo_out.pointer)[i] = ((char*)pointerFrom_in.pointer)[i];
+            ((char *)pointerTo_out.pointer)[i] = ((char *)pointerFrom_in.pointer)[i];
         }
         break;
     case PointerDataTransfer::HostToDevice:

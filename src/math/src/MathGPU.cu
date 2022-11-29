@@ -403,7 +403,7 @@ void MathGPU::Solve(Pointer<double> X_out, LinearSolverType solverType_in,
     case LinearSolverType_Cholesky:
         MemoryHandler::Copy(X_out, B_in, lengthAY_in * lengthBY_in, stream_in);
         MathGPU::Decomposition(decomposition, DecompositionType_Cholesky, A_in, lengthAX_in, lengthAY_in, solverHandle_in, stream_in);
-        MathGPU::Print(decomposition,lengthAX_in,lengthAY_in,stream_in);
+        MathGPU::Print(decomposition, lengthAX_in, lengthAY_in, stream_in);
         cusolverDnXpotrs(solverHandle_in, params, CUBLAS_FILL_MODE_LOWER, lengthAX_in, lengthBY_in, CUDA_R_64F, decomposition.pointer, lengthAX_in, CUDA_R_64F, X_out.pointer, lengthBX_in, infoDevice);
         cudaMemcpyAsync(infoHost, infoDevice, sizeof(int), cudaMemcpyDeviceToHost, stream_in);
         cudaStreamSynchronize(stream_in);

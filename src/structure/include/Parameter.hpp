@@ -40,7 +40,7 @@ public:
     // Constructor to copy an instance of Parameter class
     Parameter(const Parameter &parameter_in);
     // Copy assignment of an instance of Parameter class
-    Parameter& operator=(const Parameter &parameter_in);
+    Parameter &operator=(const Parameter &parameter_in);
     // Add Parameter Entry to Parameter Class
     unsigned Add(std::string name_in, unsigned length_in, unsigned sizeType_in);
     // Add Multiple Parameter Entries to Data Class
@@ -77,7 +77,7 @@ void Parameter::LoadData(unsigned index_in, Pointer<T> array_in, unsigned length
         std::cout << "Error: Index is out of range.";
         return;
     }
-    MemoryHandler::Copy<T>(Pointer<T>((T*)(offset.pointer[index_in].pointer),pointer.type,pointer.context), array_in, length_in);
+    MemoryHandler::Copy<T>(Pointer<T>((T *)(offset.pointer[index_in].pointer), pointer.type, pointer.context), array_in, length_in);
 }
 
 template <typename T>

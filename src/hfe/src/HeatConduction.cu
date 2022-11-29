@@ -150,6 +150,28 @@ void HeatConduction::CPU::RK4(double *T_out, double *T_in, double *Q_in, HeatCon
     }
 }
 
+void HeatConduction::CPU::SetFlux(double *Q_out, HeatConductionProblem &problem_in)
+{
+    bool xCondition, yCondition;
+    double dx, dy, Sx, Sy;
+    unsigned Lx, Ly;
+    dx = problem_in.dx;
+    dy = problem_in.dy;
+    Sx = problem_in.Sx;
+    Sy = problem_in.Sy;
+    Lx = problem_in.Lx;
+    Ly = problem_in.Ly;
+    for (unsigned j = 0u; j < problem_in.Ly; j++)
+    {
+        for (unsigned i = 0u; i < problem_in.Lx; i++)
+        {
+            xCondition = (i + 0.5) * dx >= 0.4 * Sx && (i + 0.5) * dx <= 0.7 * Sx;
+            yCondition = (j + 0.5) * dy >= 0.4 * Sy && (j + 0.5) * dy <= 0.7 * Sy;
+            Q_out[j * Lx + i] = (xCondition && yCondition) ? 100.0 : 0.0;
+        }
+    }
+}
+
 // GPU Section
 
 __device__ inline double C(double T_in)
@@ -321,4 +343,25 @@ void HeatConduction::GPU::RK4(double *T_out, double *T_in, double *Q_in, HeatCon
 
     alpha = (problem_in.dt / 6.0);
     cublasDaxpy(handle, L, &alpha, aux, 1u, T_out, 1u);
+}
+
+__global__ void SetFluxDevice(double *Q_out, double dx, double dy, double Sx, double Sy, unsigned Lx, unsigned Ly)
+{
+    unsigned xIndex = blockDim.x * blockIdx.x + threadIdx.x;
+    unsigned yIndex = blockDim.y * blockIdx.y + threadIdx.y;
+
+    bool xCondition, yCondition;
+    if (xIndex < Lx && yIndex < Ly)
+    {
+        xCondition = (xIndex + 0.5) * dx >= 0.4 * Sx && (xIndex + 0.5) * dx <= 0.7 * Sx;
+        yCondition = (yIndex + 0.5) * dy >= 0.4 * Sy && (yIndex + 0.5) * dy <= 0.7 * Sy;
+        Q_out[yIndex * Lx + xIndex] = xCondition * yCondition * 100.0;
+    }
+}
+
+void HeatConduction::GPU::SetFlux(double *Q_out, HeatConductionProblem &problem_in)
+{
+    dim3 T(16u, 16u);
+    dim3 B((problem_in.Lx + T.x - 1u) / T.x, (problem_in.Ly + T.y - 1u) / T.y);
+    SetFluxDevice<<<T, B, 0, stream>>>(Q_out, problem_in.dx, problem_in.dy, problem_in.Sx, problem_in.Sy, problem_in.Lx, problem_in.Ly);
 }

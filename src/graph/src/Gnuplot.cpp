@@ -1,12 +1,13 @@
 #include "Gnuplot.hpp"
 
-
-void GnuplotParser::ImportConfigurationGnuplot(std::ifstream& file_in, std::string& name_out, unsigned& length_out, ParserType& type_out, unsigned& iteration_out){
+void GnuplotParser::ImportConfigurationGnuplot(std::ifstream &file_in, std::string &name_out, unsigned &length_out, ParserType &type_out, unsigned &iteration_out)
+{
     char aux[102];
     unsigned type;
-    file_in.getline(aux,102);
-    name_out = aux+2;
-    if(name_out.size() > 0u && name_out[name_out.size()-1u] == '\r'){
+    file_in.getline(aux, 102);
+    name_out = aux + 2;
+    if (name_out.size() > 0u && name_out[name_out.size() - 1u] == '\r')
+    {
         name_out.pop_back();
     }
     file_in >> length_out;
@@ -15,7 +16,8 @@ void GnuplotParser::ImportConfigurationGnuplot(std::ifstream& file_in, std::stri
     type_out = (ParserType)type;
 }
 
-void GnuplotParser::ExportConfigurationGnuplot(std::ofstream& file_in, std::string name_in, unsigned length_in, ParserType type_in, std::streampos& iterationPosition_out){
+void GnuplotParser::ExportConfigurationGnuplot(std::ofstream &file_in, std::string name_in, unsigned length_in, ParserType type_in, std::streampos &iterationPosition_out)
+{
     std::string iteration_string = std::to_string(0u) + "    ";
     file_in << "& " << name_in << "\n";
     file_in << "& " << length_in << "\t";
@@ -24,10 +26,12 @@ void GnuplotParser::ExportConfigurationGnuplot(std::ofstream& file_in, std::stri
     file_in << iteration_string << "\n";
 }
 
-void GnuplotParser::ImportIndexValues(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in){
+void GnuplotParser::ImportIndexValues(std::ifstream &file_in, unsigned length_in, ParserType type_in, void *&values_out, unsigned iteration_in)
+{
     std::streampos position = file_in.tellg();
-    for(unsigned i = 0u; i < iteration_in * length_in; i++){
-        file_in.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    for (unsigned i = 0u; i < iteration_in * length_in; i++)
+    {
+        file_in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     switch (type_in)
     {
@@ -89,7 +93,8 @@ void GnuplotParser::ImportIndexValues(std::ifstream& file_in, unsigned length_in
     file_in.seekg(position);
 }
 
-void GnuplotParser::ExportIndexValues(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in){
+void GnuplotParser::ExportIndexValues(std::ofstream &file_in, unsigned length_in, ParserType type_in, void *values_in, std::streampos &iterationPosition_in, unsigned iteration_in)
+{
     std::streampos position = file_in.tellp();
     file_in.seekp(iterationPosition_in);
     file_in << iteration_in + 1u;
@@ -140,8 +145,8 @@ void GnuplotParser::ExportIndexValues(std::ofstream& file_in, unsigned length_in
     }
 }
 
-
-void GnuplotParser::ImportAllIndexValues(std::ifstream& file_in, unsigned length_in, ParserType type_in, void*& values_out, unsigned iteration_in){
+void GnuplotParser::ImportAllIndexValues(std::ifstream &file_in, unsigned length_in, ParserType type_in, void *&values_out, unsigned iteration_in)
+{
     unsigned size = length_in * iteration_in;
     switch (type_in)
     {
@@ -202,7 +207,8 @@ void GnuplotParser::ImportAllIndexValues(std::ifstream& file_in, unsigned length
     }
 }
 
-void GnuplotParser::ExportAllIndexValues(std::ofstream& file_in, unsigned length_in, ParserType type_in, void* values_in, std::streampos& iterationPosition_in, unsigned iteration_in){
+void GnuplotParser::ExportAllIndexValues(std::ofstream &file_in, unsigned length_in, ParserType type_in, void *values_in, std::streampos &iterationPosition_in, unsigned iteration_in)
+{
     std::streampos position = file_in.tellp();
     file_in.seekp(iterationPosition_in);
     file_in << iteration_in;
@@ -254,38 +260,39 @@ void GnuplotParser::ExportAllIndexValues(std::ofstream& file_in, unsigned length
     }
 }
 
-void GnuplotParser::ConvertToGnuplot(std::string path_in, std::string path_out, std::string extension_in, std::string extension_out){
+void GnuplotParser::ConvertToGnuplot(std::string path_in, std::string path_out, std::string extension_in, std::string extension_out)
+{
     std::string name;
     unsigned length;
     ParserType type;
-    void* values;
+    void *values;
     unsigned sizeType;
     std::string name_in;
     std::string name_out;
-    for(const auto & entry : std::filesystem::directory_iterator(path_in)){
-        if(entry.path().extension().string() != extension_in){
+    for (const auto &entry : std::filesystem::directory_iterator(path_in))
+    {
+        if (entry.path().extension().string() != extension_in)
+        {
             continue;
         }
         name_in = path_in + entry.path().stem().string() + extension_in;
         name_out = path_out + entry.path().stem().string() + extension_out;
 
-        
         std::ifstream in(name_in);
         std::ofstream out(name_out, std::ios::trunc);
 
         std::streampos iterationPosition;
         unsigned iteration = 0u;
-        
-        ImportConfiguration(in,name,length,type,iteration);
-        ImportAllValues(in,length,type,values,iteration);
 
-        ExportConfigurationGnuplot(out,name,length,type,iterationPosition);
-        ExportAllIndexValues(out,length,type,values,iterationPosition,iteration);
+        ImportConfiguration(in, name, length, type, iteration);
+        ImportAllValues(in, length, type, values, iteration);
 
-        DeleteValues(values,type);
+        ExportConfigurationGnuplot(out, name, length, type, iterationPosition);
+        ExportAllIndexValues(out, length, type, values, iterationPosition, iteration);
+
+        DeleteValues(values, type);
 
         out.close();
         in.close();
     }
 }
-

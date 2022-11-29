@@ -30,7 +30,7 @@ Parser::Parser(const Parser &parser_in)
     count_Out = 0u;
 }
 
-Parser& Parser::operator=(const Parser &parser_in)
+Parser &Parser::operator=(const Parser &parser_in)
 {
     length_In = parser_in.length_In;
     length_Out = parser_in.length_Out;

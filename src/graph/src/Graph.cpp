@@ -1,7 +1,8 @@
 #include <iostream>
 #include "../include/Gnuplot.hpp"
 
-int main(){
+int main()
+{
     std::cout << "\nStart Execution\n\n";
     std::string path_dir = std::filesystem::current_path();
     std::string path_text_in = path_dir + "/data/text/out/";
@@ -10,7 +11,7 @@ int main(){
     std::string extension_text_in = ".dat";
     std::string extension_text_out = ".dat";
 
-    GnuplotParser::ConvertToGnuplot(path_text_in,path_text_out,extension_text_in,extension_text_out);
+    GnuplotParser::ConvertToGnuplot(path_text_in, path_text_out, extension_text_in, extension_text_out);
 
     std::cout << "\nEnd Execution\n";
     return 0;

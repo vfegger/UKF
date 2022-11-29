@@ -25,8 +25,8 @@ protected:
 public:
     UKFMemory();
     UKFMemory(Data &inputData_in, DataCovariance &inputDataCovariance_in, DataCovariance &inputDataNoise_in, Data &measureData_in, DataCovariance &measureDataNoise_in, Parameter &inputParameter_in, PointerType type_in, PointerContext context_in);
-    UKFMemory(const UKFMemory& memory_in);
-    UKFMemory& operator=(const UKFMemory& memory_in);
+    UKFMemory(const UKFMemory &memory_in);
+    UKFMemory &operator=(const UKFMemory &memory_in);
     virtual ~UKFMemory();
 
     Pointer<Parameter> GetParameter();

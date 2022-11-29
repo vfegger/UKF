@@ -199,7 +199,8 @@ void MathCPU::MatrixMultiplication(double alpha,
                 pC[j * M + i] = alpha * auxAlpha + beta * auxBeta;
             }
         }
-    } else 
+    }
+    else
     {
         for (unsigned j = 0; j < N; j++)
         {

@@ -8,8 +8,11 @@
 #include "Data.hpp"
 #include "MemoryHandler.hpp"
 
-enum DataCovarianceMode{
-    Natural,Compact,Complete
+enum DataCovarianceMode
+{
+    Natural,
+    Compact,
+    Complete
 };
 
 class DataCovariance
@@ -36,20 +39,21 @@ private:
     bool isValid;
     // Count of Data Entries added to the Data Class
     unsigned count;
-    
+
     // Delete Pointer function
     void DeletePointer();
-public: 
+
+public:
     // Default Constructor
     DataCovariance();
     // Constructor with Maximum Number of Elements
     DataCovariance(unsigned lengthElements_in);
     // Constructor to link an instance of Data Covariance class to a Data class
-    DataCovariance(const Data& data_in);
+    DataCovariance(const Data &data_in);
     // Constructor to copy an instance of Data Covariance class
-    DataCovariance(const DataCovariance& dataCovariance_in);
+    DataCovariance(const DataCovariance &dataCovariance_in);
     // Copy assignment of an instance of Data Covariance class
-    DataCovariance& operator=(const DataCovariance& dataCovariance_in);
+    DataCovariance &operator=(const DataCovariance &dataCovariance_in);
     // Add Data Covariance Entry to Data Covariance Class
     unsigned Add(std::string name_in, unsigned length_in);
     // Add Multiple Data Covariance Entries to Data Covariance Class

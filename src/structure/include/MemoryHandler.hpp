@@ -268,7 +268,7 @@ public:
             }
             break;
         case PointerType::GPU:
-            cudaFreeAsync(pointer_in.pointer,stream_in);
+            cudaFreeAsync(pointer_in.pointer, stream_in);
             break;
         default:
             std::cout << "Error: Behavior of this type is not defined.\n";
@@ -413,5 +413,5 @@ template <>
 void MemoryHandler::Free(Pointer<void> pointer_in, cudaStream_t stream_in);
 template <>
 void MemoryHandler::Copy(Pointer<void> pointerTo_out, Pointer<void> pointerFrom_in, unsigned length_in, cudaStream_t stream_in);
-    
+
 #endif

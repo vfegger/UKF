@@ -79,7 +79,7 @@ Data::Data(const Data &data_in)
         }
     }
 }
-Data& Data::operator=(const Data &data_in)
+Data &Data::operator=(const Data &data_in)
 {
     lengthElements = data_in.lengthElements;
     names = MemoryHandler::Alloc<std::string>(lengthElements, PointerType::CPU, PointerContext::CPU_Only);
@@ -203,7 +203,7 @@ void Data::InstantiateMultiple(Pointer<Data> &dataArray_out, const Data &data_in
     }
 
     unsigned length_aux = length_in * data_in.GetLength();
-    Pointer<double> pointer = MemoryHandler::Alloc<double>(length_aux,data_in.pointer.type,data_in.pointer.context);
+    Pointer<double> pointer = MemoryHandler::Alloc<double>(length_aux, data_in.pointer.type, data_in.pointer.context);
     unsigned offset_aux = 0u;
     for (unsigned i = 0u; i < length_in; i++)
     {

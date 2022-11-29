@@ -28,43 +28,43 @@ UKFMemory::UKFMemory(Data &inputData_in, DataCovariance &inputDataCovariance_in,
     context = context_in;
 }
 
-UKFMemory::UKFMemory(const UKFMemory& memory_in)
+UKFMemory::UKFMemory(const UKFMemory &memory_in)
 {
-    state = MemoryHandler::Alloc<Data>(1u,memory_in.type,memory_in.context);
-    stateCovariance = MemoryHandler::Alloc<DataCovariance>(1u,memory_in.type,memory_in.context);
-    stateNoise = MemoryHandler::Alloc<DataCovariance>(1u,memory_in.type,memory_in.context);
-    measureData = MemoryHandler::Alloc<Data>(1u,memory_in.type,memory_in.context);
-    measureDataNoise = MemoryHandler::Alloc<DataCovariance>(1u,memory_in.type,memory_in.context);
+    state = MemoryHandler::Alloc<Data>(1u, memory_in.type, memory_in.context);
+    stateCovariance = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
+    stateNoise = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
+    measureData = MemoryHandler::Alloc<Data>(1u, memory_in.type, memory_in.context);
+    measureDataNoise = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
 
-    parameter = MemoryHandler::Alloc<Parameter>(1u,memory_in.type,memory_in.context);
+    parameter = MemoryHandler::Alloc<Parameter>(1u, memory_in.type, memory_in.context);
 
-    MemoryHandler::Copy(state,memory_in.state,1u);
-    MemoryHandler::Copy(stateCovariance,memory_in.stateCovariance,1u);
-    MemoryHandler::Copy(stateNoise,memory_in.stateNoise,1u);
-    MemoryHandler::Copy(measureData,memory_in.measureData,1u);
-    MemoryHandler::Copy(measureDataNoise,memory_in.measureDataNoise,1u);
-    MemoryHandler::Copy(parameter,memory_in.parameter,1u);
+    MemoryHandler::Copy(state, memory_in.state, 1u);
+    MemoryHandler::Copy(stateCovariance, memory_in.stateCovariance, 1u);
+    MemoryHandler::Copy(stateNoise, memory_in.stateNoise, 1u);
+    MemoryHandler::Copy(measureData, memory_in.measureData, 1u);
+    MemoryHandler::Copy(measureDataNoise, memory_in.measureDataNoise, 1u);
+    MemoryHandler::Copy(parameter, memory_in.parameter, 1u);
 
     type = memory_in.type;
     context = memory_in.context;
 }
 
-UKFMemory& UKFMemory::operator=(const UKFMemory& memory_in)
+UKFMemory &UKFMemory::operator=(const UKFMemory &memory_in)
 {
-    state = MemoryHandler::Alloc<Data>(1u,memory_in.type,memory_in.context);
-    stateCovariance = MemoryHandler::Alloc<DataCovariance>(1u,memory_in.type,memory_in.context);
-    stateNoise = MemoryHandler::Alloc<DataCovariance>(1u,memory_in.type,memory_in.context);
-    measureData = MemoryHandler::Alloc<Data>(1u,memory_in.type,memory_in.context);
-    measureDataNoise = MemoryHandler::Alloc<DataCovariance>(1u,memory_in.type,memory_in.context);
+    state = MemoryHandler::Alloc<Data>(1u, memory_in.type, memory_in.context);
+    stateCovariance = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
+    stateNoise = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
+    measureData = MemoryHandler::Alloc<Data>(1u, memory_in.type, memory_in.context);
+    measureDataNoise = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
 
-    parameter = MemoryHandler::Alloc<Parameter>(1u,memory_in.type,memory_in.context);
+    parameter = MemoryHandler::Alloc<Parameter>(1u, memory_in.type, memory_in.context);
 
-    MemoryHandler::Copy(state,memory_in.state,1u);
-    MemoryHandler::Copy(stateCovariance,memory_in.stateCovariance,1u);
-    MemoryHandler::Copy(stateNoise,memory_in.stateNoise,1u);
-    MemoryHandler::Copy(measureData,memory_in.measureData,1u);
-    MemoryHandler::Copy(measureDataNoise,memory_in.measureDataNoise,1u);
-    MemoryHandler::Copy(parameter,memory_in.parameter,1u);
+    MemoryHandler::Copy(state, memory_in.state, 1u);
+    MemoryHandler::Copy(stateCovariance, memory_in.stateCovariance, 1u);
+    MemoryHandler::Copy(stateNoise, memory_in.stateNoise, 1u);
+    MemoryHandler::Copy(measureData, memory_in.measureData, 1u);
+    MemoryHandler::Copy(measureDataNoise, memory_in.measureDataNoise, 1u);
+    MemoryHandler::Copy(parameter, memory_in.parameter, 1u);
 
     type = memory_in.type;
     context = memory_in.context;
