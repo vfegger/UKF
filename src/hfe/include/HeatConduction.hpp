@@ -18,6 +18,7 @@ namespace HeatConduction
         double dx, dy, dz, dt;
         unsigned Lx, Ly, Lz, Lt;
 
+        HeatConductionProblem();
         HeatConductionProblem(double T0_in, double Q0_in, double amp_in, double Sx_in, double Sy_in, double Sz_in, double St_in, unsigned Lx_in, unsigned Ly_in, unsigned Lz_in, unsigned Lt_in);
     };
 
@@ -29,10 +30,10 @@ namespace HeatConduction
         void Differential(double *diff_out, const double *T_in, const double *Q_in, double amp, double dx, double dy, double dz, unsigned Lx, unsigned Ly, unsigned Lz);
         void AllocWorkspaceEuler(double *&workspace_out, unsigned length_in);
         void FreeWorkspaceEuler(double *&workspace_out);
-        void Euler(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace);
+        void Euler(double *T_out, const double *T_in, const double *Q_in, HeatConductionProblem &problem_in, double *workspace);
         void AllocWorkspaceRK4(double *&workspace_out, unsigned length_in);
         void FreeWorkspaceRK4(double *&workspace_out);
-        void RK4(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace);
+        void RK4(double *T_out, const double *T_in, const double *Q_in, HeatConductionProblem &problem_in, double *workspace);
 
         void SetFlux(double *Q_out, HeatConductionProblem &problem_in);
     }

@@ -1,5 +1,9 @@
 #include "../include/HeatConduction.hpp"
 
+HeatConduction::HeatConductionProblem::HeatConductionProblem() : T0(0.0), Q0(0.0), amp(0.0), Sx(0.0), Sy(0.0), Sz(0.0), St(0.0), Lx(0u), Ly(0u), Lz(0u), Lt(0u)
+{
+}
+
 HeatConduction::HeatConductionProblem::HeatConductionProblem(double T0_in, double Q0_in, double amp_in, double Sx_in, double Sy_in, double Sz_in, double St_in, unsigned Lx_in, unsigned Ly_in, unsigned Lz_in, unsigned Lt_in) : T0(T0_in), Q0(Q0_in), amp(amp_in), Sx(Sx_in), Sy(Sy_in), Sz(Sz_in), St(St_in), Lx(Lx_in), Ly(Ly_in), Lz(Lz_in), Lt(Lt_in)
 {
 }
@@ -87,7 +91,7 @@ void HeatConduction::CPU::FreeWorkspaceEuler(double *&workspace_in)
     workspace_in = NULL;
 }
 
-void HeatConduction::CPU::Euler(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace)
+void HeatConduction::CPU::Euler(double *T_out, const double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace)
 {
     unsigned L = problem_in.Lx * problem_in.Ly * problem_in.Lz;
     Differential(workspace, T_in, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
