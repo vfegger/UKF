@@ -18,8 +18,8 @@ void HeatFluxGenerator::Generate(double mean_in, double sigma_in)
         {
             HeatConduction::CPU::SetFlux(Q.pointer, problem, t * problem.dt);
             HeatConduction::CPU::RK4(T.pointer + (t + 1) * L, T.pointer + t * L, Q.pointer, problem, workspace);
-            HeatConduction::CPU::FreeWorkspaceRK4(workspace);
         }
+        HeatConduction::CPU::FreeWorkspaceRK4(workspace);
         HeatConduction::CPU::AddError(T.pointer, mean_in, sigma_in, (problem.Lt + 1) * L);
     }
     else if (T.type == PointerType::GPU)
@@ -29,8 +29,8 @@ void HeatFluxGenerator::Generate(double mean_in, double sigma_in)
         {
             HeatConduction::GPU::SetFlux(Q.pointer, problem, t * problem.dt);
             HeatConduction::GPU::RK4(T.pointer + (t + 1) * L, T.pointer + t * L, Q.pointer, problem, workspace);
-            HeatConduction::GPU::FreeWorkspaceRK4(workspace);
         }
+        HeatConduction::GPU::FreeWorkspaceRK4(workspace);
         HeatConduction::GPU::AddError(T.pointer, mean_in, sigma_in, (problem.Lt + 1) * L);
     }
 }
