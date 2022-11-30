@@ -50,17 +50,17 @@ if [ ! -d "$DATA_PATH/text/out" ];
 then
     mkdir "$DATA_PATH/text/out"
 fi
-if [ ! -d "$DATA_PATH/bin" ];
+if [ ! -d "$DATA_PATH/binary" ];
 then
-    mkdir "$DATA_PATH/bin"
+    mkdir "$DATA_PATH/binary"
 fi
-if [ ! -d "$DATA_PATH/bin/in" ];
+if [ ! -d "$DATA_PATH/binary/in" ];
 then
-    mkdir "$DATA_PATH/bin/in"
+    mkdir "$DATA_PATH/binary/in"
 fi
-if [ ! -d "$DATA_PATH/bin/out" ];
+if [ ! -d "$DATA_PATH/binary/out" ];
 then
-    mkdir "$DATA_PATH/bin/out"
+    mkdir "$DATA_PATH/binary/out"
 fi
 
 if [ "$BUILD_ONLY" = "-b" ] || [ "$BUILD_ONLY" = "-build" ];

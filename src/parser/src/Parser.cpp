@@ -665,10 +665,12 @@ void Parser::ConvertToBinary(std::string path_in, std::string path_out, std::str
         if (!in.is_open())
         {
             std::cout << "\tError: Failed to open file input file.\n";
+            continue;
         }
         if (!out.is_open())
         {
             std::cout << "\tError: Failed to open file output file.\n";
+            continue;
         }
 
         std::streampos iterationPosition;
@@ -708,10 +710,12 @@ void Parser::ConvertToText(std::string path_in, std::string path_out, std::strin
         if (!in.is_open())
         {
             std::cout << "\tError: Failed to open file input file.\n";
+            continue;
         }
         if (!out.is_open())
         {
             std::cout << "\tError: Failed to open file output file.\n";
+            continue;
         }
 
         std::streampos iterationPosition;
