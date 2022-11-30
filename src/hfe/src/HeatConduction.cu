@@ -97,7 +97,7 @@ void HeatConduction::CPU::Euler(double *T_out, const double *T_in, const double 
     Differential(workspace, T_in, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
     for (unsigned i = 0u; i < L; i++)
     {
-        T_out[i] = T_in[i] + (problem_in.dt / 6.0) * (workspace[i]);
+        T_out[i] = T_in[i] + problem_in.dt * (workspace[i]);
     }
 }
 
@@ -122,11 +122,7 @@ void HeatConduction::CPU::RK4(double *T_out, const double *T_in, const double *Q
     k2 = k1 + L;
     k3 = k2 + L;
     k4 = k3 + L;
-    for (unsigned i = 0u; i < L; i++)
-    {
-        T_aux[i] = T_in[i];
-    }
-    Differential(k1, T_aux, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
+    Differential(k1, T_in, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
 
     for (unsigned i = 0u; i < L; i++)
     {
