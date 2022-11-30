@@ -1,10 +1,10 @@
 #include "../include/HeatConduction.hpp"
 
-HeatConduction::HeatConductionProblem::HeatConductionProblem() : T0(0.0), Q0(0.0), amp(0.0), Sx(0.0), Sy(0.0), Sz(0.0), St(0.0), Lx(0u), Ly(0u), Lz(0u), Lt(0u)
+HeatConduction::HeatConductionProblem::HeatConductionProblem() : T0(0.0), Q0(0.0), amp(0.0), Sx(0.0), Sy(0.0), Sz(0.0), St(0.0), Lx(0u), Ly(0u), Lz(0u), Lt(0u), dx(0.0), dy(0.0), dz(0.0), dt(0.0)
 {
 }
 
-HeatConduction::HeatConductionProblem::HeatConductionProblem(double T0_in, double Q0_in, double amp_in, double Sx_in, double Sy_in, double Sz_in, double St_in, unsigned Lx_in, unsigned Ly_in, unsigned Lz_in, unsigned Lt_in) : T0(T0_in), Q0(Q0_in), amp(amp_in), Sx(Sx_in), Sy(Sy_in), Sz(Sz_in), St(St_in), Lx(Lx_in), Ly(Ly_in), Lz(Lz_in), Lt(Lt_in)
+HeatConduction::HeatConductionProblem::HeatConductionProblem(double T0_in, double Q0_in, double amp_in, double Sx_in, double Sy_in, double Sz_in, double St_in, unsigned Lx_in, unsigned Ly_in, unsigned Lz_in, unsigned Lt_in) : T0(T0_in), Q0(Q0_in), amp(amp_in), Sx(Sx_in), Sy(Sy_in), Sz(Sz_in), St(St_in), Lx(Lx_in), Ly(Ly_in), Lz(Lz_in), Lt(Lt_in), dx(Sx_in / Lx_in), dy(Sy_in / Ly_in), dz(Sz_in / Lz_in), dt(St_in / Lt_in)
 {
 }
 
@@ -154,7 +154,7 @@ void HeatConduction::CPU::RK4(double *T_out, double *T_in, double *Q_in, HeatCon
     }
 }
 
-void HeatConduction::CPU::SetFlux(double *Q_out, HeatConductionProblem &problem_in)
+void HeatConduction::CPU::SetFlux(double *Q_out, HeatConductionProblem &problem_in, unsigned t_in)
 {
     bool xCondition, yCondition;
     double dx, dy, Sx, Sy;
@@ -173,6 +173,16 @@ void HeatConduction::CPU::SetFlux(double *Q_out, HeatConductionProblem &problem_
             yCondition = (j + 0.5) * dy >= 0.4 * Sy && (j + 0.5) * dy <= 0.7 * Sy;
             Q_out[j * Lx + i] = (xCondition && yCondition) ? 100.0 : 0.0;
         }
+    }
+}
+
+void HeatConduction::CPU::AddError(double *T_out, double mean_in, double sigma_in, unsigned length)
+{
+    std::default_random_engine generator;
+    std::normal_distribution<double> distribution(mean_in, sigma_in);
+    for (unsigned i = 0u; i < length; i++)
+    {
+        T_out[i] += distribution(generator);
     }
 }
 
@@ -363,9 +373,23 @@ __global__ void SetFluxDevice(double *Q_out, double dx, double dy, double Sx, do
     }
 }
 
-void HeatConduction::GPU::SetFlux(double *Q_out, HeatConductionProblem &problem_in)
+void HeatConduction::GPU::SetFlux(double *Q_out, HeatConductionProblem &problem_in, unsigned t_in)
 {
     dim3 T(16u, 16u);
     dim3 B((problem_in.Lx + T.x - 1u) / T.x, (problem_in.Ly + T.y - 1u) / T.y);
     SetFluxDevice<<<T, B, 0, stream>>>(Q_out, problem_in.dx, problem_in.dy, problem_in.Sx, problem_in.Sy, problem_in.Lx, problem_in.Ly);
+}
+
+void HeatConduction::GPU::AddError(double *T_out, double mean_in, double sigma_in, unsigned length)
+{
+    Pointer<double> T = Pointer<double>(T_out, PointerType::GPU, PointerContext::GPU_Aware);
+    Pointer<double> randomVector = Pointer<double>(PointerType::GPU, PointerContext::GPU_Aware);
+    curandGenerator_t generator;
+    curandCreateGenerator(&generator, CURAND_RNG_PSEUDO_XORWOW);
+    curandSetStream(generator, stream);
+    curandSetPseudoRandomGeneratorSeed(generator, 1234llu);
+    cudaMalloc(&(randomVector.pointer), length);
+    curandGenerateNormalDouble(generator, randomVector.pointer, length, mean_in, sigma_in);
+    curandDestroyGenerator(generator);
+    MathGPU::Add(T, randomVector, length, stream);
 }

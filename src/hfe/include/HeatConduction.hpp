@@ -3,6 +3,8 @@
 
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
+#include <curand.h>
+#include <random>
 #include "../../math/include/Math.hpp"
 
 namespace HeatConduction
@@ -35,7 +37,8 @@ namespace HeatConduction
         void FreeWorkspaceRK4(double *&workspace_out);
         void RK4(double *T_out, const double *T_in, const double *Q_in, HeatConductionProblem &problem_in, double *workspace);
 
-        void SetFlux(double *Q_out, HeatConductionProblem &problem_in);
+        void SetFlux(double *Q_out, HeatConductionProblem &problem_in, unsigned t_in);
+        void AddError(double *T_out, double mean_in, double sigma_in, unsigned length);
     }
 
     namespace GPU
@@ -58,7 +61,8 @@ namespace HeatConduction
         void FreeWorkspaceRK4(double *&workspace_out);
         void RK4(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace);
 
-        void SetFlux(double *Q_out, unsigned Lx, unsigned Ly);
+        void SetFlux(double *Q_out, HeatConductionProblem &problem_in, unsigned t_in);
+        void AddError(double *T_out, double mean_in, double sigma_in, unsigned length);
     }
 }
 

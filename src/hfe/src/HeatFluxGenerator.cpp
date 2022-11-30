@@ -1,128 +1,48 @@
 #include "../include/HeatFluxGenerator.hpp"
 
-HeatFluxGenerator::HeatFluxGenerator(unsigned Lx_in, unsigned Ly_in, unsigned Lz_in, unsigned Lt_in, double Sx_in, double Sy_in, double Sz_in, double St_in, double T0, double Amp_in, PointerType type_in, PointerContext context_in)
+HeatFluxGenerator::HeatFluxGenerator(unsigned Lx_in, unsigned Ly_in, unsigned Lz_in, unsigned Lt_in, double Sx_in, double Sy_in, double Sz_in, double St_in, double T0_in, double Q0_in, double Amp_in, PointerType type_in, PointerContext context_in) : problem(T0_in, Q0_in, Amp_in, Sx_in, Sy_in, Sz_in, St_in, Lx_in, Ly_in, Lz_in, Lt_in)
 {
-    Lx = Lx_in;
-    Ly = Ly_in;
-    Lz = Lz_in;
-    Lt = Lt_in;
-    Sx = Sx_in;
-    Sy = Sy_in;
-    Sz = Sz_in;
-    St = St_in;
-    dx = Sx_in / Lx_in;
-    dy = Sy_in / Ly_in;
-    dz = Sz_in / Lz_in;
-    dt = St_in / Lt_in;
-    T = MemoryHandler::Alloc<double>(Lx * Ly * Lz * (Lt + 1), type_in, context_in);
-    MemoryHandler::Set<double>(T, T0, 0, Lx * Ly * Lz);
-    Q = MemoryHandler::Alloc<double>(Lx * Ly, type_in, context_in);
-    Amp = Amp_in;
-}
-
-inline double HeatFluxGenerator::C(double T)
-{
-    return 1324.75 * T + 3557900.0;
-}
-inline double HeatFluxGenerator::K(double T)
-{
-    return 12.45 + (14e-3 + 2.517e-6 * T) * T;
-}
-double HeatFluxGenerator::DifferentialK(double TN_in, double T_in, double TP_in, double delta_in)
-{
-    double auxN = 2.0 * (K(TN_in) * K(T_in)) / (K(TN_in) + K(T_in)) * (TN_in - T_in) / delta_in;
-    double auxP = 2.0 * (K(TP_in) * K(T_in)) / (K(TP_in) + K(T_in)) * (TP_in - T_in) / delta_in;
-    return (auxN + auxP) / delta_in;
-}
-
-void HeatFluxGenerator::Evolution(double *T_in, double *T_out)
-{
-    unsigned index;
-    double acc;
-    double TiN, TiP;
-    double TjN, TjP;
-    double TkN, TkP;
-    double T0;
-    for (unsigned k = 0u; k < Lz; k++)
-    {
-        for (unsigned j = 0u; j < Ly; j++)
-        {
-            for (unsigned i = 0u; i < Lx; i++)
-            {
-                index = (k * Ly + j) * Lx + i;
-                T0 = T_in[index];
-                TiN = (i != 0u) ? T_in[index - 1] : T0;
-                TiP = (i != Lx - 1) ? T_in[index + 1] : T0;
-                TjN = (j != 0u) ? T_in[index - Lx] : T0;
-                TjP = (j != Ly - 1) ? T_in[index + Lx] : T0;
-                TkN = (k != 0u) ? T_in[index - Ly * Lx] : T0;
-                TkP = (k != Lz - 1) ? T_in[index + Ly * Lx] : T0;
-                acc = 0.0;
-                // X dependency
-                acc += DifferentialK(TiN, T0, TiP, dx);
-                // Y dependency
-                acc += DifferentialK(TjN, T0, TjP, dy);
-                // Z dependency
-                acc += DifferentialK(TkN, T0, TkP, dz);
-                if (k == Lz - 1)
-                {
-                    acc += Amp * Q.pointer[j * Lx + i] / dz;
-                }
-                T_out[index] = T0 + dt * acc / C(T0);
-            }
-        }
-    }
-}
-
-void HeatFluxGenerator::SetFlux(double t_in)
-{
-    unsigned index;
-    for (unsigned j = 0u; j < Ly; j++)
-    {
-        for (unsigned i = 0u; i < Lx; i++)
-        {
-            index = j * Lx + i;
-            if ((i + 0.5) * dx >= 0.4 * Sx && (i + 0.5) * dx <= 0.7 * Sx &&
-                (j + 0.5) * dy >= 0.4 * Sy && (j + 0.5) * dy <= 0.7 * Sy)
-            {
-                Q.pointer[index] = 100.0;
-            }
-            else
-            {
-                Q.pointer[index] = 0.0;
-            }
-        }
-    }
+    T = MemoryHandler::Alloc<double>(Lx_in * Ly_in * Lz_in * (Lt_in + 1), type_in, context_in);
+    MemoryHandler::Set<double>(T, T0_in, 0, Lx_in * Ly_in * Lz_in);
+    Q = MemoryHandler::Alloc<double>(Lx_in * Ly_in, type_in, context_in);
 }
 
 void HeatFluxGenerator::Generate(double mean_in, double sigma_in)
 {
-    for (unsigned t = 0u; t < Lt; t++)
+    double *workspace = NULL;
+    unsigned L = problem.Lx * problem.Ly * problem.Lz;
+    if (T.type == PointerType::CPU)
     {
-        SetFlux(t * dt);
-        Evolution(T.pointer + t * Lx * Ly * Lz, T.pointer + (t + 1) * Lx * Ly * Lz);
+        HeatConduction::CPU::AllocWorkspaceRK4(workspace, L);
+        for (unsigned t = 0u; t < problem.Lt; t++)
+        {
+            HeatConduction::CPU::SetFlux(Q.pointer, problem, t * problem.dt);
+            HeatConduction::CPU::RK4(T.pointer + (t + 1) * L, T.pointer + t * L, Q.pointer, problem, workspace);
+            HeatConduction::CPU::FreeWorkspaceRK4(workspace);
+        }
+        HeatConduction::CPU::AddError(T.pointer, mean_in, sigma_in, (problem.Lt+1) * L);
     }
-    AddError(mean_in, sigma_in);
-}
-
-void HeatFluxGenerator::AddError(double mean_in, double sigma_in)
-{
-    std::default_random_engine generator;
-    std::normal_distribution<double> distribution(mean_in, sigma_in);
-    for (unsigned i = 0u; i < Lx * Ly * Lz * Lt; i++)
+    else if (T.type == PointerType::GPU)
     {
-        T.pointer[i] += distribution(generator);
+        HeatConduction::GPU::AllocWorkspaceRK4(workspace, L);
+        for (unsigned t = 0u; t < problem.Lt; t++)
+        {
+            HeatConduction::GPU::SetFlux(Q.pointer, problem, t * problem.dt);
+            HeatConduction::GPU::RK4(T.pointer + (t + 1) * L, T.pointer + t * L, Q.pointer, problem, workspace);
+            HeatConduction::GPU::FreeWorkspaceRK4(workspace);
+        }
+        HeatConduction::GPU::AddError(T.pointer, mean_in, sigma_in, (problem.Lt+1) * L);
     }
 }
 
 Pointer<double> HeatFluxGenerator::GetTemperature(unsigned t_in)
 {
-    if (t_in > Lt)
+    if (t_in > problem.Lt)
     {
         std::cout << "Error: Out of range.\n";
         return Pointer<double>();
     }
-    return Pointer<double>(T.pointer + t_in * Lx * Ly * Lz, T.type, T.context);
+    return Pointer<double>(T.pointer + t_in * problem.Lx * problem.Ly * problem.Lz, T.type, T.context);
 }
 
 HeatFluxGenerator::~HeatFluxGenerator()
