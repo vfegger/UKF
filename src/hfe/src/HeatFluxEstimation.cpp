@@ -73,8 +73,8 @@ HeatFluxEstimation::HeatFluxEstimation(
     indexT_meas = measure.pointer[0u].Add("Temperature", Lx * Ly);
     measure.pointer[0u].Initialize(type_in, context_in);
 
-    Pointer<double> T_meas = MemoryHandler::Alloc<double>(Lx * Ly, PointerType::CPU, PointerContext::CPU_Only);
-    Pointer<double> sigmaT_meas = MemoryHandler::Alloc<double>(Lx * Ly, PointerType::CPU, PointerContext::CPU_Only);
+    Pointer<double> T_meas = MemoryHandler::Alloc<double>(Lx * Ly, type_in, context_in);
+    Pointer<double> sigmaT_meas = MemoryHandler::Alloc<double>(Lx * Ly, type_in, context_in);
     MemoryHandler::Set<double>(T_meas, T0, 0, Lx * Ly);
     MemoryHandler::Set<double>(sigmaT_meas, sTm0, 0, Lx * Ly);
     measure.pointer[0u].LoadData(indexT_meas, T_meas, Lx * Ly);

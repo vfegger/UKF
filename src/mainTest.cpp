@@ -56,11 +56,11 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     HeatFluxEstimation problem(Lx, Ly, Lz, Lt, Sx, Sy, Sz, St, T0, sT0, sTm0, Q0, sQ0, type_in, context_in);
 
     problem.UpdateMeasure(generator.GetTemperature(0u), Lx, Ly, type_in, context_in);
-    Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), Lx * Ly, ParserType::Double, generator.GetTemperature(0u).pointer, positionTemperatureMeasured, 0u);
 
     UKF ukf(Pointer<UKFMemory>(problem.GetMemory().pointer, problem.GetMemory().type, problem.GetMemory().context), alpha, beta, kappa);
 
     // Math::PrintMatrix(generator.GetTemperature(Lt),Lx,Ly);
+
 
     Pointer<Timer> timer = MemoryHandler::AllocValue<Timer, unsigned>(UKF_TIMER + 1u, PointerType::CPU, PointerContext::CPU_Only);
     double *timer_pointer = timer.pointer[0u].GetValues();
@@ -82,6 +82,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
         heatFlux_parser = heatFlux_out;
         temperatureMeasured_parser = temperatureMeasured_out;
     }
+    Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), Lx * Ly, ParserType::Double, temperatureMeasured_parser.pointer, positionTemperatureMeasured, 0u);
 
     for (unsigned i = 1u; i <= Lt; i++)
     {
