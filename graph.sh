@@ -9,10 +9,10 @@ LX=$2
 LY=$3
 LZ=$4
 LT=$5
-CPU=$6
+GPU=$6
 
 rm $GRAPH_PATH/data/*
-if [ $CPU > 0 ];
+if [ $GPU -eq 0 ];
 then
     rm $GRAPH_PATH/output/*X${LX}Y${LY}Z${LZ}T${LT}_CPU*
 else

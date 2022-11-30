@@ -278,8 +278,21 @@ void GnuplotParser::ConvertToGnuplot(std::string path_in, std::string path_out, 
         name_in = path_in + entry.path().stem().string() + extension_in;
         name_out = path_out + entry.path().stem().string() + extension_out;
 
+
+        std::cout << "\t" << name_in << " >> " << name_out << "\n";
         std::ifstream in(name_in);
         std::ofstream out(name_out, std::ios::trunc);
+
+        if (!in.is_open())
+        {
+            std::cout << "\tError: Failed to open file input file.\n";
+            continue;
+        }
+        if (!out.is_open())
+        {
+            std::cout << "\tError: Failed to open file output file.\n";
+            continue;
+        }
 
         std::streampos iterationPosition;
         unsigned iteration = 0u;
