@@ -38,6 +38,31 @@ fi
 cmake -S $SOURCE_PATH -B $BUILD_PATH $BUILD_OPTIONS
 cmake --build $BUILD_PATH
 
+if [ ! -d "$DATA_PATH/text" ];
+then
+    mkdir "$DATA_PATH/text"
+fi
+if [ ! -d "$DATA_PATH/text/in" ];
+then
+    mkdir "$DATA_PATH/text/in"
+fi
+if [ ! -d "$DATA_PATH/text/out" ];
+then
+    mkdir "$DATA_PATH/text/out"
+fi
+if [ ! -d "$DATA_PATH/bin" ];
+then
+    mkdir "$DATA_PATH/bin"
+fi
+if [ ! -d "$DATA_PATH/bin/in" ];
+then
+    mkdir "$DATA_PATH/bin/in"
+fi
+if [ ! -d "$DATA_PATH/bin/out" ];
+then
+    mkdir "$DATA_PATH/bin/out"
+fi
+
 if [ "$BUILD_ONLY" = "-b" ] || [ "$BUILD_ONLY" = "-build" ];
 then
     echo "Exit before running cases"
