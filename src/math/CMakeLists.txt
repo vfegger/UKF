@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.24.0)
 
 set(target Math)
 set(target_exe Math_Test)
@@ -17,11 +17,9 @@ add_executable(${target_exe} src/MathTest.cpp ${source})
 
 target_include_directories(${target} PUBLIC ${include_path})
 target_link_libraries(${target} PUBLIC Structure PRIVATE CUDA::cudart PRIVATE CUDA::cublas PRIVATE CUDA::cusolver)
-set_property(TARGET ${target} PROPERTY CUDA_ARCHITECTURES all)
 
 target_include_directories(${target_exe} PUBLIC ${include_path})
 target_link_libraries(${target_exe} PUBLIC Structure PRIVATE CUDA::cudart CUDA::cublas PRIVATE CUDA::cusolver)
-set_property(TARGET ${target_exe} PROPERTY CUDA_ARCHITECTURES all)
 
 find_package(OpenMP REQUIRED)
 if(OpenMP_CXX_FOUND)

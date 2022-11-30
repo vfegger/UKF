@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.24.0)
 
 set(target HeatFluxEstimation)
 
@@ -14,4 +14,3 @@ add_library(${target} ${source})
 
 target_include_directories(${target} PUBLIC ${include_path})
 target_link_libraries(${target} PUBLIC UKF PUBLIC Structure PRIVATE CUDA::cudart PRIVATE CUDA::cublas PRIVATE CUDA::cusolver PRIVATE CUDA::curand)
-set_property(TARGET ${target} PROPERTY CUDA_ARCHITECTURES all)

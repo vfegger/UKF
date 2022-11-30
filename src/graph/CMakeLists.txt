@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.24.0)
 
 set(target Graph)
 set(target_exe Graph_UKF)

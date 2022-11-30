@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.24.0)
 
 set(target CUDA_lib)
 
@@ -10,4 +10,3 @@ file(GLOB_RECURSE source ${source_path}/*.cu)
 add_library(${target} ${source})
 
 target_include_directories(${target} PUBLIC ${include_path})
-set_property(TARGET ${target} PROPERTY CUDA_ARCHITECTURES all)
