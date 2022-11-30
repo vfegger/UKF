@@ -30,6 +30,7 @@ rm -r $BUILD_PATH
 
 if [ "$CLEAN" = "true" ];
 then
+    rm $DATA_PATH/binary/in/*.bin
     rm $DATA_PATH/binary/out/*.bin
     rm $DATA_PATH/text/out/*.dat
     rm $DATA_PATH/text/out/*.ok
