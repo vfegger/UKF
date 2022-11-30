@@ -163,9 +163,9 @@ void HeatConduction::CPU::SetFlux(double *Q_out, HeatConductionProblem &problem_
     Sy = problem_in.Sy;
     Lx = problem_in.Lx;
     Ly = problem_in.Ly;
-    for (unsigned j = 0u; j < problem_in.Ly; j++)
+    for (unsigned j = 0u; j < Ly; j++)
     {
-        for (unsigned i = 0u; i < problem_in.Lx; i++)
+        for (unsigned i = 0u; i < Lx; i++)
         {
             xCondition = (i + 0.5) * dx >= 0.4 * Sx && (i + 0.5) * dx <= 0.7 * Sx;
             yCondition = (j + 0.5) * dy >= 0.4 * Sy && (j + 0.5) * dy <= 0.7 * Sy;

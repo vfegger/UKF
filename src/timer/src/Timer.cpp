@@ -61,6 +61,7 @@ Timer &Timer::operator=(const Timer &timer_in)
     }
     count = timer_in.count;
     isValid = timer_in.isValid;
+    return *this;
 }
 
 void Timer::Start()
