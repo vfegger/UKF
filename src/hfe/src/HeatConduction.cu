@@ -91,7 +91,7 @@ void HeatConduction::CPU::FreeWorkspaceEuler(double *&workspace_in)
     workspace_in = NULL;
 }
 
-void HeatConduction::CPU::Euler(double *T_out, const double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace)
+void HeatConduction::CPU::Euler(double *T_out, const double *T_in, const double *Q_in, HeatConductionProblem &problem_in, double *workspace)
 {
     unsigned L = problem_in.Lx * problem_in.Ly * problem_in.Lz;
     Differential(workspace, T_in, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
@@ -112,7 +112,7 @@ void HeatConduction::CPU::FreeWorkspaceRK4(double *&workspace_in)
     workspace_in = NULL;
 }
 
-void HeatConduction::CPU::RK4(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace)
+void HeatConduction::CPU::RK4(double *T_out, const double *T_in, const double *Q_in, HeatConductionProblem &problem_in, double *workspace)
 {
     unsigned L = problem_in.Lx * problem_in.Ly * problem_in.Lz;
     double *k1, *k2, *k3, *k4;
@@ -133,14 +133,12 @@ void HeatConduction::CPU::RK4(double *T_out, double *T_in, double *Q_in, HeatCon
         T_aux[i] = T_in[i] + 0.5 * problem_in.dt * k1[i];
     }
     Differential(k2, T_aux, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
-    T_aux = T_in;
 
     for (unsigned i = 0u; i < L; i++)
     {
         T_aux[i] = T_in[i] + 0.5 * problem_in.dt * k2[i];
     }
     Differential(k3, T_aux, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
-    T_aux = T_in;
 
     for (unsigned i = 0u; i < L; i++)
     {
