@@ -9,6 +9,10 @@ unsigned MemoryHandler::cublasHandles_size = 0u;
 unsigned MemoryHandler::cusolverHandles_size = 0u;
 bool MemoryHandler::GPUisEnabled = false;
 
+
+cublasHandle_t MemoryHandler::cublasHandle_aux = NULL;
+cusolverDnHandle_t MemoryHandler::cusolverHandle_aux = NULL;
+
 // Void explicit specialization
 
 template <>

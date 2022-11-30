@@ -16,13 +16,13 @@ UKFMemory::UKFMemory()
 
 UKFMemory::UKFMemory(Data &inputData_in, DataCovariance &inputDataCovariance_in, DataCovariance &inputDataNoise_in, Data &measureData_in, DataCovariance &measureDataNoise_in, Parameter &inputParameter_in, PointerType type_in, PointerContext context_in)
 {
-    state = MemoryHandler::AllocValue<Data, Data>(inputData_in, type_in, context_in);
-    stateCovariance = MemoryHandler::AllocValue<DataCovariance, DataCovariance>(inputDataCovariance_in, type_in, context_in);
-    stateNoise = MemoryHandler::AllocValue<DataCovariance, DataCovariance>(inputDataNoise_in, type_in, context_in);
-    measureData = MemoryHandler::AllocValue<Data, Data>(measureData_in, type_in, context_in);
-    measureDataNoise = MemoryHandler::AllocValue<DataCovariance, DataCovariance>(measureDataNoise_in, type_in, context_in);
+    state = MemoryHandler::AllocValue<Data, Data>(inputData_in, PointerType::CPU, PointerContext::CPU_Only);
+    stateCovariance = MemoryHandler::AllocValue<DataCovariance, DataCovariance>(inputDataCovariance_in, PointerType::CPU, PointerContext::CPU_Only);
+    stateNoise = MemoryHandler::AllocValue<DataCovariance, DataCovariance>(inputDataNoise_in, PointerType::CPU, PointerContext::CPU_Only);
+    measureData = MemoryHandler::AllocValue<Data, Data>(measureData_in, PointerType::CPU, PointerContext::CPU_Only);
+    measureDataNoise = MemoryHandler::AllocValue<DataCovariance, DataCovariance>(measureDataNoise_in, PointerType::CPU, PointerContext::CPU_Only);
 
-    parameter = MemoryHandler::AllocValue<Parameter, Parameter>(inputParameter_in, type_in, context_in);
+    parameter = MemoryHandler::AllocValue<Parameter, Parameter>(inputParameter_in, PointerType::CPU, PointerContext::CPU_Only);
 
     type = type_in;
     context = context_in;
@@ -30,13 +30,13 @@ UKFMemory::UKFMemory(Data &inputData_in, DataCovariance &inputDataCovariance_in,
 
 UKFMemory::UKFMemory(const UKFMemory &memory_in)
 {
-    state = MemoryHandler::Alloc<Data>(1u, memory_in.type, memory_in.context);
-    stateCovariance = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
-    stateNoise = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
-    measureData = MemoryHandler::Alloc<Data>(1u, memory_in.type, memory_in.context);
-    measureDataNoise = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
+    state = MemoryHandler::Alloc<Data>(1u, PointerType::CPU, PointerContext::CPU_Only);
+    stateCovariance = MemoryHandler::Alloc<DataCovariance>(1u, PointerType::CPU, PointerContext::CPU_Only);
+    stateNoise = MemoryHandler::Alloc<DataCovariance>(1u, PointerType::CPU, PointerContext::CPU_Only);
+    measureData = MemoryHandler::Alloc<Data>(1u, PointerType::CPU, PointerContext::CPU_Only);
+    measureDataNoise = MemoryHandler::Alloc<DataCovariance>(1u, PointerType::CPU, PointerContext::CPU_Only);
 
-    parameter = MemoryHandler::Alloc<Parameter>(1u, memory_in.type, memory_in.context);
+    parameter = MemoryHandler::Alloc<Parameter>(1u, PointerType::CPU, PointerContext::CPU_Only);
 
     MemoryHandler::Copy(state, memory_in.state, 1u);
     MemoryHandler::Copy(stateCovariance, memory_in.stateCovariance, 1u);
@@ -51,13 +51,13 @@ UKFMemory::UKFMemory(const UKFMemory &memory_in)
 
 UKFMemory &UKFMemory::operator=(const UKFMemory &memory_in)
 {
-    state = MemoryHandler::Alloc<Data>(1u, memory_in.type, memory_in.context);
-    stateCovariance = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
-    stateNoise = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
-    measureData = MemoryHandler::Alloc<Data>(1u, memory_in.type, memory_in.context);
-    measureDataNoise = MemoryHandler::Alloc<DataCovariance>(1u, memory_in.type, memory_in.context);
+    state = MemoryHandler::Alloc<Data>(1u, PointerType::CPU, PointerContext::CPU_Only);
+    stateCovariance = MemoryHandler::Alloc<DataCovariance>(1u, PointerType::CPU, PointerContext::CPU_Only);
+    stateNoise = MemoryHandler::Alloc<DataCovariance>(1u, PointerType::CPU, PointerContext::CPU_Only);
+    measureData = MemoryHandler::Alloc<Data>(1u, PointerType::CPU, PointerContext::CPU_Only);
+    measureDataNoise = MemoryHandler::Alloc<DataCovariance>(1u, PointerType::CPU, PointerContext::CPU_Only);
 
-    parameter = MemoryHandler::Alloc<Parameter>(1u, memory_in.type, memory_in.context);
+    parameter = MemoryHandler::Alloc<Parameter>(1u, PointerType::CPU, PointerContext::CPU_Only);
 
     MemoryHandler::Copy(state, memory_in.state, 1u);
     MemoryHandler::Copy(stateCovariance, memory_in.stateCovariance, 1u);

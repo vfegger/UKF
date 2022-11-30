@@ -55,7 +55,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
 
     HeatFluxEstimation problem(Lx, Ly, Lz, Lt, Sx, Sy, Sz, St, T0, sT0, sTm0, Q0, sQ0, type_in, context_in);
 
-    problem.UpdateMeasure(generator.GetTemperature(0u), Lx, Ly);
+    problem.UpdateMeasure(generator.GetTemperature(0u), Lx, Ly, type_in, context_in);
     Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), Lx * Ly, ParserType::Double, generator.GetTemperature(0u).pointer, positionTemperatureMeasured, 0u);
 
     UKF ukf(Pointer<UKFMemory>(problem.GetMemory().pointer, problem.GetMemory().type, problem.GetMemory().context), alpha, beta, kappa);
@@ -103,7 +103,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTimer), UKF_TIMER + 1, ParserType::Double, timer_pointer, positionTimer, i - 1u);
         // Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),Lx,Ly);
         // Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,Lx,Ly);
-        problem.UpdateMeasure(generator.GetTemperature(i), Lx, Ly);
+        problem.UpdateMeasure(generator.GetTemperature(i), Lx, Ly, type_in, context_in);
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), Lx * Ly, ParserType::Double, temperatureMeasured_parser.pointer, positionTemperatureMeasured, i);
     }
 
@@ -143,6 +143,10 @@ int main(int argc, char **argv)
     {
         std::cout << "Error: Wrong number of parameters: " << argc << "\n";
         return 1;
+    }
+
+    if(pointerType == PointerType::GPU){
+        cudaDeviceReset();
     }
 
     std::string path_dir = std::filesystem::current_path();

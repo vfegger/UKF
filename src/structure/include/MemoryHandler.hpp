@@ -71,6 +71,9 @@ private:
     static unsigned cublasHandles_size;
     static unsigned cusolverHandles_size;
 
+    static cublasHandle_t cublasHandle_aux;
+    static cusolverDnHandle_t cusolverHandle_aux;
+
     static bool GPUisEnabled;
 
     static void AllocStreams(unsigned size_in)
@@ -143,6 +146,10 @@ public:
         AllocStreams(cudaSize_in);
         AllocCuBLAS(cublasSize_in);
         AllocCuSolverHandles(cusolverSize_in);
+
+        cublasCreate_v2(&cublasHandle_aux);
+        cusolverDnCreate(&cusolverHandle_aux);
+
         GPUisEnabled = true;
     }
 
@@ -151,6 +158,8 @@ public:
         FreeCuSolverHandles();
         FreeCuBLAS();
         FreeStreams();
+        cublasDestroy_v2(cublasHandle_aux);
+        cusolverDnDestroy(cusolverHandle_aux);
         GPUisEnabled = false;
     }
 
@@ -362,6 +371,43 @@ public:
             break;
         case PointerDataTransfer::DeviceToDevice:
             cudaMemcpyAsync(pointerTo_out.pointer, pointerFrom_in.pointer, sizeof(T) * length_in, cudaMemcpyDeviceToDevice, stream_in);
+            break;
+        default:
+            break;
+        }
+    }
+
+    template <typename T>
+    static void Copy(Pointer<T> pointerTo_out, Pointer<T> pointerFrom_in, unsigned length_in, unsigned strideTo_in, unsigned strideFrom_in, cudaStream_t stream_in = cudaStreamDefault)
+    {
+        if (pointerTo_out.pointer == NULL || pointerFrom_in.pointer == NULL)
+        {
+            std::cout << "Error: copying null pointers.\n";
+            return;
+        }
+        PointerDataTransfer transfer = TransferType(pointerTo_out.type, pointerTo_out.context, pointerFrom_in.type, pointerFrom_in.context);
+        switch (transfer)
+        {
+        case PointerDataTransfer::HostToHost:
+            for (unsigned i = 0u; i < length_in; i++)
+            {
+                pointerTo_out.pointer[strideTo_in * i] = pointerFrom_in.pointer[strideFrom_in * i];
+            }
+            break;
+        case PointerDataTransfer::HostToDevice:
+            cudaMemcpy2D(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideTo_in, sizeof(T), length_in, cudaMemcpyHostToDevice);
+            break;
+        case PointerDataTransfer::DeviceToHost:
+            cudaMemcpy2D(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideTo_in, sizeof(T), length_in, cudaMemcpyDeviceToHost);
+            break;
+        case PointerDataTransfer::HostAwareToDevice:
+            cudaMemcpy2DAsync(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideTo_in, sizeof(T), length_in, cudaMemcpyHostToDevice, stream_in);
+            break;
+        case PointerDataTransfer::DeviceToHostAware:
+            cudaMemcpy2DAsync(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideTo_in, sizeof(T), length_in, cudaMemcpyDeviceToHost, stream_in);
+            break;
+        case PointerDataTransfer::DeviceToDevice:
+            cudaMemcpy2DAsync(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideTo_in, sizeof(T), length_in, cudaMemcpyDeviceToDevice, stream_in);
             break;
         default:
             break;

@@ -19,7 +19,7 @@ public:
 
     HeatFluxEstimation(unsigned Lx, unsigned Ly, unsigned Lz, unsigned Lt, double Sx, double Sy, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, PointerType type_in, PointerContext context_in);
 
-    void UpdateMeasure(Pointer<double> T_in, unsigned Lx, unsigned Ly);
+    void UpdateMeasure(Pointer<double> T_in, unsigned Lx, unsigned Ly, PointerType type_in, PointerContext context_in);
 
     ~HeatFluxEstimation();
 };

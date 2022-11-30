@@ -10,7 +10,7 @@ HeatFluxEstimation::HeatFluxEstimation(
     double Sx, double Sy, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, PointerType type_in, PointerContext context_in)
 {
     std::cout << "Parameter Initialization\n";
-    parameter = MemoryHandler::AllocValue<Parameter, unsigned>(4u, type_in, context_in);
+    parameter = MemoryHandler::AllocValue<Parameter, unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
     unsigned indexL, indexD, indexS, indexAmp;
     indexL = parameter.pointer[0u].Add("Length", 4u, sizeof(unsigned));
     indexD = parameter.pointer[0u].Add("Delta", 4u, sizeof(double));
@@ -40,7 +40,7 @@ HeatFluxEstimation::HeatFluxEstimation(
     parameter.pointer[0u].LoadData(indexS, S, 4u);
     parameter.pointer[0u].LoadData(indexAmp, Amp, 1u);
     std::cout << "Input Initialization\n";
-    input = MemoryHandler::AllocValue<Data, unsigned>(2u, type_in, context_in);
+    input = MemoryHandler::AllocValue<Data, unsigned>(2u, PointerType::CPU, PointerContext::CPU_Only);
     unsigned indexT, indexQ;
     indexT = input.pointer[0u].Add("Temperature", Lx * Ly * Lz);
     indexQ = input.pointer[0u].Add("Heat Flux", Lx * Ly);
@@ -55,8 +55,8 @@ HeatFluxEstimation::HeatFluxEstimation(
     MemoryHandler::Set<double>(sigmaQ, sQ0, 0, Lx * Ly);
     input.pointer[0u].LoadData(indexT, T, Lx * Ly * Lz);
     input.pointer[0u].LoadData(indexQ, Q, Lx * Ly);
-    inputCovariance = MemoryHandler::AllocValue<DataCovariance, Data>(input.pointer[0], type_in, context_in);
-    inputNoise = MemoryHandler::AllocValue<DataCovariance, Data>(input.pointer[0], type_in, context_in);
+    inputCovariance = MemoryHandler::AllocValue<DataCovariance, Data>(input.pointer[0], PointerType::CPU, PointerContext::CPU_Only);
+    inputNoise = MemoryHandler::AllocValue<DataCovariance, Data>(input.pointer[0], PointerType::CPU, PointerContext::CPU_Only);
     inputCovariance.pointer[0].LoadData(indexT, sigmaT, Lx * Ly * Lz, DataCovarianceMode::Compact);
     inputCovariance.pointer[0].LoadData(indexQ, sigmaQ, Lx * Ly, DataCovarianceMode::Compact);
     inputNoise.pointer[0].LoadData(indexT, sigmaT, Lx * Ly * Lz, DataCovarianceMode::Compact);
@@ -91,11 +91,9 @@ HeatFluxEstimation::HeatFluxEstimation(
     std::cout << "End Initialization\n";
 }
 
-void HeatFluxEstimation::UpdateMeasure(Pointer<double> T_in, unsigned Lx, unsigned Ly)
+void HeatFluxEstimation::UpdateMeasure(Pointer<double> T_in, unsigned Lx, unsigned Ly, PointerType type_in, PointerContext context_in)
 {
-    PointerType type_in = PointerType::CPU;
-    PointerContext context_in = PointerContext::CPU_Only;
-    Pointer<Data> measure_aux = MemoryHandler::AllocValue<Data, unsigned>(1u, type_in, context_in);
+    Pointer<Data> measure_aux = MemoryHandler::AllocValue<Data, unsigned>(1u, PointerType::CPU, PointerContext::CPU_Only);
     unsigned indexT_meas;
     indexT_meas = measure_aux.pointer[0u].Add("Temperature", Lx * Ly);
     measure_aux.pointer[0u].Initialize(type_in, context_in);
