@@ -10,7 +10,7 @@ if(ARGC > 5) file_path = ARG6
 if(ARGC > 6) output_path = ARG7
 
 typeName = "_CPU"
-if(isCPU > 0) typeName = "_GPU"
+if(isGPU > 0) typeName = "_GPU"
 
 timer_file = "Timer"
 temperature_file = "Temperature"
