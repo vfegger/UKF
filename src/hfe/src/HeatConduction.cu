@@ -12,12 +12,12 @@ HeatConduction::HeatConductionProblem::HeatConductionProblem(double T0_in, doubl
 
 inline double HeatConduction::CPU::C(double T_in)
 {
-    return (14e-3 + 2.517e-6 * T_in) * T_in + 12.45;
+    return 1324.75 * T_in + 3557900.0;
 }
 
 inline double HeatConduction::CPU::K(double T_in)
 {
-    return 1324.75 * T_in + 3557900.0;
+    return (14e-3 + 2.517e-6 * T_in) * T_in + 12.45;
 }
 
 double HeatConduction::CPU::DifferentialK(double TN_in, double T_in, double TP_in, double delta_in)
@@ -64,7 +64,7 @@ void HeatConduction::CPU::Differential(double *diff_out, const double *T_in, con
         for (unsigned i = 0u; i < Lx; i++)
         {
             index = j * Lx + i;
-            diff_out[offset + index] = (amp / dz) * Q_in[index];
+            diff_out[offset + index] += (amp / dz) * Q_in[index];
         }
     }
     for (unsigned k = 0u; k < Lz; k++)
@@ -188,12 +188,12 @@ void HeatConduction::CPU::AddError(double *T_out, double mean_in, double sigma_i
 
 __device__ inline double C(double T_in)
 {
-    return (14e-3 + 2.517e-6 * T_in) * T_in + 12.45;
+    return 1324.75 * T_in + 3557900.0;
 }
 
 __device__ inline double K(double T_in)
 {
-    return 1324.75 * T_in + 3557900.0;
+    return (14e-3 + 2.517e-6 * T_in) * T_in + 12.45;
 }
 
 __device__ inline double DifferentialK(double TN_in, double T_in, double TP_in, double delta_in)
