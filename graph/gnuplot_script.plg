@@ -2,7 +2,7 @@ x = ARG1
 y = ARG2
 z = ARG3
 t = ARG4
-isGPU = ARG5
+isGPU = ARGV[5]
 
 file_path = "data/"
 output_path = "output/"

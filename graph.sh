@@ -11,6 +11,15 @@ LZ=$4
 LT=$5
 GPU=$6
 
+if [ ! -d "$GRAPH_PATH/data" ];
+then
+    mkdir $GRAPH_PATH/data
+fi
+if [ ! -d "$GRAPH_PATH/output" ];
+then
+    mkdir $GRAPH_PATH/output/
+fi
+
 rm $GRAPH_PATH/data/*
 if [ $GPU -eq 0 ];
 then
@@ -25,6 +34,6 @@ echo "Finished GNUPlot Parser Execution"
 
 echo "Running GNUPlot for graph generation"
 cd $GRAPH_PATH
-gnuplot -c gnuplot_script.plg $LX $LY $LZ $LT $CPU
+gnuplot -c gnuplot_script.plg $LX $LY $LZ $LT $GPU
 cd $CURRENT_PATH
 echo "Finished GNUPlot Execution"
