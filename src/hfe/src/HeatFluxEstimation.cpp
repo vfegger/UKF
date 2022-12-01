@@ -16,7 +16,7 @@ HeatFluxEstimation::HeatFluxEstimation(
     indexD = parameter.pointer[0u].Add("Delta", 4u, sizeof(double));
     indexS = parameter.pointer[0u].Add("Size", 4u, sizeof(double));
     indexAmp = parameter.pointer[0u].Add("Amp", 1u, sizeof(double));
-    parameter.pointer[0u].Initialize(type_in, context_in);
+    parameter.pointer[0u].Initialize(PointerType::CPU, PointerContext::CPU_Only);
     Pointer<unsigned> L = MemoryHandler::Alloc<unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
     L.pointer[0u] = Lx;
     L.pointer[1u] = Ly;

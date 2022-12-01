@@ -216,7 +216,8 @@ __global__ void DifferentialAxis(double *diff_out, const double *T_in, double dx
     unsigned threadDimY;
     double T_aux = 0.0;
     double diff_aux = 0.0;
-    if (xIndex < Lx && yIndex < Ly && zIndex < Lz)
+    bool inside = xIndex < Lx && yIndex < Ly && zIndex < Lz;
+    if (inside)
     {
         T_aux = T_in[index];
     }
@@ -224,27 +225,27 @@ __global__ void DifferentialAxis(double *diff_out, const double *T_in, double dx
     threadDimX = blockDim.x + 2u;
     threadDimY = blockDim.y + 2u;
     T[thread] = T_aux;
-    if (threadIdx.x == 0u && xIndex < Lx)
+    if (threadIdx.x == 0u && inside)
     {
         T[thread - 1u] = T_aux;
     }
-    if (threadIdx.x + 1u == blockDim.x)
+    if (threadIdx.x + 1u == blockDim.x || xIndex + 1u == Lx && inside)
     {
         T[thread + 1u] = T_aux;
     }
-    if (threadIdx.y == 0u)
+    if (threadIdx.y == 0u && inside)
     {
         T[thread - threadDimX] = T_aux;
     }
-    if (threadIdx.y + 1u == blockDim.y)
+    if (threadIdx.y + 1u == blockDim.y || yIndex + 1u == Ly && inside)
     {
         T[thread + threadDimX] = T_aux;
     }
-    if (threadIdx.z == 0u)
+    if (threadIdx.z == 0u && inside)
     {
         T[thread - threadDimX * threadDimY] = T_aux;
     }
-    if (threadIdx.z + 1u == blockDim.z)
+    if (threadIdx.z + 1u == blockDim.z || zIndex + 1u == Lz && inside)
     {
         T[thread + threadDimX * threadDimY] = T_aux;
     }
@@ -253,7 +254,7 @@ __global__ void DifferentialAxis(double *diff_out, const double *T_in, double dx
     diff_aux += DifferentialK(T[thread - threadDimX], T[thread], T[thread + threadDimX], dy);
     diff_aux += DifferentialK(T[thread - threadDimX * threadDimY], T[thread], T[thread + threadDimX * threadDimY], dz);
 
-    if (xIndex < Lx && yIndex < Ly && zIndex < Lz)
+    if (inside)
     {
         diff_out[index] = diff_aux;
     }
@@ -271,46 +272,47 @@ __global__ void TermalCapacity(double *diff_out, const double *T_in, unsigned Lx
     }
 }
 
-void HeatConduction::GPU::Differential(double *diff_out, const double *T_in, const double *Q_in, double amp, double dx, double dy, double dz, unsigned Lx, unsigned Ly, unsigned Lz)
+void HeatConduction::GPU::Differential(double *diff_out, const double *T_in, const double *Q_in, double amp, double dx, double dy, double dz, unsigned Lx, unsigned Ly, unsigned Lz, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
+    cublasSetStream(handle_in, stream_in);
     // Temperature Diffusion
     dim3 T(8u, 8u, 4u);
     dim3 B((Lx + T.x - 1u) / T.x, (Ly + T.y - 1u) / T.y, (Lz + T.z - 1u) / T.z);
     unsigned size = sizeof(double) * (T.x + 2u) * (T.y + 2u) * (T.z + 2u);
-    DifferentialAxis<<<T, B, size, stream>>>(diff_out, T_in, dx, dy, dz, Lx, Ly, Lz);
+    DifferentialAxis<<<B, T, size, stream_in>>>(diff_out, T_in, dx, dy, dz, Lx, Ly, Lz);
     // Flux Contribution
     double alpha = amp / dz;
-    cublasDaxpy(handle, Lx * Ly, &alpha, Q_in, 1, diff_out + Lx * Ly * (Lz - 1u), 1);
+    cublasDaxpy(handle_in, Lx * Ly, &alpha, Q_in, 1, diff_out + Lx * Ly * (Lz - 1u), 1);
     // Thermal Capacity
-    TermalCapacity<<<T, B, size, stream>>>(diff_out, T_in, Lx, Ly, Lz);
+    TermalCapacity<<<B, T, size, stream_in>>>(diff_out, T_in, Lx, Ly, Lz);
 }
 
-void HeatConduction::GPU::AllocWorkspaceEuler(double *&workspace_out, unsigned length_in)
+void HeatConduction::GPU::AllocWorkspaceEuler(double *&workspace_out, unsigned length_in, cudaStream_t stream_in)
 {
-    cudaMallocAsync(&workspace_out, sizeof(double) * length_in, stream);
+    cudaMallocAsync(&workspace_out, sizeof(double) * length_in, stream_in);
 }
 
-void HeatConduction::GPU::FreeWorkspaceEuler(double *&workspace_out)
+void HeatConduction::GPU::FreeWorkspaceEuler(double *&workspace_out, cudaStream_t stream_in)
 {
-    cudaFreeAsync(workspace_out, stream);
+    cudaFreeAsync(workspace_out, stream_in);
 }
 
-void HeatConduction::GPU::Euler(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace)
+void HeatConduction::GPU::Euler(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
-    cublasDcopy(handle, problem_in.Lx * problem_in.Ly * problem_in.Lz, T_in, 1u, T_out, 1u);
-    Differential(workspace, T_in, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
+    cublasDcopy(handle_in, problem_in.Lx * problem_in.Ly * problem_in.Lz, T_in, 1u, T_out, 1u);
+    Differential(workspace, T_in, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz, handle_in, stream_in);
     double alpha = problem_in.dt;
-    cublasDaxpy(handle, problem_in.Lx * problem_in.Ly * problem_in.Lz, &alpha, workspace, 1u, T_out, 1u);
+    cublasDaxpy(handle_in, problem_in.Lx * problem_in.Ly * problem_in.Lz, &alpha, workspace, 1u, T_out, 1u);
 }
-void HeatConduction::GPU::AllocWorkspaceRK4(double *&workspace_out, unsigned length_in)
+void HeatConduction::GPU::AllocWorkspaceRK4(double *&workspace_out, unsigned length_in, cudaStream_t stream_in)
 {
-    cudaMallocAsync(&workspace_out, sizeof(double) * 5u * length_in, stream);
+    cudaMallocAsync(&workspace_out, sizeof(double) * 5u * length_in, stream_in);
 }
-void HeatConduction::GPU::FreeWorkspaceRK4(double *&workspace_out)
+void HeatConduction::GPU::FreeWorkspaceRK4(double *&workspace_out, cudaStream_t stream_in)
 {
-    cudaFreeAsync(workspace_out, stream);
+    cudaFreeAsync(workspace_out, stream_in);
 }
-void HeatConduction::GPU::RK4(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace)
+void HeatConduction::GPU::RK4(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
     double alpha;
     double *k1, *k2, *k3, *k4, *aux;
@@ -322,35 +324,35 @@ void HeatConduction::GPU::RK4(double *T_out, double *T_in, double *Q_in, HeatCon
     k3 = k2 + L;
     k4 = k3 + L;
 
-    cublasDcopy(handle, L, T_in, 1u, aux, 1u);
-    Differential(k1, aux, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
+    cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
+    Differential(k1, aux, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz, handle_in, stream_in);
 
-    cublasDcopy(handle, L, T_in, 1u, aux, 1u);
+    cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
     alpha = 0.5 * problem_in.dt;
-    cublasDaxpy(handle, L, &alpha, k1, 1u, aux, 1u);
-    Differential(k2, aux, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
+    cublasDaxpy(handle_in, L, &alpha, k1, 1u, aux, 1u);
+    Differential(k2, aux, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz, handle_in, stream_in);
 
-    cublasDcopy(handle, L, T_in, 1u, aux, 1u);
+    cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
     alpha = 0.5 * problem_in.dt;
-    cublasDaxpy(handle, L, &alpha, k2, 1u, aux, 1u);
-    Differential(k3, aux, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
+    cublasDaxpy(handle_in, L, &alpha, k2, 1u, aux, 1u);
+    Differential(k3, aux, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz, handle_in, stream_in);
 
-    cublasDcopy(handle, L, T_in, 1u, aux, 1u);
+    cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
     alpha = 1.0 * problem_in.dt;
-    cublasDaxpy(handle, L, &alpha, k3, 1u, aux, 1u);
-    Differential(k4, aux, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz);
+    cublasDaxpy(handle_in, L, &alpha, k3, 1u, aux, 1u);
+    Differential(k4, aux, Q_in, problem_in.amp, problem_in.dx, problem_in.dy, problem_in.dz, problem_in.Lx, problem_in.Ly, problem_in.Lz, handle_in, stream_in);
 
-    cublasDcopy(handle, L, T_in, 1u, T_out, 1u);
+    cublasDcopy(handle_in, L, T_in, 1u, T_out, 1u);
 
-    cublasDcopy(handle, L, k1, 1u, aux, 1u);
+    cublasDcopy(handle_in, L, k1, 1u, aux, 1u);
     alpha = 2.0;
-    cublasDaxpy(handle, L, &alpha, k2, 1u, aux, 1u);
-    cublasDaxpy(handle, L, &alpha, k3, 1u, aux, 1u);
+    cublasDaxpy(handle_in, L, &alpha, k2, 1u, aux, 1u);
+    cublasDaxpy(handle_in, L, &alpha, k3, 1u, aux, 1u);
     alpha = 1.0;
-    cublasDaxpy(handle, L, &alpha, k4, 1u, aux, 1u);
+    cublasDaxpy(handle_in, L, &alpha, k4, 1u, aux, 1u);
 
     alpha = (problem_in.dt / 6.0);
-    cublasDaxpy(handle, L, &alpha, aux, 1u, T_out, 1u);
+    cublasDaxpy(handle_in, L, &alpha, aux, 1u, T_out, 1u);
 }
 
 __global__ void SetFluxDevice(double *Q_out, double dx, double dy, double Sx, double Sy, unsigned Lx, unsigned Ly)
@@ -367,23 +369,23 @@ __global__ void SetFluxDevice(double *Q_out, double dx, double dy, double Sx, do
     }
 }
 
-void HeatConduction::GPU::SetFlux(double *Q_out, HeatConductionProblem &problem_in, unsigned t_in)
+void HeatConduction::GPU::SetFlux(double *Q_out, HeatConductionProblem &problem_in, unsigned t_in, cudaStream_t stream_in)
 {
     dim3 T(16u, 16u);
     dim3 B((problem_in.Lx + T.x - 1u) / T.x, (problem_in.Ly + T.y - 1u) / T.y);
-    SetFluxDevice<<<T, B, 0, stream>>>(Q_out, problem_in.dx, problem_in.dy, problem_in.Sx, problem_in.Sy, problem_in.Lx, problem_in.Ly);
+    SetFluxDevice<<<B, T, 0, stream_in>>>(Q_out, problem_in.dx, problem_in.dy, problem_in.Sx, problem_in.Sy, problem_in.Lx, problem_in.Ly);
 }
 
-void HeatConduction::GPU::AddError(double *T_out, double mean_in, double sigma_in, unsigned length)
+void HeatConduction::GPU::AddError(double *T_out, double mean_in, double sigma_in, unsigned length, cudaStream_t stream_in)
 {
     Pointer<double> T = Pointer<double>(T_out, PointerType::GPU, PointerContext::GPU_Aware);
     Pointer<double> randomVector = Pointer<double>(PointerType::GPU, PointerContext::GPU_Aware);
     curandGenerator_t generator;
     curandCreateGenerator(&generator, CURAND_RNG_PSEUDO_XORWOW);
-    curandSetStream(generator, stream);
+    curandSetStream(generator, stream_in);
     curandSetPseudoRandomGeneratorSeed(generator, 1234llu);
     cudaMalloc(&(randomVector.pointer), length);
     curandGenerateNormalDouble(generator, randomVector.pointer, length, mean_in, sigma_in);
     curandDestroyGenerator(generator);
-    MathGPU::Add(T, randomVector, length, stream);
+    MathGPU::Add(T, randomVector, length, stream_in);
 }

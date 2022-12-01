@@ -43,26 +43,16 @@ namespace HeatConduction
 
     namespace GPU
     {
-        static cudaStream_t stream;
-        static cublasHandle_t handle;
+        void Differential(double *diff_out, const double *T_in, const double *Q_in, double amp, double dx, double dy, double dz, unsigned Lx, unsigned Ly, unsigned Lz, cublasHandle_t handle_in, cudaStream_t stream_in = cudaStreamDefault);
+        void AllocWorkspaceEuler(double *&workspace_out, unsigned length_in, cudaStream_t stream_in = cudaStreamDefault);
+        void FreeWorkspaceEuler(double *&workspace_out, cudaStream_t stream_in = cudaStreamDefault);
+        void Euler(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in = cudaStreamDefault);
+        void AllocWorkspaceRK4(double *&workspace_out, unsigned length_in, cudaStream_t stream_in = cudaStreamDefault);
+        void FreeWorkspaceRK4(double *&workspace_out, cudaStream_t stream_in = cudaStreamDefault);
+        void RK4(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in = cudaStreamDefault);
 
-        void Differential(double *diff_out, const double *T_in, const double *Q_in, double amp, double dx, double dy, double dz, unsigned Lx, unsigned Ly, unsigned Lz);
-        void AllocWorkspaceEuler(double *&workspace_out, unsigned length_in);
-        void FreeWorkspaceEuler(double *&workspace_out);
-        void Euler(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace);
-        void AllocWorkspaceRK4(double *&workspace_out, unsigned length_in);
-        void FreeWorkspaceRK4(double *&workspace_out);
-        void RK4(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace);
-
-        void AllocWorkspaceEuler(double *&workspace_out, unsigned length_in);
-        void FreeWorkspaceEuler(double *&workspace_out);
-        void Euler(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace);
-        void AllocWorkspaceRK4(double *&workspace_out, unsigned length_in);
-        void FreeWorkspaceRK4(double *&workspace_out);
-        void RK4(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace);
-
-        void SetFlux(double *Q_out, HeatConductionProblem &problem_in, unsigned t_in);
-        void AddError(double *T_out, double mean_in, double sigma_in, unsigned length);
+        void SetFlux(double *Q_out, HeatConductionProblem &problem_in, unsigned t_in, cudaStream_t stream_in = cudaStreamDefault);
+        void AddError(double *T_out, double mean_in, double sigma_in, unsigned length, cudaStream_t stream_in = cudaStreamDefault);
     }
 }
 

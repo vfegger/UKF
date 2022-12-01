@@ -165,16 +165,25 @@ public:
 
     static cudaStream_t GetStream(unsigned index_in)
     {
+        if(!GPUisEnabled){
+            return cudaStreamDefault;
+        }
         return MemoryHandler::cudaStreams[index_in];
     }
 
     static cublasHandle_t GetCuBLASHandle(unsigned index_in)
     {
+        if(!GPUisEnabled){
+            return NULL;
+        }
         return MemoryHandler::cublasHandles[index_in];
     }
 
     static cusolverDnHandle_t GetCuSolverHandle(unsigned index_in)
     {
+        if(!GPUisEnabled){
+            return NULL;
+        }
         return MemoryHandler::cusolverHandles[index_in];
     }
 
@@ -395,19 +404,19 @@ public:
             }
             break;
         case PointerDataTransfer::HostToDevice:
-            cudaMemcpy2D(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideTo_in, sizeof(T), length_in, cudaMemcpyHostToDevice);
+            cudaMemcpy2D(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideFrom_in, sizeof(T), length_in, cudaMemcpyHostToDevice);
             break;
         case PointerDataTransfer::DeviceToHost:
-            cudaMemcpy2D(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideTo_in, sizeof(T), length_in, cudaMemcpyDeviceToHost);
+            cudaMemcpy2D(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideFrom_in, sizeof(T), length_in, cudaMemcpyDeviceToHost);
             break;
         case PointerDataTransfer::HostAwareToDevice:
-            cudaMemcpy2DAsync(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideTo_in, sizeof(T), length_in, cudaMemcpyHostToDevice, stream_in);
+            cudaMemcpy2DAsync(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideFrom_in, sizeof(T), length_in, cudaMemcpyHostToDevice, stream_in);
             break;
         case PointerDataTransfer::DeviceToHostAware:
-            cudaMemcpy2DAsync(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideTo_in, sizeof(T), length_in, cudaMemcpyDeviceToHost, stream_in);
+            cudaMemcpy2DAsync(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideFrom_in, sizeof(T), length_in, cudaMemcpyDeviceToHost, stream_in);
             break;
         case PointerDataTransfer::DeviceToDevice:
-            cudaMemcpy2DAsync(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideTo_in, sizeof(T), length_in, cudaMemcpyDeviceToDevice, stream_in);
+            cudaMemcpy2DAsync(pointerTo_out.pointer, sizeof(T) * strideTo_in, pointerFrom_in.pointer, sizeof(T) * strideFrom_in, sizeof(T), length_in, cudaMemcpyDeviceToDevice, stream_in);
             break;
         default:
             break;
@@ -415,7 +424,7 @@ public:
     }
 
     template <typename T>
-    static void Set(Pointer<T> pointer_inout, const T &value, unsigned start, unsigned end)
+    static void Set(Pointer<T> pointer_inout, const T &value, unsigned start, unsigned end, cudaStream_t stream_in = cudaStreamDefault)
     {
         if (pointer_inout.pointer == NULL)
         {
@@ -444,7 +453,7 @@ public:
             }
             break;
         case PointerType::GPU:
-            HelperCUDA::Initialize(pointer_inout.pointer + start, &value, end - start, sizeof(T));
+            HelperCUDA::Initialize(pointer_inout.pointer + start, &value, end - start, sizeof(T), stream_in);
             break;
         default:
             std::cout << "Error: Behavior of this type is not defined.\n";

@@ -51,7 +51,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexHeatFlux), "Heat Flux", Lx * Ly, ParserType::Double, positionHeatFlux);
 
     HeatFluxGenerator generator(Lx, Ly, Lz, Lt, Sx, Sy, Sz, St, T0, Q0, Amp, type_in, context_in);
-    generator.Generate(mean, sigma);
+    generator.Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
 
     HeatFluxEstimation problem(Lx, Ly, Lz, Lt, Sx, Sy, Sz, St, T0, sT0, sTm0, Q0, sQ0, type_in, context_in);
 
@@ -148,6 +148,7 @@ int main(int argc, char **argv)
 
     if(pointerType == PointerType::GPU){
         cudaDeviceReset();
+        MemoryHandler::CreateGPUContext(1u,1u,1u);
     }
 
     std::string path_dir = std::filesystem::current_path();
@@ -238,6 +239,11 @@ int main(int argc, char **argv)
                           name_type + ".ok";
     std::ofstream ok_file(ok_name);
     ok_file.close();
+
+    if(pointerType == PointerType::GPU){
+        MemoryHandler::DestroyGPUContext();
+        cudaDeviceReset();
+    }
 
     std::cout << "\nEnd Execution\n";
     return 0;

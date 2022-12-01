@@ -5,7 +5,7 @@
 
 namespace HelperCUDA
 {
-    void Initialize(void *pointer_out, const void *value_in, unsigned length_in, unsigned size_in);
+    void Initialize(void *pointer_out, const void *value_in, unsigned length_in, unsigned size_in, cudaStream_t stream_in = cudaStreamDefault);
 };
 
 #endif

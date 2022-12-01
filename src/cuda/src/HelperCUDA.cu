@@ -18,14 +18,13 @@ __global__ void InitializeVector(void *pointer_out, const void *value_in, unsign
     }
 }
 
-void HelperCUDA::Initialize(void *pointer_out, const void *value_in, unsigned length_in, unsigned size_in)
+void HelperCUDA::Initialize(void *pointer_out, const void *value_in, unsigned length_in, unsigned size_in, cudaStream_t stream_in)
 {
     dim3 T(1024u);
     dim3 B((length_in + T.x - 1u) / T.x);
     void *value_aux = NULL;
-    cudaMallocAsync(&value_aux, size_in, cudaStreamDefault);
-    cudaMemcpyAsync(value_aux, value_in, size_in, cudaMemcpyHostToDevice, cudaStreamDefault);
-    InitializeVector<<<B, T, 0, cudaStreamDefault>>>(pointer_out, value_aux, length_in, size_in);
-    cudaFreeAsync(value_aux, cudaStreamDefault);
-    cudaStreamSynchronize(cudaStreamDefault);
+    cudaMallocAsync(&value_aux, size_in, stream_in);
+    cudaMemcpyAsync(value_aux, value_in, size_in, cudaMemcpyHostToDevice, stream_in);
+    InitializeVector<<<B, T, 0, stream_in>>>(pointer_out, value_aux, length_in, size_in);
+    cudaFreeAsync(value_aux, stream_in);
 }

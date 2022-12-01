@@ -180,8 +180,8 @@ void Swap(T &left_inout, T &right_inout)
     right_inout = aux;
 }
 
-void SetCuBLASOperation(double *&auxLeft_out, cublasOperation_t &leftStructure_out, unsigned &lengthXLeft_out, unsigned &lengthYLeft_out, unsigned &leadingDimensionLeft_out,
-                        double *&auxRight_out, cublasOperation_t &rightStructure_out, unsigned &lengthXRight_out, unsigned &lengthYRight_out, unsigned &leadingDimensionRight_out,
+void SetCuBLASOperation(double *&auxLeft_out, cublasOperation_t &leftStructure_out, unsigned &lengthXLeft_out, unsigned &lengthYLeft_out, unsigned &leadingDimensionLeft_out, unsigned &subDimensionLeft_out,
+                        double *&auxRight_out, cublasOperation_t &rightStructure_out, unsigned &lengthXRight_out, unsigned &lengthYRight_out, unsigned &leadingDimensionRight_out, unsigned &subDimensionRight_out,
                         unsigned &lengthXOut_in, unsigned &lengthYOut_in,
                         MatrixStructure matrixOutStructure_in, MatrixStructure matrixLeftStructure_in, MatrixStructure matrixRightStructure_in)
 {
@@ -204,8 +204,35 @@ void SetCuBLASOperation(double *&auxLeft_out, cublasOperation_t &leftStructure_o
         Swap(lengthXLeft_out, lengthYRight_out);
         Swap(lengthYLeft_out, lengthXRight_out);
         Swap(leadingDimensionLeft_out, leadingDimensionRight_out);
+        Swap(subDimensionLeft_out, subDimensionRight_out);
         leftStructure_out = (matrixRightStructure_in == MatrixStructure_Transposed) ? cublasOperation_t::CUBLAS_OP_N : cublasOperation_t::CUBLAS_OP_T;
         rightStructure_out = (matrixLeftStructure_in == MatrixStructure_Transposed) ? cublasOperation_t::CUBLAS_OP_N : cublasOperation_t::CUBLAS_OP_T;
+    }
+}
+
+__global__ void columnScale(double *matrix_out, double *matrix_in, double *vector_in, unsigned lengthX_in, unsigned lengthY_in)
+{
+    unsigned xIndex = blockDim.x * blockIdx.x + threadIdx.x;
+    unsigned yIndex = blockDim.y * blockIdx.y + threadIdx.y;
+    for (unsigned j = yIndex; j < lengthY_in; j += blockDim.y * gridDim.y)
+    {
+        for (unsigned i = xIndex; i < lengthX_in; i += blockDim.x * gridDim.x)
+        {
+            matrix_out[j * lengthX_in + i] = matrix_in[j * lengthX_in + i] * vector_in[j];
+        }
+    }
+}
+
+__global__ void rowScale(double *matrix_out, double *matrix_in, double *vector_in, unsigned lengthX_in, unsigned lengthY_in)
+{
+    unsigned xIndex = blockDim.x * blockIdx.x + threadIdx.x;
+    unsigned yIndex = blockDim.y * blockIdx.y + threadIdx.y;
+    for (unsigned j = yIndex; j < lengthY_in; j += blockDim.y * gridDim.y)
+    {
+        for (unsigned i = xIndex; i < lengthX_in; i += blockDim.x * gridDim.x)
+        {
+            matrix_out[j * lengthX_in + i] = matrix_in[j * lengthX_in + i] * vector_in[i];
+        }
     }
 }
 
@@ -220,6 +247,7 @@ void MathGPU::MatrixMultiplication(double alpha,
     double *aux = NULL;
     double *auxL, *auxR;
     unsigned ldL, ldR;
+    unsigned sdL, sdR;
     cublasOperation_t opL, opR;
     unsigned ML, MX;
     unsigned NR, NX;
@@ -227,7 +255,9 @@ void MathGPU::MatrixMultiplication(double alpha,
     unsigned K;
 
     ldL = lengthLeftX_in;
+    sdL = lengthLeftY_in;
     ldR = lengthRightX_in;
+    sdR = lengthRightY_in;
 
     ML = lengthLeftX_in;
     MX = lengthOutX_in;
@@ -239,7 +269,7 @@ void MathGPU::MatrixMultiplication(double alpha,
     auxL = matrixLeft_in.pointer;
     auxR = matrixRight_in.pointer;
 
-    SetCuBLASOperation(auxL, opL, ML, KL, ldL, auxR, opR, KR, NR, ldR, MX, NX, matrixOutStructure_in, matrixLeftStructure_in, matrixRightStructure_in);
+    SetCuBLASOperation(auxL, opL, ML, KL, ldL, sdL, auxR, opR, KR, NR, ldR, sdR, MX, NX, matrixOutStructure_in, matrixLeftStructure_in, matrixRightStructure_in);
 
     if (KL == KR && MX == ML && NX == NR)
     {
@@ -258,12 +288,15 @@ void MathGPU::MatrixMultiplication(double alpha,
         if (ML < NR)
         {
             cudaMallocAsync(&aux, sizeof(double) * ML * KL, stream_in);
-            for (unsigned i = 0u; i < K; i++)
+            dim3 T(32, 32);
+            dim3 B((ldL + T.x - 1u) / T.x, (sdL + T.y - 1u) / T.y);
+            if (opL == CUBLAS_OP_N)
             {
-                unsigned stride1, stride2;
-                stride1 = (opL == CUBLAS_OP_N) ? 1 : ldL;
-                stride2 = (opL == CUBLAS_OP_N) ? ldL : 1;
-                cublasDaxpy(handle_in, ML, weight_in.pointer + i, auxL + i * stride2, stride1, aux + i * stride2, stride1);
+                columnScale<<<B, T, 0, stream_in>>>(aux, auxL, weight_in.pointer, ldL, sdL);
+            }
+            else
+            {
+                rowScale<<<B, T, 0, stream_in>>>(aux, auxL, weight_in.pointer, ldL, sdL);
             }
             cublasDgemm(handle_in, opL, opR, MX, NX, K, &alpha, aux, ldL, auxR, ldR, &beta, matrix_out.pointer, MX);
             cudaFreeAsync(aux, stream_in);
@@ -271,12 +304,16 @@ void MathGPU::MatrixMultiplication(double alpha,
         else
         {
             cudaMallocAsync(&aux, sizeof(double) * KR * NR, stream_in);
-            for (unsigned i = 0u; i < K; i++)
+            dim3 T(32, 32);
+            dim3 B((ldR + T.x - 1u) / T.x, (sdR + T.y - 1u) / T.y);
+            if (opR == CUBLAS_OP_N)
             {
-                unsigned stride1, stride2;
-                stride1 = (opL == CUBLAS_OP_N) ? ldR : 1;
-                stride2 = (opL == CUBLAS_OP_N) ? 1 : ldR;
-                cublasDaxpy(handle_in, NR, weight_in.pointer + i, auxR + i * stride2, stride1, aux + i, stride1);
+                rowScale<<<B, T, 0, stream_in>>>(aux, auxR, weight_in.pointer, ldR, sdR);
+            }
+            else
+            {
+                std::cout << "LdR: " << ldR << "; SdR: " << sdR << "\n";
+                columnScale<<<B, T, 0, stream_in>>>(aux, auxR, weight_in.pointer, ldR, sdR);
             }
             cublasDgemm(handle_in, opL, opR, MX, NX, K, &alpha, auxL, ldL, aux, ldR, &beta, matrix_out.pointer, MX);
             cudaFreeAsync(aux, stream_in);
@@ -296,7 +333,7 @@ void MathGPU::Mean(Pointer<double> vector_out, Pointer<double> matrixLeft_in, un
     if (weight_in.pointer != NULL)
     {
         alpha = 1.0;
-        beta = 1.0;
+        beta = 0.0;
         cublasDgemv(handle_in, CUBLAS_OP_N, lengthX_in, lengthY_in, &alpha, matrixLeft_in.pointer, lengthX_in, weight_in.pointer, 1, &beta, vector_out.pointer, 1);
     }
     else
@@ -403,7 +440,9 @@ void MathGPU::Solve(Pointer<double> X_out, LinearSolverType solverType_in,
     case LinearSolverType_Cholesky:
         MemoryHandler::Copy(X_out, B_in, lengthAY_in * lengthBY_in, stream_in);
         MathGPU::Decomposition(decomposition, DecompositionType_Cholesky, A_in, lengthAX_in, lengthAY_in, solverHandle_in, stream_in);
-        MathGPU::Print(decomposition, lengthAX_in, lengthAY_in, stream_in);
+        std::cout << X_out.pointer << " " << A_in.pointer << " " << B_in.pointer << " " << decomposition.pointer << "\n";
+        // MathGPU::Print(decomposition, lengthAX_in, lengthAY_in, stream_in);
+        std::cout << X_out.pointer << " " << A_in.pointer << " " << B_in.pointer << " " << decomposition.pointer << "\n";
         cusolverDnXpotrs(solverHandle_in, params, CUBLAS_FILL_MODE_LOWER, lengthAX_in, lengthBY_in, CUDA_R_64F, decomposition.pointer, lengthAX_in, CUDA_R_64F, X_out.pointer, lengthBX_in, infoDevice);
         cudaMemcpyAsync(infoHost, infoDevice, sizeof(int), cudaMemcpyDeviceToHost, stream_in);
         cudaStreamSynchronize(stream_in);

@@ -7,7 +7,7 @@ HeatFluxGenerator::HeatFluxGenerator(unsigned Lx_in, unsigned Ly_in, unsigned Lz
     Q = MemoryHandler::Alloc<double>(Lx_in * Ly_in, type_in, context_in);
 }
 
-void HeatFluxGenerator::Generate(double mean_in, double sigma_in)
+void HeatFluxGenerator::Generate(double mean_in, double sigma_in, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
     double *workspace = NULL;
     unsigned L = problem.Lx * problem.Ly * problem.Lz;
@@ -28,7 +28,7 @@ void HeatFluxGenerator::Generate(double mean_in, double sigma_in)
         for (unsigned t = 0u; t < problem.Lt; t++)
         {
             HeatConduction::GPU::SetFlux(Q.pointer, problem, t * problem.dt);
-            HeatConduction::GPU::RK4(T.pointer + (t + 1) * L, T.pointer + t * L, Q.pointer, problem, workspace);
+            HeatConduction::GPU::RK4(T.pointer + (t + 1) * L, T.pointer + t * L, Q.pointer, problem, workspace, handle_in, stream_in);
         }
         HeatConduction::GPU::FreeWorkspaceRK4(workspace);
         HeatConduction::GPU::AddError(T.pointer, mean_in, sigma_in, (problem.Lt + 1) * L);

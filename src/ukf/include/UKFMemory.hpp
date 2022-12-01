@@ -39,8 +39,8 @@ public:
     void UpdateMeasure(Data &measureData_in);
     Pointer<DataCovariance> GetMeasureNoise();
 
-    virtual void Evolution(Data &data_inout, Parameter &parameter_in) = 0;
-    virtual void Observation(Data &data_in, Parameter &parameter_in, Data &data_out) = 0;
+    virtual void Evolution(Data &data_inout, Parameter &parameter_in, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in = cudaStreamDefault) = 0;
+    virtual void Observation(Data &data_in, Parameter &parameter_in, Data &data_out, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in = cudaStreamDefault) = 0;
 
     Pointer<double> GetWeightMean();
     Pointer<double> GetWeightCovariance();

@@ -23,6 +23,12 @@ UKF::UKF(Pointer<UKFMemory> memory_in, double alpha_in, double beta_in, double k
 // UKF Iteration
 void UKF::Iterate(Timer &timer)
 {
+    cudaStream_t stream0 = MemoryHandler::GetStream(0u);
+    cublasHandle_t cublasHandle0 = MemoryHandler::GetCuBLASHandle(0u);
+    cusolverDnHandle_t cusolverHandle0 = MemoryHandler::GetCuSolverHandle(0u);
+
+    // Math fuctions are implicit stream0
+
     timer.Reset();
     timer.Start();
     // Initialization of variables
@@ -53,52 +59,52 @@ void UKF::Iterate(Timer &timer)
 
     std::cout << "State length: " << lengthState << "; Observation length: " << lengthObservation << "\n";
 
-    Pointer<double> crossCovariancePointer = MemoryHandler::Alloc<double>(lengthState * lengthObservation, stateType, stateContext);
-    Pointer<double> kalmanGainPointer = MemoryHandler::Alloc<double>(lengthState * lengthObservation, stateType, stateContext);
-    MemoryHandler::Set(crossCovariancePointer, 0.0, 0u, lengthState * lengthObservation);
+    Pointer<double> crossCovariancePointer = MemoryHandler::Alloc<double>(lengthState * lengthObservation, stateType, stateContext, stream0);
+    Pointer<double> kalmanGainPointer = MemoryHandler::Alloc<double>(lengthState * lengthObservation, stateType, stateContext, stream0);
+    MemoryHandler::Set(crossCovariancePointer, 0.0, 0u, lengthState * lengthObservation, stream0);
     timer.Save();
 
     // Methods
     std::cout << "Calculate Cholesky Decomposition\n";
-    Pointer<double> chol = MemoryHandler::Alloc<double>(lengthState * lengthState, stateType, stateContext);
-    for (unsigned i = 0u; i < lengthState * lengthState; i++)
-    {
-        chol.pointer[i] = 0.0;
-    }
+
+    Pointer<double> chol = MemoryHandler::Alloc<double>(lengthState * lengthState, stateType, stateContext, stream0);
+    MemoryHandler::Set(chol, 0.0, 0u, lengthState * lengthState, stream0);
     Math::Mul(stateCovariancePointer, lengthState + lambda, lengthState * lengthState);
     Math::Decomposition(chol, DecompositionType_Cholesky, stateCovariancePointer, lengthState, lengthState);
     timer.Save();
 
     std::cout << "Generate Sigma Points based on Cholesky Decompostion\n";
     unsigned sigmaPointsLength = 2u * lengthState + 1u;
-    Pointer<double> WeightMean = MemoryHandler::Alloc<double>(sigmaPointsLength, stateType, stateContext);
-    Pointer<double> WeightCovariance = MemoryHandler::Alloc<double>(sigmaPointsLength, stateType, stateContext);
+    Pointer<double> WeightMean = MemoryHandler::Alloc<double>(sigmaPointsLength, stateType, stateContext, stream0);
+    Pointer<double> WeightCovariance = MemoryHandler::Alloc<double>(sigmaPointsLength, stateType, stateContext, stream0);
 
-    MemoryHandler::Set(WeightMean, lambda / (lengthState + lambda), 0u, 1u);
-    MemoryHandler::Set(WeightCovariance, lambda / (lengthState + lambda) + (1.0 - alpha * alpha + beta), 0u, 1u);
-    MemoryHandler::Set(WeightMean, 0.5 / (lengthState + lambda), 1u, sigmaPointsLength);
-    MemoryHandler::Set(WeightCovariance, 0.5 / (lengthState + lambda), 1u, sigmaPointsLength);
+    MemoryHandler::Set(WeightMean, lambda / (lengthState + lambda), 0u, 1u, stream0);
+    MemoryHandler::Set(WeightCovariance, lambda / (lengthState + lambda) + (1.0 - alpha * alpha + beta), 0u, 1u, stream0);
+    MemoryHandler::Set(WeightMean, 0.5 / (lengthState + lambda), 1u, sigmaPointsLength, stream0);
+    MemoryHandler::Set(WeightCovariance, 0.5 / (lengthState + lambda), 1u, sigmaPointsLength, stream0);
 
-    Pointer<Data> sigmaPointsState = Pointer<Data>();       // TODO
-    Pointer<Data> sigmaPointsObservation = Pointer<Data>(); // TODO
+    Pointer<Data> sigmaPointsState = Pointer<Data>();
+    Pointer<Data> sigmaPointsObservation = Pointer<Data>();
+    // Implicit Stream Default
     Data::InstantiateMultiple(sigmaPointsState, state.pointer[0u], sigmaPointsLength);
     Data::InstantiateMultiple(sigmaPointsObservation, observation.pointer[0u], sigmaPointsLength);
+
     Math::Operation(Math::Add, sigmaPointsState.pointer[0u].GetPointer(), chol, lengthState, lengthState, lengthState, lengthState, lengthState, 0u);
     Math::Operation(Math::Sub, sigmaPointsState.pointer[0u].GetPointer(), chol, lengthState, lengthState, lengthState, lengthState, (lengthState + 1u) * lengthState, 0u);
-    MemoryHandler::Free(chol);
+    MemoryHandler::Free(chol,stream0);
     timer.Save();
 
     std::cout << "Observation Step\n";
     for (unsigned i = 0u; i < sigmaPointsLength; i++)
     {
-        memory.pointer[0u].Observation(sigmaPointsState.pointer[i], parameter.pointer[0u], sigmaPointsObservation.pointer[i]);
+        memory.pointer[0u].Observation(sigmaPointsState.pointer[i], parameter.pointer[0u], sigmaPointsObservation.pointer[i],cublasHandle0,cusolverHandle0,stream0);
     }
     timer.Save();
 
     std::cout << "Evolution Step\n";
     for (unsigned i = 0u; i < sigmaPointsLength; i++)
     {
-        memory.pointer[0u].Evolution(sigmaPointsState.pointer[i], parameter.pointer[0]);
+        memory.pointer[0u].Evolution(sigmaPointsState.pointer[i], parameter.pointer[0],cublasHandle0,cusolverHandle0,stream0);
     }
     timer.Save();
 
@@ -133,9 +139,14 @@ void UKF::Iterate(Timer &timer)
                                WeightCovariance);
 
     timer.Save();
+    std::cout << "\nCovariances: \n\n";
+    // Math::PrintMatrix(stateCovariancePointer, lengthState, lengthState);
+    // Math::PrintMatrix(observationCovariancePointer, lengthObservation, lengthObservation);
+    // Math::PrintMatrix(crossCovariancePointer, lengthObservation, lengthState);
 
     // K is transposed for later use. Solver to find K = Pxy*(Pyy^-1) <=> Pxy = K * Pyy <=> Pyy * K^T = Pxy^T => A*X=B
     std::cout << "Kalman Gain Calulation\n";
+    std::cout << kalmanGainPointer.pointer << " " << observationCovariancePointer.pointer << " " << crossCovariancePointer.pointer << "\n";
     Math::Solve(kalmanGainPointer, LinearSolverType_Cholesky, observationCovariancePointer, lengthObservation, lengthObservation, crossCovariancePointer, lengthObservation, lengthState);
     timer.Save();
 

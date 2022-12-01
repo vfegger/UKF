@@ -222,8 +222,7 @@ void DataCovariance::LoadData(unsigned index_in, Pointer<double> array_in, unsig
         MemoryHandler::Copy(offset.pointer[index_in], array_in, length_in * length_in);
         break;
     case DataCovarianceMode::Compact:
-        // TODO: URGENT !!!
-        MemoryHandler::Copy(offset.pointer[index_in],array_in,length_in,length+1,1);
+        MemoryHandler::Copy(offset.pointer[index_in], array_in, length_in, length + 1, 1u);
         break;
     case DataCovarianceMode::Complete:
         std::cout << "Warning: This mode overwrites the whole covariance matrix.\n";

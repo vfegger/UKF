@@ -12,7 +12,7 @@ HeatFluxEstimationMemory::HeatFluxEstimationMemory(const HeatFluxEstimationMemor
 {
 }
 
-void HeatFluxEstimationMemory::Evolution(Data &data_inout, Parameter &parameter_in)
+void HeatFluxEstimationMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in)
 {
     HeatConduction::HeatConductionProblem problem;
     Pointer<unsigned> length = parameter_in.GetPointer<unsigned>(0u);
@@ -42,13 +42,13 @@ void HeatFluxEstimationMemory::Evolution(Data &data_inout, Parameter &parameter_
     }
     else if (pointer.type == PointerType::GPU)
     {
-        HeatConduction::GPU::AllocWorkspaceEuler(workspace, problem.Lx * problem.Ly * problem.Lz);
-        HeatConduction::GPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, problem, workspace);
-        HeatConduction::GPU::FreeWorkspaceEuler(workspace);
+        HeatConduction::GPU::AllocWorkspaceEuler(workspace, problem.Lx * problem.Ly * problem.Lz, stream_in);
+        HeatConduction::GPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, problem, workspace, cublasHandle_in, stream_in);
+        HeatConduction::GPU::FreeWorkspaceEuler(workspace, stream_in);
     }
 }
 
-void HeatFluxEstimationMemory::Observation(Data &data_in, Parameter &parameter_in, Data &data_out)
+void HeatFluxEstimationMemory::Observation(Data &data_in, Parameter &parameter_in, Data &data_out, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in)
 {
     Pointer<unsigned> length = parameter_in.GetPointer<unsigned>(0u);
     MemoryHandler::Copy(data_out[0u], data_in[0u], length.pointer[0u] * length.pointer[1u]);

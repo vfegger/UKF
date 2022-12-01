@@ -179,7 +179,7 @@ void Data::InstantiateMultiple(Pointer<Data> &dataArray_out, const Data &data_in
         std::cout << "Error: Invalid size. It is expected at least 1.\n";
         return;
     }
-    if (!data_in.GetValidation() && data_in.GetLength() == 0u)
+    if (!data_in.GetValidation() || data_in.GetLength() == 0u)
     {
         std::cout << "Error: Invalid data for copy.\n";
     }

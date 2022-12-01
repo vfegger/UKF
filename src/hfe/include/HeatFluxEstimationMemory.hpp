@@ -11,8 +11,8 @@ public:
     HeatFluxEstimationMemory(Data &a, DataCovariance &b, DataCovariance &c, Data &d, DataCovariance &e, Parameter &f, PointerType type_in, PointerContext context_in);
     HeatFluxEstimationMemory(const HeatFluxEstimationMemory &memory_in);
     
-    void Evolution(Data &data_inout, Parameter &parameter_in) override;
-    void Observation(Data &data_in, Parameter &parameter_in, Data &data_out) override;
+    void Evolution(Data &data_inout, Parameter &parameter_in, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in = cudaStreamDefault) override;
+    void Observation(Data &data_in, Parameter &parameter_in, Data &data_out, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in = cudaStreamDefault) override;
 };
 
 #endif
