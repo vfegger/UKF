@@ -17,8 +17,8 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
             double alpha, double beta, double kappa,
             PointerType type_in, PointerContext context_in)
 {
+    std::cout << std::cout.precision(3);
     Pointer<Parser> parser = MemoryHandler::AllocValue<Parser, unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
-
     unsigned indexTimer;
     unsigned indexTemperature;
     unsigned indexTemperatureMeasured;
@@ -81,7 +81,6 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
         temperatureMeasured_parser = temperatureMeasured_out;
     }
     Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), Lx * Ly, ParserType::Double, temperatureMeasured_parser.pointer, positionTemperatureMeasured, 0u);
-
     for (unsigned i = 1u; i <= Lt; i++)
     {
         std::cout << "Iteration " << i << ":\n";

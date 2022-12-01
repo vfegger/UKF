@@ -221,33 +221,34 @@ __global__ void DifferentialAxis(double *diff_out, const double *T_in, double dx
     {
         T_aux = T_in[index];
     }
-    thread = GetIndex(threadIdx.x + 1u, threadIdx.y + 1u, threadIdx.z + 1u, blockDim.x + 2u, blockDim.y + 2u);
     threadDimX = blockDim.x + 2u;
     threadDimY = blockDim.y + 2u;
+    thread = GetIndex(threadIdx.x + 1u, threadIdx.y + 1u, threadIdx.z + 1u, threadDimX, threadDimY);
     T[thread] = T_aux;
     if (threadIdx.x == 0u && inside)
     {
-        T[thread - 1u] = T_aux;
+        T[thread - 1u] = (xIndex == 0u) ? T_aux : T_in[index - 1];
     }
     if (threadIdx.x + 1u == blockDim.x || xIndex + 1u == Lx && inside)
     {
-        T[thread + 1u] = T_aux;
+        T[thread + 1u] = (xIndex + 1u == Lx) ? T_aux : T_in[index + 1u];
     }
+
     if (threadIdx.y == 0u && inside)
     {
-        T[thread - threadDimX] = T_aux;
+        T[thread - threadDimX] = (yIndex == 0u) ? T_aux : T_in[index - Lx];
     }
     if (threadIdx.y + 1u == blockDim.y || yIndex + 1u == Ly && inside)
     {
-        T[thread + threadDimX] = T_aux;
+        T[thread + threadDimX] = (yIndex + 1u == Ly) ? T_aux : T_in[index + Lx];
     }
     if (threadIdx.z == 0u && inside)
     {
-        T[thread - threadDimX * threadDimY] = T_aux;
+        T[thread - threadDimX * threadDimY] = (zIndex == 0u) ? T_aux : T_in[index - Lx * Ly];
     }
     if (threadIdx.z + 1u == blockDim.z || zIndex + 1u == Lz && inside)
     {
-        T[thread + threadDimX * threadDimY] = T_aux;
+        T[thread + threadDimX * threadDimY] = (zIndex + 1u == Lz) ? T_aux : T_in[index + Lx * Ly];
     }
     __syncthreads();
     diff_aux += DifferentialK(T[thread - 1u], T[thread], T[thread + 1u], dx);
@@ -314,6 +315,7 @@ void HeatConduction::GPU::FreeWorkspaceRK4(double *&workspace_out, cudaStream_t 
 }
 void HeatConduction::GPU::RK4(double *T_out, double *T_in, double *Q_in, HeatConductionProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
+    cublasSetStream(handle_in, stream_in);
     double alpha;
     double *k1, *k2, *k3, *k4, *aux;
     unsigned L = problem_in.Lx * problem_in.Ly * problem_in.Lz;
@@ -384,23 +386,28 @@ void HeatConduction::GPU::AddError(double *T_out, double mean_in, double sigma_i
     curandStatus_t status;
     curandGenerator_t generator;
     status = curandCreateGenerator(&generator, CURAND_RNG_PSEUDO_XORWOW);
-    if(status != curandStatus_t::CURAND_STATUS_SUCCESS){
+    if (status != curandStatus_t::CURAND_STATUS_SUCCESS)
+    {
         std::cout << "GPU curand error: " << status << "\n";
     }
     status = curandSetStream(generator, stream_in);
-    if(status != curandStatus_t::CURAND_STATUS_SUCCESS){
+    if (status != curandStatus_t::CURAND_STATUS_SUCCESS)
+    {
         std::cout << "GPU curand error: " << status << "\n";
     }
     status = curandSetPseudoRandomGeneratorSeed(generator, 1234llu);
-    if(status != curandStatus_t::CURAND_STATUS_SUCCESS){
+    if (status != curandStatus_t::CURAND_STATUS_SUCCESS)
+    {
         std::cout << "GPU curand error: " << status << "\n";
     }
     status = curandGenerateNormalDouble(generator, randomVector.pointer, length, mean_in, sigma_in);
-    if(status != curandStatus_t::CURAND_STATUS_SUCCESS){
+    if (status != curandStatus_t::CURAND_STATUS_SUCCESS)
+    {
         std::cout << "GPU curand error: " << status << "\n";
     }
     status = curandDestroyGenerator(generator);
-    if(status != curandStatus_t::CURAND_STATUS_SUCCESS){
+    if (status != curandStatus_t::CURAND_STATUS_SUCCESS)
+    {
         std::cout << "GPU curand error: " << status << "\n";
     }
     MathGPU::Add(T, randomVector, length, stream_in);
