@@ -139,11 +139,7 @@ void UKF::Iterate(Timer &timer)
                                WeightCovariance);
 
     timer.Save();
-    std::cout << "\nCovariances: \n\n";
-    // Math::PrintMatrix(stateCovariancePointer, lengthState, lengthState);
-    // Math::PrintMatrix(observationCovariancePointer, lengthObservation, lengthObservation);
-    // Math::PrintMatrix(crossCovariancePointer, lengthObservation, lengthState);
-
+    
     // K is transposed for later use. Solver to find K = Pxy*(Pyy^-1) <=> Pxy = K * Pyy <=> Pyy * K^T = Pxy^T => A*X=B
     std::cout << "Kalman Gain Calulation\n";
     Math::Solve(kalmanGainPointer, LinearSolverType_Cholesky, observationCovariancePointer, lengthObservation, lengthObservation, crossCovariancePointer, lengthObservation, lengthState);
