@@ -146,7 +146,6 @@ void UKF::Iterate(Timer &timer)
 
     // K is transposed for later use. Solver to find K = Pxy*(Pyy^-1) <=> Pxy = K * Pyy <=> Pyy * K^T = Pxy^T => A*X=B
     std::cout << "Kalman Gain Calulation\n";
-    std::cout << kalmanGainPointer.pointer << " " << observationCovariancePointer.pointer << " " << crossCovariancePointer.pointer << "\n";
     Math::Solve(kalmanGainPointer, LinearSolverType_Cholesky, observationCovariancePointer, lengthObservation, lengthObservation, crossCovariancePointer, lengthObservation, lengthState);
     timer.Save();
 
@@ -172,11 +171,11 @@ void UKF::Iterate(Timer &timer)
     timer.Save();
 
     std::cout << "Delete Auxiliary Structures\n";
-    MemoryHandler::Free(WeightMean);
-    MemoryHandler::Free(WeightCovariance);
+    MemoryHandler::Free(WeightMean,stream0);
+    MemoryHandler::Free(WeightCovariance,stream0);
 
-    MemoryHandler::Free(crossCovariancePointer);
-    MemoryHandler::Free(kalmanGainPointer);
+    MemoryHandler::Free(crossCovariancePointer,stream0);
+    MemoryHandler::Free(kalmanGainPointer,stream0);
 
     MemoryHandler::Free(sigmaPointsState);
     MemoryHandler::Free(sigmaPointsObservation);
