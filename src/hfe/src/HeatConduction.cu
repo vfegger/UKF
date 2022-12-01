@@ -380,7 +380,7 @@ void HeatConduction::GPU::AddError(double *T_out, double mean_in, double sigma_i
 {
     Pointer<double> T = Pointer<double>(T_out, PointerType::GPU, PointerContext::GPU_Aware);
     Pointer<double> randomVector = Pointer<double>(PointerType::GPU, PointerContext::GPU_Aware);
-    cudaMallocAsync(&(randomVector.pointer), sizeof(double) * length, stream_in);
+    cudaMalloc(&(randomVector.pointer), sizeof(double) * length);
     curandStatus_t status;
     curandGenerator_t generator;
     status = curandCreateGenerator(&generator, CURAND_RNG_PSEUDO_XORWOW);
@@ -405,5 +405,5 @@ void HeatConduction::GPU::AddError(double *T_out, double mean_in, double sigma_i
     }
     MathGPU::Add(T, randomVector, length, stream_in);
     cudaStreamSynchronize(stream_in);
-    cudaFreeAsync(randomVector.pointer, stream_in);
+    cudaFree(randomVector.pointer);
 }

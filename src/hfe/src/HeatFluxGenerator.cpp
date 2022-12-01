@@ -29,14 +29,9 @@ void HeatFluxGenerator::Generate(double mean_in, double sigma_in, cublasHandle_t
         {
             HeatConduction::GPU::SetFlux(Q.pointer, problem, t * problem.dt, stream_in);
             HeatConduction::GPU::RK4(T.pointer + (t + 1) * L, T.pointer + t * L, Q.pointer, problem, workspace, handle_in, stream_in);
-            cudaDeviceSynchronize();
-            Math::PrintMatrix(Pointer<double>(T.pointer+(t+1)*L,GPU,GPU_Aware),1,L);
-            cudaDeviceSynchronize();
         }
         HeatConduction::GPU::FreeWorkspaceRK4(workspace, stream_in);
         HeatConduction::GPU::AddError(T.pointer, mean_in, sigma_in, (problem.Lt + 1) * L, stream_in);
-        cudaDeviceSynchronize();
-        Math::PrintMatrix(Pointer<double>(T.pointer+L,GPU,GPU_Aware),L,L);
     }
 }
 

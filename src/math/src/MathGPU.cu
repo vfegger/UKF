@@ -312,7 +312,6 @@ void MathGPU::MatrixMultiplication(double alpha,
             }
             else
             {
-                std::cout << "LdR: " << ldR << "; SdR: " << sdR << "\n";
                 columnScale<<<B, T, 0, stream_in>>>(aux, auxR, weight_in.pointer, ldR, sdR);
             }
             cublasDgemm(handle_in, opL, opR, MX, NX, K, &alpha, auxL, ldL, aux, ldR, &beta, matrix_out.pointer, MX);

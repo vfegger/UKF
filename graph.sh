@@ -1,3 +1,5 @@
+echo "Running graph.sh"
+
 BUILD_PATH_GRAPH=$1
 FILE_PATH_GRAPH="$BASH_SOURCE"
 DIR_PATH_GRAPH="$(dirname "$BASH_SOURCE")"
@@ -21,7 +23,7 @@ then
 fi
 
 rm $GRAPH_PATH/data/*
-if [ $GPU -eq 0 ];
+if [ "$GPU" = "0" ];
 then
     rm $GRAPH_PATH/output/*X${LX}Y${LY}Z${LZ}T${LT}_CPU*
 else
@@ -37,3 +39,5 @@ cd $GRAPH_PATH
 gnuplot -c gnuplot_script.plg $LX $LY $LZ $LT $GPU
 cd $CURRENT_PATH
 echo "Finished GNUPlot Execution"
+
+exit

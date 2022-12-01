@@ -59,9 +59,6 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
 
     UKF ukf(Pointer<UKFMemory>(problem.GetMemory().pointer, problem.GetMemory().type, problem.GetMemory().context), alpha, beta, kappa);
 
-    // Math::PrintMatrix(generator.GetTemperature(Lt),Lx,Ly);
-
-
     Pointer<Timer> timer = MemoryHandler::AllocValue<Timer, unsigned>(UKF_TIMER + 1u, PointerType::CPU, PointerContext::CPU_Only);
     double *timer_pointer = timer.pointer[0u].GetValues();
 
@@ -96,7 +93,6 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
             MemoryHandler::Copy(temperature_parser, temperature_out, Lx * Ly * Lz);
             MemoryHandler::Copy(heatFlux_parser, heatFlux_out, Lx * Ly);
             MemoryHandler::Copy(temperatureMeasured_parser, temperatureMeasured_out, Lx * Ly);
-            Math::PrintMatrix(generator.GetTemperature(i),1,Lx*Ly);
             cudaDeviceSynchronize();
         }
 
