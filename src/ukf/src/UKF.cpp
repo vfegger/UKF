@@ -185,5 +185,7 @@ void UKF::Iterate(Timer &timer)
     MemoryHandler::Free(observationCovariance);
     timer.Save();
 
+    cudaStreamSynchronize(stream0);
+
     std::cout << "Iteration Ended\n\n";
 }

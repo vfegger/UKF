@@ -75,6 +75,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
         temperature_parser = MemoryHandler::Alloc<double>(Lx * Ly * Lz, PointerType::CPU, PointerContext::CPU_Only);
         heatFlux_parser = MemoryHandler::Alloc<double>(Lx * Ly, PointerType::CPU, PointerContext::CPU_Only);
         temperatureMeasured_parser = MemoryHandler::Alloc<double>(Lx * Ly, PointerType::CPU, PointerContext::CPU_Only);
+        MemoryHandler::Copy(temperatureMeasured_parser, temperatureMeasured_out, Lx * Ly);
     }
     else
     {
@@ -88,23 +89,22 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     {
         std::cout << "Iteration " << i << ":\n";
         ukf.Iterate(timer.pointer[0u]);
+        problem.UpdateMeasure(generator.GetTemperature(i), Lx, Ly, type_in, context_in);
 
         if (type_in == PointerType::GPU)
         {
             MemoryHandler::Copy(temperature_parser, temperature_out, Lx * Ly * Lz);
             MemoryHandler::Copy(heatFlux_parser, heatFlux_out, Lx * Ly);
             MemoryHandler::Copy(temperatureMeasured_parser, temperatureMeasured_out, Lx * Ly);
+            Math::PrintMatrix(generator.GetTemperature(i),1,Lx*Ly);
+            cudaDeviceSynchronize();
         }
 
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperature), Lx * Ly * Lz, ParserType::Double, temperature_parser.pointer, positionTemperature, i - 1u);
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexHeatFlux), Lx * Ly, ParserType::Double, heatFlux_parser.pointer, positionHeatFlux, i - 1u);
         timer.pointer[0u].Save();
         timer.pointer[0u].SetValues();
-        // timer->Print();
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTimer), UKF_TIMER + 1, ParserType::Double, timer_pointer, positionTimer, i - 1u);
-        // Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer(),Lx,Ly);
-        // Math::PrintMatrix(problem.GetMemory()->GetState()->GetPointer()+Lx*Ly*Lz,Lx,Ly);
-        problem.UpdateMeasure(generator.GetTemperature(i), Lx, Ly, type_in, context_in);
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), Lx * Ly, ParserType::Double, temperatureMeasured_parser.pointer, positionTemperatureMeasured, i);
     }
 

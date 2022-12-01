@@ -380,12 +380,30 @@ void HeatConduction::GPU::AddError(double *T_out, double mean_in, double sigma_i
 {
     Pointer<double> T = Pointer<double>(T_out, PointerType::GPU, PointerContext::GPU_Aware);
     Pointer<double> randomVector = Pointer<double>(PointerType::GPU, PointerContext::GPU_Aware);
+    cudaMallocAsync(&(randomVector.pointer), sizeof(double) * length, stream_in);
+    curandStatus_t status;
     curandGenerator_t generator;
-    curandCreateGenerator(&generator, CURAND_RNG_PSEUDO_XORWOW);
-    curandSetStream(generator, stream_in);
-    curandSetPseudoRandomGeneratorSeed(generator, 1234llu);
-    cudaMalloc(&(randomVector.pointer), length);
-    curandGenerateNormalDouble(generator, randomVector.pointer, length, mean_in, sigma_in);
-    curandDestroyGenerator(generator);
+    status = curandCreateGenerator(&generator, CURAND_RNG_PSEUDO_XORWOW);
+    if(status != curandStatus_t::CURAND_STATUS_SUCCESS){
+        std::cout << "GPU curand error: " << status << "\n";
+    }
+    status = curandSetStream(generator, stream_in);
+    if(status != curandStatus_t::CURAND_STATUS_SUCCESS){
+        std::cout << "GPU curand error: " << status << "\n";
+    }
+    status = curandSetPseudoRandomGeneratorSeed(generator, 1234llu);
+    if(status != curandStatus_t::CURAND_STATUS_SUCCESS){
+        std::cout << "GPU curand error: " << status << "\n";
+    }
+    status = curandGenerateNormalDouble(generator, randomVector.pointer, length, mean_in, sigma_in);
+    if(status != curandStatus_t::CURAND_STATUS_SUCCESS){
+        std::cout << "GPU curand error: " << status << "\n";
+    }
+    status = curandDestroyGenerator(generator);
+    if(status != curandStatus_t::CURAND_STATUS_SUCCESS){
+        std::cout << "GPU curand error: " << status << "\n";
+    }
     MathGPU::Add(T, randomVector, length, stream_in);
+    cudaStreamSynchronize(stream_in);
+    cudaFreeAsync(randomVector.pointer, stream_in);
 }
