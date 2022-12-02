@@ -173,12 +173,13 @@ void MathCPU::MatrixMultiplication(double alpha,
     double auxAlpha = 0.0;
     double auxBeta = 0.0;
     double *aux = pC;
-    if (matrixOutStructure_in == MatrixStructure_Transposed)
+    unsigned i, j, k;
+    if (matrixOutStructure_in == MatrixStructure_Transposed && beta != 0.0)
     {
         aux = new double[M * N];
-        for (unsigned j = 0; j < N; j++)
+        for (j = 0; j < N; j++)
         {
-            for (unsigned i = 0; i < M; i++)
+            for (i = 0; i < M; i++)
             {
                 aux[j * M + i] = pC[i * N + j];
             }
@@ -186,29 +187,36 @@ void MathCPU::MatrixMultiplication(double alpha,
     }
     if (weight_in.pointer == NULL)
     {
-        for (unsigned j = 0; j < N; j++)
+        #pragma omp parallel private(i,j,k,auxAlpha,auxBeta) shared(pA,pB,pC,aux) 
         {
-            for (unsigned i = 0; i < M; i++)
+            #pragma omp for collapse(2)
+            for (j = 0; j < N; j++)
             {
+                for (i = 0; i < M; i++)
+                {
                 auxAlpha = 0.0;
                 auxBeta = aux[j * M + i];
-                for (unsigned k = 0; k < K; k++)
+                for (k = 0; k < K; k++)
                 {
                     auxAlpha += pA[k * sA2 + i * sA1] * pB[j * sB2 + k * sB1];
                 }
                 pC[j * M + i] = alpha * auxAlpha + beta * auxBeta;
+                }
             }
         }
     }
-    else
+else
+{
+    #pragma omp parallel private(i,j,k,auxAlpha,auxBeta) shared(pA,pB,pC,aux) 
     {
-        for (unsigned j = 0; j < N; j++)
+        #pragma omp for collapse(2)
+        for (j = 0; j < N; j++)
         {
-            for (unsigned i = 0; i < M; i++)
+            for (i = 0; i < M; i++)
             {
                 auxAlpha = 0.0;
                 auxBeta = aux[j * M + i];
-                for (unsigned k = 0; k < K; k++)
+                for (k = 0; k < K; k++)
                 {
                     auxAlpha += weight_in.pointer[k] * pA[k * sA2 + i * sA1] * pB[j * sB2 + k * sB1];
                 }
@@ -216,10 +224,11 @@ void MathCPU::MatrixMultiplication(double alpha,
             }
         }
     }
-    if (matrixOutStructure_in == MatrixStructure_Transposed)
-    {
-        delete[] aux;
-    }
+}
+if (matrixOutStructure_in == MatrixStructure_Transposed && beta != 0.0)
+{
+    delete[] aux;
+}
 }
 
 // Reducibles Operations

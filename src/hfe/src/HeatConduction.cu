@@ -225,6 +225,7 @@ __global__ void DifferentialAxis(double *diff_out, const double *T_in, double dx
     threadDimY = blockDim.y + 2u;
     thread = GetIndex(threadIdx.x + 1u, threadIdx.y + 1u, threadIdx.z + 1u, threadDimX, threadDimY);
     T[thread] = T_aux;
+    __syncthreads();
     if (threadIdx.x == 0u && inside)
     {
         T[thread - 1u] = (xIndex == 0u) ? T_aux : T_in[index - 1];
