@@ -42,9 +42,9 @@ void HeatFluxEstimationMemory::Evolution(Data &data_inout, Parameter &parameter_
     }
     else if (pointer.type == PointerType::GPU)
     {
-        HeatConduction::GPU::AllocWorkspaceEuler(workspace, problem.Lx * problem.Ly * problem.Lz, stream_in);
-        HeatConduction::GPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, problem, workspace, cublasHandle_in, stream_in);
-        HeatConduction::GPU::FreeWorkspaceEuler(workspace, stream_in);
+        HeatConduction::GPU::AllocWorkspaceRK4(workspace, problem.Lx * problem.Ly * problem.Lz, stream_in);
+        HeatConduction::GPU::RK4(T_inout.pointer, T_inout.pointer, Q_in.pointer, problem, workspace, cublasHandle_in, stream_in);
+        HeatConduction::GPU::FreeWorkspaceRK4(workspace, stream_in);
     }
 }
 
