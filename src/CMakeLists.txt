@@ -23,4 +23,4 @@ add_subdirectory(cuda)
 # Add the executable
 add_executable(${PROJECT_NAME} mainTest.cpp)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Structure Math Parser Timer UKF HeatFluxEstimation Graph)
+target_link_libraries(${PROJECT_NAME} PUBLIC Structure Math Parser Timer UKF HFE Graph)
