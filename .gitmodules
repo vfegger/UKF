@@ -1,0 +1,3 @@
+[submodule "temp"]
+	path = src/Parser
+	url = https://github.com/vfegger/Parser.git
