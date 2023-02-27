@@ -1,10 +1,10 @@
 #include "../include/HeatConductionRadiationCylinder.hpp"
 
-HeatConductionRadiationCylinder::HeatConductionRadiationCylinderProblem::HeatConductionRadiationCylinderProblem() : T0(0.0), Q0(0.0), amp(0.0), r0(0.0), Sr(0.0), Sth(0.0), Sz(0.0), St(0.0), Lr(0u), Lth(0u), Lz(0u), Lt(0u), dr(0.0), dth(0.0), dz(0.0), dt(0.0)
+HCRC::HCRCProblem::HCRCProblem() : T0(0.0), Q0(0.0), amp(0.0), r0(0.0), Sr(0.0), Sth(0.0), Sz(0.0), St(0.0), Lr(0u), Lth(0u), Lz(0u), Lt(0u), dr(0.0), dth(0.0), dz(0.0), dt(0.0)
 {
 }
 
-HeatConductionRadiationCylinder::HeatConductionRadiationCylinderProblem::HeatConductionRadiationCylinderProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in) : T0(T0_in), Q0(Q0_in), amp(amp_in), r0(r0_in), Sr(Sr_in), Sth(Sth_in), Sz(Sz_in), St(St_in), Lr(Lr_in), Lth(Lth_in), Lz(Lz_in), Lt(Lt_in), dr(Sr_in / Lr_in), dth(Sth_in / Lth_in), dz(Sz_in / Lz_in), dt(St_in / Lt_in)
+HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in) : T0(T0_in), Q0(Q0_in), amp(amp_in), r0(r0_in), Sr(Sr_in - r0_in), Sth(Sth_in), Sz(Sz_in), St(St_in), Lr(Lr_in), Lth(Lth_in), Lz(Lz_in), Lt(Lt_in), dr((Sr_in - r0_in) / Lr_in), dth(Sth_in / Lth_in), dz(Sz_in / Lz_in), dt(St_in / Lt_in)
 {
 }
 
@@ -15,38 +15,39 @@ inline unsigned Index(unsigned i, unsigned j, unsigned k, unsigned Lr, unsigned 
     return (std::clamp(k, 0u, Lz - 1) * Lth + (j % Lth)) * Lr + std::clamp(i, 0u, Lr - 1u);
 }
 
-inline unsigned Index(unsigned i, unsigned j, unsigned Lr, unsigned Lth)
+inline unsigned Index(unsigned j, unsigned k, unsigned Lth, unsigned Lz)
 {
-    return (j % Lth) * Lr + std::clamp(i, 0u, Lr);
+    return std::clamp(k, 0u, Lz - 1) * Lth + (j % Lth);
 }
 
-inline double HeatConductionRadiationCylinder::CPU::C(double T_in)
+inline double HCRC::CPU::C(double T_in)
 {
     return 1324.75 * T_in + 3557900.0;
 }
 
-inline double HeatConductionRadiationCylinder::CPU::K(double T_in)
+inline double HCRC::CPU::K(double T_in)
 {
     return (14e-3 + 2.517e-6 * T_in) * T_in + 12.45;
 }
 
-inline double HeatConductionRadiationCylinder::CPU::E(double T_in)
+inline double HCRC::CPU::E(double T_in)
 {
     return 0.5;
 }
 
-double HeatConductionRadiationCylinder::CPU::DifferentialK(double TN_in, double T_in, double TP_in, double delta_in, double coefN, double coefP)
+double HCRC::CPU::DifferentialK(const double T0_in, const double TP_in, const double delta_in, const double coef_in)
 {
-    double auxN = 2.0 * (K(TN_in) * K(T_in)) / (K(TN_in) + K(T_in)) * (TN_in - T_in) / delta_in;
-    double auxP = 2.0 * (K(TP_in) * K(T_in)) / (K(TP_in) + K(T_in)) * (TP_in - T_in) / delta_in;
-    return (coefN * auxN + coefP * auxP) / delta_in;
+    double K_mean = 2.0 * (K(TP_in) * K(T0_in)) / (K(TP_in) + K(T0_in));
+    double diff = (TP_in - T0_in) / delta_in;
+    return coef_in * K_mean * diff;
 }
 
-void HeatConductionRadiationCylinder::CPU::Differential(double *diff_out, const double *T_in, const double *Q_in, double amp, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
+void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double *Q_in, double amp, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
 {
     unsigned index, indexQ;
     double acc;
     double T0, TiN, TiP, TjN, TjP, TkN, TkP;
+    // Diffusion Surfaces
     for (unsigned k = 0u; k < Lz; k++)
     {
         for (unsigned j = 0u; j < Lth; j++)
@@ -62,26 +63,34 @@ void HeatConductionRadiationCylinder::CPU::Differential(double *diff_out, const 
                 TkN = T_in[Index(i, j, k - 1, Lr, Lth, Lz)];
                 TkP = T_in[Index(i, j, k + 1, Lr, Lth, Lz)];
                 acc = 0.0;
-                // X dependency
-                acc += DifferentialK(TiN, T0, TiP, dr, 1.0, 1.0);
-                // Y dependency
-                acc += DifferentialK(TjN, T0, TjP, dth, 1.0 / (r0 - (dr * Lr) / 2.0), 1.0 / (r0 + (dr * Lr) / 2.0));
+                // R dependency
+                double R_N = DifferentialK(T0, TiN, dr, (r0 + dr * i) * dth * dz);
+                double R_P = DifferentialK(T0, TiP, dr, (r0 + dr * (i + 1u)) * dth * dz);
+                acc += R_N + R_P;
+                // Th dependency
+                double Th_N = DifferentialK(T0, TjN, dth * (r0 + dr * i), dr * dz);
+                double Th_P = DifferentialK(T0, TjP, dth * (r0 + dr * (i + 1u)), dr * dz);
+                acc += Th_N + Th_P;
                 // Z dependency
-                acc += DifferentialK(TkN, T0, TkP, dz, 1.0, 1.0);
+                double Z_N = DifferentialK(T0, TkN, dz, dr * (r0 + dr * i) * dth);
+                double Z_P = DifferentialK(T0, TkP, dz, dr * (r0 + dr * (i + 1u)) * dth);
+                acc += Z_N + Z_P;
 
                 diff_out[index] = acc;
             }
         }
     }
-    for (unsigned j = 0u; j < Lth; j++)
+    // Influx Surfaces (Countour Region)
+    for (unsigned k = 0u; k < Lz; k++)
     {
-        for (unsigned i = 0u; i < Lr; i++)
+        for (unsigned j = 0u; j < Lth; j++)
         {
-            index = Index(i, j, Lz - 1u, Lr, Lth, Lz);
-            indexQ = Index(i, j, Lr, Lth);
-            diff_out[index] += (amp / dz) * E(T_in[index]) * Q_in[indexQ];
+            index = Index(Lr - 1u, j, k, Lr, Lth, Lz);
+            indexQ = Index(j, k, Lth, Lz);
+            diff_out[index] += amp * E(T_in[index]) * Q_in[indexQ] * (r0 + dr * Lr) * dth * dz;
         }
     }
+    // Calculation of the temporal derivative
     for (unsigned k = 0u; k < Lz; k++)
     {
         for (unsigned j = 0u; j < Lth; j++)
@@ -89,24 +98,26 @@ void HeatConductionRadiationCylinder::CPU::Differential(double *diff_out, const 
             for (unsigned i = 0u; i < Lr; i++)
             {
                 index = Index(i, j, Lz - 1u, Lr, Lth, Lz);
-                diff_out[index] /= C(T_in[index]);
+                double mR = r0 + dr * (i + 0.5);
+                double vol = dr * mR * dth * dz;
+                diff_out[index] /= vol * C(T_in[index]);
             }
         }
     }
 }
 
-void HeatConductionRadiationCylinder::CPU::AllocWorkspaceEuler(double *&workspace_out, unsigned length_in)
+void HCRC::CPU::AllocWorkspaceEuler(double *&workspace_out, unsigned length_in)
 {
     workspace_out = new double[length_in];
 }
 
-void HeatConductionRadiationCylinder::CPU::FreeWorkspaceEuler(double *&workspace_in)
+void HCRC::CPU::FreeWorkspaceEuler(double *&workspace_in)
 {
     delete[] workspace_in;
     workspace_in = NULL;
 }
 
-void HeatConductionRadiationCylinder::CPU::Euler(double *T_out, const double *T_in, const double *Q_in, HeatConductionRadiationCylinderProblem &problem_in, double *workspace)
+void HCRC::CPU::Euler(double *T_out, const double *T_in, const double *Q_in, HCRCProblem &problem_in, double *workspace)
 {
     unsigned L = problem_in.Lr * problem_in.Lth * problem_in.Lz;
     Differential(workspace, T_in, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
@@ -116,18 +127,18 @@ void HeatConductionRadiationCylinder::CPU::Euler(double *T_out, const double *T_
     }
 }
 
-void HeatConductionRadiationCylinder::CPU::AllocWorkspaceRK4(double *&workspace_out, unsigned length_in)
+void HCRC::CPU::AllocWorkspaceRK4(double *&workspace_out, unsigned length_in)
 {
     workspace_out = new double[5u * length_in];
 }
 
-void HeatConductionRadiationCylinder::CPU::FreeWorkspaceRK4(double *&workspace_in)
+void HCRC::CPU::FreeWorkspaceRK4(double *&workspace_in)
 {
     delete[] workspace_in;
     workspace_in = NULL;
 }
 
-void HeatConductionRadiationCylinder::CPU::RK4(double *T_out, const double *T_in, const double *Q_in, HeatConductionRadiationCylinderProblem &problem_in, double *workspace)
+void HCRC::CPU::RK4(double *T_out, const double *T_in, const double *Q_in, HCRCProblem &problem_in, double *workspace)
 {
     unsigned L = problem_in.Lr * problem_in.Lth * problem_in.Lz;
     double *k1, *k2, *k3, *k4;
@@ -163,7 +174,7 @@ void HeatConductionRadiationCylinder::CPU::RK4(double *T_out, const double *T_in
     }
 }
 
-void HeatConductionRadiationCylinder::CPU::SetFlux(double *Q_out, HeatConductionRadiationCylinderProblem &problem_in, unsigned t_in)
+void HCRC::CPU::SetFlux(double *Q_out, HCRCProblem &problem_in, unsigned t_in)
 {
     bool xCondition, yCondition;
     double dr, dth, Sr, Sth;
@@ -185,7 +196,7 @@ void HeatConductionRadiationCylinder::CPU::SetFlux(double *Q_out, HeatConduction
     }
 }
 
-void HeatConductionRadiationCylinder::CPU::AddError(double *T_out, double mean_in, double sigma_in, unsigned length)
+void HCRC::CPU::AddError(double *T_out, double mean_in, double sigma_in, unsigned length)
 {
     std::default_random_engine generator;
     std::normal_distribution<double> distribution(mean_in, sigma_in);
@@ -212,11 +223,11 @@ __device__ inline double E(double T_in)
     return 0.5;
 }
 
-__device__ inline double DifferentialK(double TN_in, double T_in, double TP_in, double delta_in, double coefN, double coefP)
+__device__ double DifferentialK(const double T0_in, const double TP_in, const double delta_in, const double coef_in)
 {
-    double auxN = 2.0 * (K(TN_in) * K(T_in)) / (K(TN_in) + K(T_in)) * (TN_in - T_in) / delta_in;
-    double auxP = 2.0 * (K(TP_in) * K(T_in)) / (K(TP_in) + K(T_in)) * (TP_in - T_in) / delta_in;
-    return (coefN * auxN + coefP * auxP) / delta_in;
+    double K_mean = 2.0 * (K(TP_in) * K(T0_in)) / (K(TP_in) + K(T0_in));
+    double diff = (TP_in - T0_in) / delta_in;
+    return coef_in * K_mean * diff;
 }
 
 __device__ inline unsigned clamp(unsigned i, unsigned min, unsigned max)
@@ -233,6 +244,11 @@ __device__ inline unsigned Index3D(unsigned i, unsigned j, unsigned k, unsigned 
 __device__ inline unsigned IndexThread(unsigned i, unsigned j, unsigned k, unsigned Li, unsigned Lj)
 {
     return (k * Lj + j) * Li + i;
+}
+
+__device__ inline unsigned Index2D(unsigned j, unsigned k, unsigned Lj, unsigned Lk)
+{
+    return clamp(k, 0u, Lk - 1u) * Lj + (j % Lj);
 }
 
 __global__ void DifferentialAxis(double *diff_out, const double *T_in, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
@@ -283,9 +299,12 @@ __global__ void DifferentialAxis(double *diff_out, const double *T_in, double r0
         T[thread + threadDimX * threadDimY] = T_in[Index3D(xIndex, yIndex, zIndex + 1u, Lr, Lth, Lz)];
     }
     __syncthreads();
-    diff_aux += DifferentialK(T[thread - 1u], T[thread], T[thread + 1u], dr, 1.0, 1.0);
-    diff_aux += DifferentialK(T[thread - threadDimX], T[thread], T[thread + threadDimX], dth, 1.0 / (r0 - (dr * Lr) / 2.0), 1.0 / (r0 + (dr * Lr) / 2.0));
-    diff_aux += DifferentialK(T[thread - threadDimX * threadDimY], T[thread], T[thread + threadDimX * threadDimY], dz, 1.0, 1.0);
+    diff_aux += DifferentialK(T[thread], T[thread - 1u], dr, (r0 + dr * xIndex) * dth * dz);
+    diff_aux += DifferentialK(T[thread], T[thread + 1u], dr, (r0 + dr * (xIndex + 1u)) * dth * dz);
+    diff_aux += DifferentialK(T[thread], T[thread - threadDimX], dth * (r0 + dr * xIndex), dr * dz);
+    diff_aux += DifferentialK(T[thread], T[thread + threadDimX], dth * (r0 + dr * (xIndex + 1u)), dr * dz);
+    diff_aux += DifferentialK(T[thread], T[thread - threadDimX * threadDimY], dz, dr * (r0 + dr * xIndex) * dth);
+    diff_aux += DifferentialK(T[thread], T[thread + threadDimX * threadDimY], dz, dr * (r0 + dr * (xIndex + 1u)) * dth);
 
     if (inside)
     {
@@ -293,7 +312,19 @@ __global__ void DifferentialAxis(double *diff_out, const double *T_in, double r0
     }
 }
 
-__global__ void TermalCapacity(double *diff_out, const double *T_in, unsigned Lr, unsigned Lth, unsigned Lz)
+__global__ void FluxContribution(double *diff_out, const double *T_in, const double *Q_in, double amp, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
+{
+    unsigned yIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned zIndex = blockIdx.y * blockDim.y + threadIdx.y;
+    unsigned index = Index3D(Lr - 1u, yIndex, zIndex, Lr, Lth, Lz);
+    unsigned indexQ = Index2D(yIndex, zIndex, Lth, Lz);
+    if (yIndex < Lth && zIndex < Lz)
+    {
+        diff_out[index] += amp * E(T_in[index]) * Q_in[indexQ] * (r0 + dr * Lr) * dth * dz;
+    }
+}
+
+__global__ void TermalCapacity(double *diff_out, const double *T_in, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
 {
     unsigned xIndex = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned yIndex = blockIdx.y * blockDim.y + threadIdx.y;
@@ -301,11 +332,13 @@ __global__ void TermalCapacity(double *diff_out, const double *T_in, unsigned Lr
     unsigned index = Index3D(xIndex, yIndex, zIndex, Lr, Lth, Lz);
     if (xIndex < Lr && yIndex < Lth && zIndex < Lz)
     {
-        diff_out[index] /= C(T_in[index]);
+        double mR = r0 + dr * (xIndex + 0.5);
+        double vol = dr * mR * dth * dz;
+        diff_out[index] /= vol * C(T_in[index]);
     }
 }
 
-void HeatConductionRadiationCylinder::GPU::Differential(double *diff_out, const double *T_in, const double *Q_in, double amp, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz, cublasHandle_t handle_in, cudaStream_t stream_in)
+void HCRC::GPU::Differential(double *diff_out, const double *T_in, const double *Q_in, double amp, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
     cublasSetStream(handle_in, stream_in);
     // Temperature Diffusion
@@ -314,38 +347,39 @@ void HeatConductionRadiationCylinder::GPU::Differential(double *diff_out, const 
     unsigned size = sizeof(double) * (T.x + 2u) * (T.y + 2u) * (T.z + 2u);
     DifferentialAxis<<<B, T, size, stream_in>>>(diff_out, T_in, r0, dr, dth, dz, Lr, Lth, Lz);
     // Flux Contribution
-    double alpha = amp / dz;
-    cublasDaxpy(handle_in, Lr * Lth, &alpha, Q_in, 1, diff_out + Lr * Lth * (Lz - 1u), 1);
+    dim3 Tq(16u, 16u);
+    dim3 Bq((Lth + T.y - 1u) / T.y, (Lz + T.z - 1u) / T.z);
+    FluxContribution<<<Bq, Tq, size, stream_in>>>(diff_out, T_in, Q_in, amp, r0, dr, dth, dz, Lr, Lth, Lz);
     // Thermal Capacity
-    TermalCapacity<<<B, T, size, stream_in>>>(diff_out, T_in, Lr, Lth, Lz);
+    TermalCapacity<<<B, T, size, stream_in>>>(diff_out, T_in, r0, dr, dth, dz, Lr, Lth, Lz);
 }
 
-void HeatConductionRadiationCylinder::GPU::AllocWorkspaceEuler(double *&workspace_out, unsigned length_in, cudaStream_t stream_in)
+void HCRC::GPU::AllocWorkspaceEuler(double *&workspace_out, unsigned length_in, cudaStream_t stream_in)
 {
     cudaMallocAsync(&workspace_out, sizeof(double) * length_in, stream_in);
 }
 
-void HeatConductionRadiationCylinder::GPU::FreeWorkspaceEuler(double *&workspace_out, cudaStream_t stream_in)
+void HCRC::GPU::FreeWorkspaceEuler(double *&workspace_out, cudaStream_t stream_in)
 {
     cudaFreeAsync(workspace_out, stream_in);
 }
 
-void HeatConductionRadiationCylinder::GPU::Euler(double *T_out, double *T_in, double *Q_in, HeatConductionRadiationCylinderProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in)
+void HCRC::GPU::Euler(double *T_out, double *T_in, double *Q_in, HCRCProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
     cublasDcopy(handle_in, problem_in.Lr * problem_in.Lth * problem_in.Lz, T_in, 1u, T_out, 1u);
-    Differential(workspace, T_in, Q_in, problem_in.amp, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+    Differential(workspace, T_in, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
     double alpha = problem_in.dt;
     cublasDaxpy(handle_in, problem_in.Lr * problem_in.Lth * problem_in.Lz, &alpha, workspace, 1u, T_out, 1u);
 }
-void HeatConductionRadiationCylinder::GPU::AllocWorkspaceRK4(double *&workspace_out, unsigned length_in, cudaStream_t stream_in)
+void HCRC::GPU::AllocWorkspaceRK4(double *&workspace_out, unsigned length_in, cudaStream_t stream_in)
 {
     cudaMallocAsync(&workspace_out, sizeof(double) * 5u * length_in, stream_in);
 }
-void HeatConductionRadiationCylinder::GPU::FreeWorkspaceRK4(double *&workspace_out, cudaStream_t stream_in)
+void HCRC::GPU::FreeWorkspaceRK4(double *&workspace_out, cudaStream_t stream_in)
 {
     cudaFreeAsync(workspace_out, stream_in);
 }
-void HeatConductionRadiationCylinder::GPU::RK4(double *T_out, double *T_in, double *Q_in, HeatConductionRadiationCylinderProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in)
+void HCRC::GPU::RK4(double *T_out, double *T_in, double *Q_in, HCRCProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
     cublasSetStream(handle_in, stream_in);
     double alpha;
@@ -359,22 +393,22 @@ void HeatConductionRadiationCylinder::GPU::RK4(double *T_out, double *T_in, doub
     k4 = k3 + L;
 
     cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
-    Differential(k1, aux, Q_in, problem_in.amp, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+    Differential(k1, aux, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
 
     cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
     alpha = 0.5 * problem_in.dt;
     cublasDaxpy(handle_in, L, &alpha, k1, 1u, aux, 1u);
-    Differential(k2, aux, Q_in, problem_in.amp, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+    Differential(k2, aux, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
 
     cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
     alpha = 0.5 * problem_in.dt;
     cublasDaxpy(handle_in, L, &alpha, k2, 1u, aux, 1u);
-    Differential(k3, aux, Q_in, problem_in.amp, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+    Differential(k3, aux, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
 
     cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
     alpha = 1.0 * problem_in.dt;
     cublasDaxpy(handle_in, L, &alpha, k3, 1u, aux, 1u);
-    Differential(k4, aux, Q_in, problem_in.amp, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+    Differential(k4, aux, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
 
     cublasDcopy(handle_in, L, T_in, 1u, T_out, 1u);
 
@@ -403,14 +437,14 @@ __global__ void SetFluxDevice(double *Q_out, double dr, double dth, double Sr, d
     }
 }
 
-void HeatConductionRadiationCylinder::GPU::SetFlux(double *Q_out, HeatConductionRadiationCylinderProblem &problem_in, unsigned t_in, cudaStream_t stream_in)
+void HCRC::GPU::SetFlux(double *Q_out, HCRCProblem &problem_in, unsigned t_in, cudaStream_t stream_in)
 {
     dim3 T(16u, 16u);
     dim3 B((problem_in.Lr + T.x - 1u) / T.x, (problem_in.Lth + T.y - 1u) / T.y);
     SetFluxDevice<<<B, T, 0, stream_in>>>(Q_out, problem_in.dr, problem_in.dth, problem_in.Sr, problem_in.Sth, problem_in.Lr, problem_in.Lth);
 }
 
-void HeatConductionRadiationCylinder::GPU::AddError(double *T_out, double mean_in, double sigma_in, unsigned length, cudaStream_t stream_in)
+void HCRC::GPU::AddError(double *T_out, double mean_in, double sigma_in, unsigned length, cudaStream_t stream_in)
 {
     Pointer<double> T = Pointer<double>(T_out, PointerType::GPU, PointerContext::GPU_Aware);
     Pointer<double> randomVector = Pointer<double>(PointerType::GPU, PointerContext::GPU_Aware);

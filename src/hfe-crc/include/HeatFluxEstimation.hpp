@@ -3,10 +3,10 @@
 
 #include "HeatFluxEstimationMemory.hpp"
 
-class HeatFluxEstimation
+class HFE_CRC
 {
 private:
-    Pointer<HeatFluxEstimationMemory> memory;
+    Pointer<HFE_CRCMemory> memory;
     Pointer<Parameter> parameter;
     Pointer<Data> input;
     Pointer<DataCovariance> inputCovariance;
@@ -15,13 +15,13 @@ private:
     Pointer<DataCovariance> measureNoise;
 
 public:
-    Pointer<HeatFluxEstimationMemory> GetMemory();
+    Pointer<HFE_CRCMemory> GetMemory();
 
-    HeatFluxEstimation(unsigned Lx, unsigned Ly, unsigned Lz, unsigned Lt, double Sx, double Sy, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, PointerType type_in, PointerContext context_in);
+    HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr, double Sth, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, PointerType type_in, PointerContext context_in);
 
-    void UpdateMeasure(Pointer<double> T_in, unsigned Lx, unsigned Ly, PointerType type_in, PointerContext context_in);
+    void UpdateMeasure(Pointer<double> T_in, PointerType type_in, PointerContext context_in);
 
-    ~HeatFluxEstimation();
+    ~HFE_CRC();
 };
 
 #endif

@@ -10,14 +10,14 @@ set(CMAKE_CUDA_ARCHITECTURES 61 86)
 project(UKF_1 VERSION 0.1)
 
 # Add Libraries
-add_subdirectory(structure)
-add_subdirectory(parser)
-add_subdirectory(ukf)
-add_subdirectory(math)
-add_subdirectory(timer)
-add_subdirectory(hfe)
-add_subdirectory(graph)
-add_subdirectory(cuda)
+add_subdirectory(src/structure)
+add_subdirectory(src/parser)
+add_subdirectory(src/ukf)
+add_subdirectory(src/math)
+add_subdirectory(src/timer)
+add_subdirectory(src/hfe)
+add_subdirectory(src/graph)
+add_subdirectory(src/cuda)
 
 
 # Add the executable

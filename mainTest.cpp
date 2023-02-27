@@ -1,12 +1,12 @@
 #include <iostream>
-#include "structure/include/Data.hpp"
-#include "structure/include/DataCovariance.hpp"
-#include "structure/include/Parameter.hpp"
-#include "parser/include/Parser.hpp"
-#include "ukf/include/UKF.hpp"
-#include "timer/include/Timer.hpp"
-#include "hfe/include/HeatFluxEstimation.hpp"
-#include "hfe/include/HeatFluxGenerator.hpp"
+#include "src/structure/include/Data.hpp"
+#include "src/structure/include/DataCovariance.hpp"
+#include "src/structure/include/Parameter.hpp"
+#include "src/parser/include/Parser.hpp"
+#include "src/ukf/include/UKF.hpp"
+#include "src/timer/include/Timer.hpp"
+#include "src/hfe/include/HeatFluxEstimation.hpp"
+#include "src/hfe/include/HeatFluxGenerator.hpp"
 #include <stdlib.h>
 #include <filesystem>
 
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
         MemoryHandler::CreateGPUContext(1u,1u,1u);
     }
 
-    std::string path_dir = std::filesystem::current_path();
+    std::string path_dir = std::filesystem::current_path().string();
     std::string path_text_in = path_dir + "/data/text/in/";
     std::string path_binary_in = path_dir + "/data/binary/in/";
 
