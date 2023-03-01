@@ -22,5 +22,6 @@ add_subdirectory(src/cuda)
 
 # Add the executable
 add_executable(${PROJECT_NAME} mainTest.cpp)
+add_executable(${PROJECT_NAME}_CRC mainTest.cpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Structure Math Parser Timer UKF HFE Graph)
