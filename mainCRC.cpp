@@ -119,8 +119,8 @@ int main(int argc, char **argv)
 {
     std::cout << "\nStart Execution\n\n";
 
-    unsigned Lx;
-    unsigned Ly;
+    unsigned Lr;
+    unsigned Lth;
     unsigned Lz;
     unsigned Lt;
 
@@ -129,8 +129,8 @@ int main(int argc, char **argv)
 
     if (argc == 1 + 4 + 2)
     {
-        Lx = (unsigned)std::stoi(argv[1u]);
-        Ly = (unsigned)std::stoi(argv[2u]);
+        Lr = (unsigned)std::stoi(argv[1u]);
+        Lth = (unsigned)std::stoi(argv[2u]);
         Lz = (unsigned)std::stoi(argv[3u]);
         Lt = (unsigned)std::stoi(argv[4u]);
         pointerType = (PointerType)std::stoi(argv[5u]);
@@ -154,9 +154,11 @@ int main(int argc, char **argv)
     std::string path_text_out = path_dir + "/data/text/out/";
     std::string path_binary_out = path_dir + "/data/binary/out/";
 
-    std::string name_size = "ParameterSize";
-    std::string name_heatProblem = "ParameterHeatProblem";
-    std::string name_UKFParm = "ParameterUKF";
+    std::string name_problem = "_CRC";
+
+    std::string name_size = "ParameterSize" + name_problem;
+    std::string name_heatProblem = "ParameterHeatProblem" + name_problem;
+    std::string name_UKFParm = "ParameterUKF" + name_problem;
 
     std::string extension_text = ".dat";
     std::string extension_binary = ".bin";
@@ -193,34 +195,40 @@ int main(int argc, char **argv)
 
     delete parser;
 
-    double Sx = S[0u];
-    double Sy = S[1u];
-    double Sz = S[2u];
-    double St = S[3u];
+    unsigned it;
 
-    double T0 = HPParm[0u];
-    double sT0 = HPParm[1u];
-    double sTm0 = HPParm[2u];
-    double Q0 = HPParm[3u];
-    double sQ0 = HPParm[4u];
-    double Amp = HPParm[5u];
-    double mean = HPParm[6u];
-    double sigma = HPParm[7u];
+    it = 0u;
+    double Sr = S[it++];
+    double Sth = S[it++];
+    double Sz = S[it++];
+    double St = S[it++];
 
-    double alpha = UKFParm[0u];
-    double beta = UKFParm[1u];
-    double kappa = UKFParm[2u];
+    it = 0u;
+    double T0 = HPParm[it++];
+    double sT0 = HPParm[it++];
+    double sTm0 = HPParm[it++];
+    double Q0 = HPParm[it++];
+    double sQ0 = HPParm[it++];
+    double Amp = HPParm[it++];
+    double r0 = HPParm[it++];
+    double mean = HPParm[it++];
+    double sigma = HPParm[it++];
+
+    it = 0u;
+    double alpha = UKFParm[it++];
+    double beta = UKFParm[it++];
+    double kappa = UKFParm[it++];
 
     delete[] S;
     delete[] HPParm;
     delete[] UKFParm;
 
-    std::cout << "\nRunning case with grid: (" << Lx << "," << Ly << "," << Lz << "," << Lt << ")\n\n";
+    std::cout << "\nRunning case with grid: (" << Lr << "," << Lth << "," << Lz << "," << Lt << ")\n\n";
 
     RunCase(path_binary_out, extension_binary,
-            Lx, Ly, Lz, Lt,
-            Sx, Sy, Sz, St,
-            T0, sT0, sTm0, Q0, sQ0, Amp, mean, sigma,
+            Lr, Lth, Lz, Lt,
+            Sr, Sth, Sz, St,
+            T0, sT0, sTm0, Q0, sQ0, Amp, r0, mean, sigma,
             alpha, beta, kappa,
             pointerType, pointerContext);
 
@@ -228,8 +236,8 @@ int main(int argc, char **argv)
 
     std::string name_type = (pointerType == PointerType::GPU) ? "_GPU" : "_CPU";
     std::string ok_name = path_text_out +
-                          "X" + std::to_string(Lx) +
-                          "Y" + std::to_string(Ly) +
+                          "R" + std::to_string(Lr) +
+                          "Th" + std::to_string(Lth) +
                           "Z" + std::to_string(Lz) +
                           "T" + std::to_string(Lt) +
                           name_type + ".ok";
