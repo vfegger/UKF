@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "C:/Users/Dragon/Desktop/TCC/Code/UKF",
+    "cmake.sourceDirectory": "${workspaceFolder}/.",
     "files.associations": {
         "iostream": "cpp",
         "array": "cpp",

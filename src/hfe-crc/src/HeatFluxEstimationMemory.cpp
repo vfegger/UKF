@@ -52,6 +52,69 @@ void HFE_CRCMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasH
 
 void HFE_CRCMemory::Observation(Data &data_in, Parameter &parameter_in, Data &data_out, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in)
 {
-    Pointer<unsigned> length = parameter_in.GetPointer<unsigned>(0u);
-    MemoryHandler::Copy(data_out[0u], data_in[0u], length.pointer[1u] * length.pointer[2u]);
+    // Observation should use the correct sensors and angle positions
+    unsigned Lr = parameter_in.GetPointer<unsigned>(0u).pointer[0u];
+    unsigned Lth = parameter_in.GetPointer<unsigned>(0u).pointer[1u];
+    unsigned Lz = parameter_in.GetPointer<unsigned>(0u).pointer[2u];
+    double Sr = parameter_in.GetPointer<double>(2u).pointer[0u];
+    double Sth = parameter_in.GetPointer<double>(2u).pointer[1u];
+    double Sz = parameter_in.GetPointer<double>(2u).pointer[2u];
+    double r0 = parameter_in.GetPointer<double>(3u).pointer[1u];
+    double pi = acos(-1.0);
+
+    // As the sensors are external of the object, the sensors are internal or external
+    double r_int = parameter_in.GetPointer<double>(3u).pointer[1u];
+    double r_ext = r_int + parameter_in.GetPointer<double>(1u).pointer[0u];
+    // Angle is fixed as the sensor is spatially locked
+    double th_1 = 3.0 * pi / 2.0;
+    double th_2 = pi;
+    // The sensors are in a given fixed position on the z axis
+    double z_1 = 0.0 * Sz;
+    double z_2 = 0.5 * Sz;
+    double z_3 = 1.0 * Sz;
+    // Project the positions on the grid
+    unsigned length = 6u;
+    unsigned *i = new unsigned[length];
+    unsigned *j = new unsigned[length];
+    unsigned *k = new unsigned[length];
+    unsigned it = 0u;
+    // Sensor - 1 - (r_int,th_1,z_1)
+    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = max((unsigned)(Lth * th_1 / Sth), Lth - 1u);
+    k[it] = max((unsigned)(Lz * z_1 / Sz), Lz - 1u);
+    it++;
+    // Sensor - 2 - (r_int,th_1,z_2)
+    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = max((unsigned)(Lth * th_1 / Sth), Lth - 1u);
+    k[it] = max((unsigned)(Lz * z_2 / Sz), Lz - 1u);
+    it++;
+    // Sensor - 3 - (r_int,th_1,z_3)
+    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = max((unsigned)(Lth * th_1 / Sth), Lth - 1u);
+    k[it] = max((unsigned)(Lz * z_3 / Sz), Lz - 1u);
+    it++;
+    // Sensor - 4 - (r_int,th_2,z_1)
+    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = max((unsigned)(Lth * th_2 / Sth), Lth - 1u);
+    k[it] = max((unsigned)(Lz * z_1 / Sz), Lz - 1u);
+    it++;
+    // Sensor - 5 - (r_int,th_2,z_2)
+    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = max((unsigned)(Lth * th_2 / Sth), Lth - 1u);
+    k[it] = max((unsigned)(Lz * z_2 / Sz), Lz - 1u);
+    it++;
+    // Sensor - 6 - (r_int,th_2,z_3)
+    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = max((unsigned)(Lth * th_2 / Sth), Lth - 1u);
+    k[it] = max((unsigned)(Lz * z_3 / Sz), Lz - 1u);
+    it++;
+
+    // Get indexes from (i,k,j)
+    unsigned *indexes = new unsigned[length];
+    for (unsigned l = 0u; l < length; l++)
+    {
+        indexes[l] = HCRC::GetIndex3D(i[l], j[l], k[l], Lr, Lth, Lz);
+    }
+
+    MemoryHandler::Copy(data_out[0u], data_in[0u], HCRC_Measures);
 }
