@@ -109,12 +109,15 @@ void HFE_CRCMemory::Observation(Data &data_in, Parameter &parameter_in, Data &da
     k[it] = max((unsigned)(Lz * z_3 / Sz), Lz - 1u);
     it++;
 
-    // Get indexes from (i,k,j)
-    unsigned *indexes = new unsigned[length];
-    for (unsigned l = 0u; l < length; l++)
+    Pointer<double> pointer = data_inout.GetPointer();
+    Pointer<double> T_in = data_in[0u];
+    Pointer<double> T_out = data_out[0u];
+    if (pointer.type == PointerType::CPU)
     {
-        indexes[l] = HCRC::GetIndex3D(i[l], j[l], k[l], Lr, Lth, Lz);
+        HCRC::CPU::SelectTemperatures(T_out.pointer,T_in.pointer,i,j,k,it,Lr,Lth,Lz);
     }
-
-    MemoryHandler::Copy(data_out[0u], data_in[0u], HCRC_Measures);
+    else if (pointer.type == PointerType::GPU)
+    {
+        HCRC::GPU::SelectTemperatures(T_out.pointer,T_in.pointer,i,j,k,it,Lr,Lth,Lz);
+    }
 }

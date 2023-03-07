@@ -206,6 +206,14 @@ void HCRC::CPU::AddError(double *T_out, double mean_in, double sigma_in, unsigne
     }
 }
 
+void HCRC::CPU::SelectTemperatures(double *T_out, double *T_in, unsigned *indexR_in, unsigned *indexTh_in, unsigned *indexZ_in, unsigned length_in, unsigned Lr, unsigned Lth, unsigned Lz)
+{
+    for (unsigned i = 0u; i < length_in; i++)
+    {
+        T_out[i] = T_in[Index3D(indexR_in[i], indexTh_in[i], indexZ_in[i], Lr, Lth, Lz)];
+    }
+}
+
 // GPU Section
 
 __device__ inline double C(double T_in)
@@ -479,4 +487,12 @@ void HCRC::GPU::AddError(double *T_out, double mean_in, double sigma_in, unsigne
     MathGPU::Add(T, randomVector, length, stream_in);
     cudaStreamSynchronize(stream_in);
     cudaFree(randomVector.pointer);
+}
+
+void HCRC::GPU::SelectTemperatures(double *T_out, double *T_in, unsigned *indexR_in, unsigned *indexTh_in, unsigned *indexZ_in, unsigned length_in, unsigned Lr, unsigned Lth, unsigned Lz)
+{
+    for (unsigned i = 0u; i < length_in; i++)
+    {
+        cudaMemcpy(T_out+i,T_in+Index3D(indexR_in[i], indexTh_in[i], indexZ_in[i], Lr, Lth, Lz),sizeof(double),cudaMemcpyDeviceToDevice);
+    }
 }
