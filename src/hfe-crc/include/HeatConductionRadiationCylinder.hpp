@@ -44,6 +44,8 @@ namespace HCRC
 
         void SetFlux(double *Q_out, HCRCProblem &problem_in, unsigned t_in);
         void AddError(double *T_out, double mean_in, double sigma_in, unsigned length);
+
+        void Sensors(HCRCProblem &problem_in);
     }
 
     namespace GPU
@@ -58,6 +60,8 @@ namespace HCRC
 
         void SetFlux(double *Q_out, HCRCProblem &problem_in, unsigned t_in, cudaStream_t stream_in = cudaStreamDefault);
         void AddError(double *T_out, double mean_in, double sigma_in, unsigned length, cudaStream_t stream_in = cudaStreamDefault);
+
+        void Sensors();
     }
 }
 
