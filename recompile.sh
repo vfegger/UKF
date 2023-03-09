@@ -71,6 +71,11 @@ LY_REF=24
 LZ_REF=6
 LT_REF=100
 
+LX_DEB=12
+LY_DEB=12
+LZ_DEB=3
+LT_DEB=2
+
 LX_LOWER=8
 LX_UPPER=32
 LX_STRIDE=4
@@ -87,12 +92,13 @@ LT_LOWER=50
 LT_UPPER=150
 LT_STRIDE=10
 
+if [ "$DEBUG" = "-d" ] || [ "$DEBUG" = "-debug" ] || [ "$DEBUG" = "-DEBUG" ] || [ "$DEBUG" = "-Debug" ];
+then
+    valgrind $MEMORY_CHECK_OPTIONS $BUILD_PATH/UKF_1 $LX_DEB $LY_DEB $LZ_DEB $LT_DEB 0 0
+fi
+
 if [ "$RUN_CPU" = "-CPU" ]; 
 then
-    if [ "$DEBUG" = "-d" ] || [ "$DEBUG" = "-debug" ] || [ "$DEBUG" = "-DEBUG" ] || [ "$DEBUG" = "-Debug" ];
-    then
-        valgrind $MEMORY_CHECK_OPTIONS $BUILD_PATH/UKF_1 $LX_REF $LY_REF $LZ_REF $LT_REF 0 0
-    fi
     for i in $(seq $LX_LOWER $LX_STRIDE $LX_UPPER); do
         FILE_OK=$DATA_PATH/text/out/X${i}Y${LY_REF}Z${LZ_REF}T${LT_REF}_CPU.ok
         if [ ! -f "$FILE_OK" ]; then

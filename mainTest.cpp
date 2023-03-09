@@ -17,7 +17,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
             double alpha, double beta, double kappa,
             PointerType type_in, PointerContext context_in)
 {
-    std::cout << std::cout.precision(3);
+    std::cout << std::setprecision(3);
     Pointer<Parser> parser = MemoryHandler::AllocValue<Parser, unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
     unsigned indexTimer;
     unsigned indexTemperature;
