@@ -79,44 +79,45 @@ void HFE_CRCMemory::Observation(Data &data_in, Parameter &parameter_in, Data &da
     unsigned *k = new unsigned[length];
     unsigned it = 0u;
     // Sensor - 1 - (r_int,th_1,z_1)
-    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
-    j[it] = max((unsigned)(Lth * th_1 / Sth), Lth - 1u);
-    k[it] = max((unsigned)(Lz * z_1 / Sz), Lz - 1u);
+    i[it] = std::max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = std::max((unsigned)(Lth * th_1 / Sth), Lth - 1u);
+    k[it] = std::max((unsigned)(Lz * z_1 / Sz), Lz - 1u);
     it++;
     // Sensor - 2 - (r_int,th_1,z_2)
-    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
-    j[it] = max((unsigned)(Lth * th_1 / Sth), Lth - 1u);
-    k[it] = max((unsigned)(Lz * z_2 / Sz), Lz - 1u);
+    i[it] = std::max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = std::max((unsigned)(Lth * th_1 / Sth), Lth - 1u);
+    k[it] = std::max((unsigned)(Lz * z_2 / Sz), Lz - 1u);
     it++;
     // Sensor - 3 - (r_int,th_1,z_3)
-    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
-    j[it] = max((unsigned)(Lth * th_1 / Sth), Lth - 1u);
-    k[it] = max((unsigned)(Lz * z_3 / Sz), Lz - 1u);
+    i[it] = std::max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = std::max((unsigned)(Lth * th_1 / Sth), Lth - 1u);
+    k[it] = std::max((unsigned)(Lz * z_3 / Sz), Lz - 1u);
     it++;
     // Sensor - 4 - (r_int,th_2,z_1)
-    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
-    j[it] = max((unsigned)(Lth * th_2 / Sth), Lth - 1u);
-    k[it] = max((unsigned)(Lz * z_1 / Sz), Lz - 1u);
+    i[it] = std::max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = std::max((unsigned)(Lth * th_2 / Sth), Lth - 1u);
+    k[it] = std::max((unsigned)(Lz * z_1 / Sz), Lz - 1u);
     it++;
     // Sensor - 5 - (r_int,th_2,z_2)
-    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
-    j[it] = max((unsigned)(Lth * th_2 / Sth), Lth - 1u);
-    k[it] = max((unsigned)(Lz * z_2 / Sz), Lz - 1u);
+    i[it] = std::max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = std::max((unsigned)(Lth * th_2 / Sth), Lth - 1u);
+    k[it] = std::max((unsigned)(Lz * z_2 / Sz), Lz - 1u);
     it++;
     // Sensor - 6 - (r_int,th_2,z_3)
-    i[it] = max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
-    j[it] = max((unsigned)(Lth * th_2 / Sth), Lth - 1u);
-    k[it] = max((unsigned)(Lz * z_3 / Sz), Lz - 1u);
+    i[it] = std::max((unsigned)(Lr * (r_int - r0) / Sr), Lr - 1u);
+    j[it] = std::max((unsigned)(Lth * th_2 / Sth), Lth - 1u);
+    k[it] = std::max((unsigned)(Lz * z_3 / Sz), Lz - 1u);
     it++;
 
-    Pointer<double> pointer = data_inout.GetPointer();
+    Pointer<double> pointer_in = data_in.GetPointer();
+    Pointer<double> pointer_out = data_out.GetPointer();
     Pointer<double> T_in = data_in[0u];
     Pointer<double> T_out = data_out[0u];
-    if (pointer.type == PointerType::CPU)
+    if (pointer_in.type == PointerType::CPU && pointer_out.type == PointerType::CPU)
     {
         HCRC::CPU::SelectTemperatures(T_out.pointer,T_in.pointer,i,j,k,it,Lr,Lth,Lz);
     }
-    else if (pointer.type == PointerType::GPU)
+    else if (pointer_in.type == PointerType::GPU && pointer_out.type == PointerType::GPU)
     {
         HCRC::GPU::SelectTemperatures(T_out.pointer,T_in.pointer,i,j,k,it,Lr,Lth,Lz);
     }
