@@ -1,4 +1,4 @@
-#include "Gnuplot.hpp"
+#include "../include/Gnuplot.hpp"
 
 void GnuplotParser::ImportConfigurationGnuplot(std::ifstream &file_in, std::string &name_out, unsigned &length_out, ParserType &type_out, unsigned &iteration_out)
 {

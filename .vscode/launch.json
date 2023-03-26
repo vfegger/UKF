@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceRoot}/build-debug/UKF_1",
-            "args": ["8", "8", "3", "2", "0", "0"],
+            "args": ["8", "8", "3", "50", "1", "1"],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
             "environment": [],
