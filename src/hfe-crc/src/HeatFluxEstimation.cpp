@@ -5,7 +5,7 @@ Pointer<HFE_CRCMemory> HFE_CRC::GetMemory()
     return memory;
 }
 
-HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr, double Sth, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, double Amp, double r0, PointerType type_in, PointerContext context_in)
+HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr, double Sth, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, double Tamb0, double sTamb0, double Amp, double r0, double h, PointerType type_in, PointerContext context_in)
 {
     std::cout << "Parameter Initialization\n";
     parameter = MemoryHandler::AllocValue<Parameter, unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
@@ -31,36 +31,47 @@ HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr,
     S.pointer[2u] = Sz;
     S.pointer[3u] = St;
     Pointer<double> P = MemoryHandler::Alloc<double>(2u, PointerType::CPU, PointerContext::CPU_Only);
-    P.pointer[0u] = Amp;   // Amp
-    P.pointer[1u] = r0; // Radius
+    P.pointer[0u] = Amp; // Amp
+    P.pointer[1u] = r0;  // Radius
+    P.pointer[1u] = h;   // Heat Convection Coefficient
 
     parameter.pointer[0u].LoadData(indexL, L, 4u);
     parameter.pointer[0u].LoadData(indexD, D, 4u);
     parameter.pointer[0u].LoadData(indexS, S, 4u);
-    parameter.pointer[0u].LoadData(indexP, P, 2u);
+    parameter.pointer[0u].LoadData(indexP, P, 3u);
     std::cout << "Input Initialization\n";
-    input = MemoryHandler::AllocValue<Data, unsigned>(2u, PointerType::CPU, PointerContext::CPU_Only);
-    unsigned indexT, indexQ;
+    input = MemoryHandler::AllocValue<Data, unsigned>(3u, PointerType::CPU, PointerContext::CPU_Only);
+    unsigned indexT, indexQ, indexTamb;
     indexT = input.pointer[0u].Add("Temperature", Lr * Lth * Lz);
     indexQ = input.pointer[0u].Add("Heat Flux", Lth * Lz);
+    indexTamb = input.pointer[0u].Add("Temperature Ambient", 1u);
     input.pointer[0u].Initialize(type_in, context_in);
     Pointer<double> T = MemoryHandler::Alloc<double>(Lr * Lth * Lz, type_in, context_in);
     Pointer<double> sigmaT = MemoryHandler::Alloc<double>(Lr * Lth * Lz, type_in, context_in);
     Pointer<double> Q = MemoryHandler::Alloc<double>(Lth * Lz, type_in, context_in);
     Pointer<double> sigmaQ = MemoryHandler::Alloc<double>(Lth * Lz, type_in, context_in);
-    MemoryHandler::Set<double>(T, T0, 0, Lr * Lth * Lz);
-    MemoryHandler::Set<double>(sigmaT, sT0, 0, Lr * Lth * Lz);
-    MemoryHandler::Set<double>(Q, Q0, 0, Lth * Lz);
-    MemoryHandler::Set<double>(sigmaQ, sQ0, 0, Lth * Lz);
+    Pointer<double> Tamb = MemoryHandler::Alloc<double>(1u, type_in, context_in);
+    Pointer<double> sigmaTamb = MemoryHandler::Alloc<double>(1u, type_in, context_in);
+    MemoryHandler::Set<double>(T, T0, 0u, Lr * Lth * Lz);
+    MemoryHandler::Set<double>(sigmaT, sT0, 0u, Lr * Lth * Lz);
+    MemoryHandler::Set<double>(Q, Q0, 0u, Lth * Lz);
+    MemoryHandler::Set<double>(sigmaQ, sQ0, 0u, Lth * Lz);
+    MemoryHandler::Set<double>(Tamb, Tamb0, 0u, 1u);
+    MemoryHandler::Set<double>(sigmaTamb, sTamb0, 0u, 1u);
     input.pointer[0u].LoadData(indexT, T, Lr * Lth * Lz);
     input.pointer[0u].LoadData(indexQ, Q, Lth * Lz);
+    input.pointer[0u].LoadData(indexTamb, Tamb, 1u);
     inputCovariance = MemoryHandler::AllocValue<DataCovariance, Data>(input.pointer[0], PointerType::CPU, PointerContext::CPU_Only);
     inputNoise = MemoryHandler::AllocValue<DataCovariance, Data>(input.pointer[0], PointerType::CPU, PointerContext::CPU_Only);
     inputCovariance.pointer[0].LoadData(indexT, sigmaT, Lr * Lth * Lz, DataCovarianceMode::Compact);
     inputCovariance.pointer[0].LoadData(indexQ, sigmaQ, Lth * Lz, DataCovarianceMode::Compact);
+    inputCovariance.pointer[0].LoadData(indexTamb, sigmaTamb, 1u, DataCovarianceMode::Compact);
     inputNoise.pointer[0].LoadData(indexT, sigmaT, Lr * Lth * Lz, DataCovarianceMode::Compact);
     inputNoise.pointer[0].LoadData(indexQ, sigmaQ, Lth * Lz, DataCovarianceMode::Compact);
+    inputNoise.pointer[0].LoadData(indexTamb, sigmaTamb, 1u, DataCovarianceMode::Compact);
 
+    MemoryHandler::Free<double>(sigmaTamb);
+    MemoryHandler::Free<double>(Tamb);
     MemoryHandler::Free<double>(sigmaQ);
     MemoryHandler::Free<double>(Q);
     MemoryHandler::Free<double>(sigmaT);

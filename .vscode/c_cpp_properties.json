@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${CUDA_PATH}/**"
+                "${env:CUDA_PATH}/**"
             ],
             "defines": [
                 "_DEBUG",

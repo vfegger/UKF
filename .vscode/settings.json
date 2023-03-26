@@ -95,6 +95,8 @@
         "xmemory": "cpp",
         "xstddef": "cpp",
         "xtr1common": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "ranges": "cpp",
+        "span": "cpp"
     }
 }

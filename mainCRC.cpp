@@ -10,16 +10,37 @@
 #include <stdlib.h>
 #include <filesystem>
 
-int RunCase(std::string &path_binary, std::string &extension_binary,
+int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::string &extension_binary,
             unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt,
             double Sr, double Sth, double Sz, double St,
             double T0, double sT0, double sTm0, double Q0, double sQ0,
             double Amp, double r0, double mean, double sigma,
             double alpha, double beta, double kappa,
+            unsigned projectCase,
             PointerType type_in, PointerContext context_in)
 {
     std::cout << std::cout.precision(3);
-    Pointer<Parser> parser = MemoryHandler::AllocValue<Parser, unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
+
+    Pointer<Parser> parser = MemoryHandler::AllocValue<Parser, unsigned>(5u, PointerType::CPU, PointerContext::CPU_Only);
+
+    // Input Treatment
+    void *pointer = NULL;
+    std::string name;
+    unsigned length;
+    ParserType type;
+    unsigned iteration;
+    std::string name_temperature_measured_input = "Temp" + std::to_string(projectCase);
+    unsigned indexTemperatureMeasuredInput = parser.pointer[0u].OpenFileIn(path_binary_in, name_temperature_measured_input, extension_binary, std::ios::binary);
+    Parser::ImportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasuredInput), name, length, type, iteration);
+    if(length != HCRC_Measures_Total) {
+        std::cout << "Error: Input data do not match the expected size.\n";
+        return;
+    }
+    if(Lt >= iteration){
+        Lt = iteration;
+    }
+
+    // Output Treatment
     unsigned indexTimer;
     unsigned indexTemperature;
     unsigned indexTemperatureMeasured;
@@ -36,52 +57,73 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     std::string name_heatFlux = "HeatFlux";
     std::string name_type = (type_in == PointerType::CPU) ? "_CPU" : "_GPU";
 
-    std::string name_timer_aux = name_timer + "R" + std::to_string(Lr) + "Th" + std::to_string(Lth) + "Z" + std::to_string(Lz) + "T" + std::to_string(Lt) + name_type;
-    std::string name_temperature_aux = name_temperature + "R" + std::to_string(Lr) + "Th" + std::to_string(Lth) + "Z" + std::to_string(Lz) + "T" + std::to_string(Lt) + name_type;
-    std::string name_temperature_measured_aux = name_temperature_measured + "R" + std::to_string(Lr) + "Th" + std::to_string(Lth) + "Z" + std::to_string(Lz) + "T" + std::to_string(Lt) + name_type;
-    std::string name_heatFlux_aux = name_heatFlux + "R" + std::to_string(Lr) + "Th" + std::to_string(Lth) + "Z" + std::to_string(Lz) + "T" + std::to_string(Lt) + name_type;
+    std::string name_case = "R" + std::to_string(Lr) + "Th" + std::to_string(Lth) + "Z" + std::to_string(Lz) + "T" + std::to_string(Lt) + "C" + std::to_string(projectCase);
 
-    indexTimer = parser.pointer[0u].OpenFileOut(path_binary, name_timer_aux, extension_binary, std::ios::binary);
-    indexTemperature = parser.pointer[0u].OpenFileOut(path_binary, name_temperature_aux, extension_binary, std::ios::binary);
-    indexTemperatureMeasured = parser.pointer[0u].OpenFileOut(path_binary, name_temperature_measured_aux, extension_binary, std::ios::binary);
-    indexHeatFlux = parser.pointer[0u].OpenFileOut(path_binary, name_heatFlux_aux, extension_binary, std::ios::binary);
+    std::string name_timer_aux = name_timer + name_case + name_type;
+    std::string name_temperature_aux = name_temperature + name_case + name_type;
+    std::string name_temperature_measured_aux = name_temperature_measured + name_case + name_type;
+    std::string name_heatFlux_aux = name_heatFlux + name_case + name_type;
+
+    indexTimer = parser.pointer[0u].OpenFileOut(path_binary_out, name_timer_aux, extension_binary, std::ios::binary);
+    indexTemperature = parser.pointer[0u].OpenFileOut(path_binary_out, name_temperature_aux, extension_binary, std::ios::binary);
+    indexTemperatureMeasured = parser.pointer[0u].OpenFileOut(path_binary_out, name_temperature_measured_aux, extension_binary, std::ios::binary);
+    indexHeatFlux = parser.pointer[0u].OpenFileOut(path_binary_out, name_heatFlux_aux, extension_binary, std::ios::binary);
 
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexTimer), "Timer", UKF_TIMER + 1, ParserType::Double, positionTimer);
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexTemperature), "Temperature", Lr * Lth * Lz, ParserType::Double, positionTemperature);
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), "Temperature Measured", HCRC_Measures, ParserType::Double, positionTemperatureMeasured);
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexHeatFlux), "Heat Flux", Lth * Lz, ParserType::Double, positionHeatFlux);
 
+    // Artificial Generation
     HFG_CRC generator(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Amp, r0, type_in, context_in);
     generator.Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
 
+    Pointer<double> temperatureMeasured_generator = generator.GetTemperature(0u);
+    Pointer<double> temperatureMeasured_parser;
+    if (type_in == PointerType::GPU)
+    {
+        temperatureMeasured_parser = MemoryHandler::Alloc<double>(HCRC_Measures, PointerType::CPU, PointerContext::CPU_Only);
+    }
+    for(unsigned i = 0u; i <= Lt; i++){
+        if (type_in == PointerType::GPU)
+        {
+            MemoryHandler::Copy(temperatureMeasured_parser, generator.GetTemperature(i), HCRC_Measures);
+            cudaDeviceSynchronize();
+        }
+        Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), HCRC_Measures, ParserType::Double, generator.GetTemperature(i).pointer, positionTemperatureMeasured, i);
+    }
+    if (type_in == PointerType::GPU)
+    {
+        cudaDeviceSynchronize();
+        MemoryHandler::Free(temperatureMeasured_parser);
+    }
+
+    // Problem Definition
     HFE_CRC problem(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, sT0, sTm0, Q0, sQ0, Amp, r0, type_in, context_in);
 
     problem.UpdateMeasure(generator.GetTemperature(0u), type_in, context_in);
 
+    // UKF Setup
     UKF ukf(Pointer<UKFMemory>(problem.GetMemory().pointer, problem.GetMemory().type, problem.GetMemory().context), alpha, beta, kappa);
 
+    // Timer Setup
     Pointer<Timer> timer = MemoryHandler::AllocValue<Timer, unsigned>(UKF_TIMER + 1u, PointerType::CPU, PointerContext::CPU_Only);
     double *timer_pointer = timer.pointer[0u].GetValues();
 
     Pointer<double> temperature_out = problem.GetMemory().pointer[0u].GetState().pointer[0u].GetPointer();
     Pointer<double> heatFlux_out = Pointer<double>(temperature_out.pointer + Lr * Lth * Lz, temperature_out.type, temperature_out.context);
-    Pointer<double> temperatureMeasured_out = problem.GetMemory().pointer[0u].GetMeasure().pointer[0u].GetPointer();
 
-    Pointer<double> temperature_parser, heatFlux_parser, temperatureMeasured_parser;
+    Pointer<double> temperature_parser, heatFlux_parser;
     if (type_in == PointerType::GPU)
     {
         temperature_parser = MemoryHandler::Alloc<double>(Lr * Lth * Lz, PointerType::CPU, PointerContext::CPU_Only);
         heatFlux_parser = MemoryHandler::Alloc<double>(Lth * Lz, PointerType::CPU, PointerContext::CPU_Only);
-        temperatureMeasured_parser = MemoryHandler::Alloc<double>(HCRC_Measures, PointerType::CPU, PointerContext::CPU_Only);
-        MemoryHandler::Copy(temperatureMeasured_parser, temperatureMeasured_out, HCRC_Measures);
     }
     else
     {
         temperature_parser = temperature_out;
         heatFlux_parser = heatFlux_out;
-        temperatureMeasured_parser = temperatureMeasured_out;
     }
-    Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), HCRC_Measures, ParserType::Double, temperatureMeasured_parser.pointer, positionTemperatureMeasured, 0u);
     for (unsigned i = 1u; i <= Lt; i++)
     {
         std::cout << "Iteration " << i << ":\n";
@@ -92,7 +134,6 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
         {
             MemoryHandler::Copy(temperature_parser, temperature_out, Lr * Lth * Lz);
             MemoryHandler::Copy(heatFlux_parser, heatFlux_out, Lth * Lz);
-            MemoryHandler::Copy(temperatureMeasured_parser, temperatureMeasured_out, HCRC_Measures);
             cudaDeviceSynchronize();
         }
 
@@ -101,7 +142,6 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
         timer.pointer[0u].Save();
         timer.pointer[0u].SetValues();
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTimer), UKF_TIMER + 1, ParserType::Double, timer_pointer, positionTimer, i - 1u);
-        Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), HCRC_Measures, ParserType::Double, temperatureMeasured_parser.pointer, positionTemperatureMeasured, i);
     }
 
     MemoryHandler::Free<Parser>(parser);
@@ -110,7 +150,6 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     {
         MemoryHandler::Free(temperature_parser);
         MemoryHandler::Free(heatFlux_parser);
-        MemoryHandler::Free(temperatureMeasured_parser);
     }
     return 0;
 }
@@ -127,7 +166,9 @@ int main(int argc, char **argv)
     PointerType pointerType;
     PointerContext pointerContext;
 
-    if (argc == 1 + 4 + 2)
+    unsigned projectCase;
+
+    if (argc == 1 + 4 + 2 + 1)
     {
         Lr = (unsigned)std::stoi(argv[1u]);
         Lth = (unsigned)std::stoi(argv[2u]);
@@ -135,6 +176,7 @@ int main(int argc, char **argv)
         Lt = (unsigned)std::stoi(argv[4u]);
         pointerType = (PointerType)std::stoi(argv[5u]);
         pointerContext = (PointerContext)std::stoi(argv[6u]);
+        projectCase = (PointerContext)std::stoi(argv[7u]);
     }
     else
     {
@@ -170,7 +212,7 @@ int main(int argc, char **argv)
     unsigned indexSize = parser->OpenFileIn(path_binary_in, name_size, extension_binary, std::ios::binary);
     unsigned indexHPParm = parser->OpenFileIn(path_binary_in, name_heatProblem, extension_binary, std::ios::binary);
     unsigned indexUKFParm = parser->OpenFileIn(path_binary_in, name_UKFParm, extension_binary, std::ios::binary);
-
+   
     double *S = NULL;
     double *HPParm = NULL;
     double *UKFParm = NULL;
@@ -225,11 +267,12 @@ int main(int argc, char **argv)
 
     std::cout << "\nRunning case with grid: (" << Lr << "," << Lth << "," << Lz << "," << Lt << ")\n\n";
 
-    RunCase(path_binary_out, extension_binary,
+    RunCase(path_binary_in, path_binary_out, extension_binary,
             Lr, Lth, Lz, Lt,
             Sr, Sth, Sz, St,
             T0, sT0, sTm0, Q0, sQ0, Amp, r0, mean, sigma,
             alpha, beta, kappa,
+            projectCase,
             pointerType, pointerContext);
 
     Parser::ConvertToText(path_binary_out, path_text_out, extension_text);
@@ -240,6 +283,7 @@ int main(int argc, char **argv)
                           "Th" + std::to_string(Lth) +
                           "Z" + std::to_string(Lz) +
                           "T" + std::to_string(Lt) +
+                          "C" + std::to_string(projectCase) +
                           name_type + ".ok";
     std::ofstream ok_file(ok_name);
     ok_file.close();

@@ -173,7 +173,7 @@ void MathCPU::MatrixMultiplication(double alpha,
     double auxAlpha = 0.0;
     double auxBeta = 0.0;
     double *aux = pC;
-    unsigned i, j, k;
+    int i, j, k;
     if (matrixOutStructure_in == MatrixStructure_Transposed && beta != 0.0)
     {
         aux = new double[M * N];

@@ -1,10 +1,10 @@
 #include "../include/HeatConductionRadiationCylinder.hpp"
 
-HCRC::HCRCProblem::HCRCProblem() : T0(0.0), Q0(0.0), amp(0.0), r0(0.0), Sr(0.0), Sth(0.0), Sz(0.0), St(0.0), Lr(0u), Lth(0u), Lz(0u), Lt(0u), dr(0.0), dth(0.0), dz(0.0), dt(0.0)
+HCRC::HCRCProblem::HCRCProblem() : T0(0.0), Q0(0.0), amp(0.0), r0(0.0), h(0.0), Sr(0.0), Sth(0.0), Sz(0.0), St(0.0), Lr(0u), Lth(0u), Lz(0u), Lt(0u), dr(0.0), dth(0.0), dz(0.0), dt(0.0)
 {
 }
 
-HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in) : T0(T0_in), Q0(Q0_in), amp(amp_in), r0(r0_in), Sr(Sr_in - r0_in), Sth(Sth_in), Sz(Sz_in), St(St_in), Lr(Lr_in), Lth(Lth_in), Lz(Lz_in), Lt(Lt_in), dr((Sr_in - r0_in) / Lr_in), dth(Sth_in / Lth_in), dz(Sz_in / Lz_in), dt(St_in / Lt_in)
+HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double h_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in) : T0(T0_in), Q0(Q0_in), amp(amp_in), r0(r0_in), h(h_in), Sr(Sr_in - r0_in), Sth(Sth_in), Sz(Sz_in), St(St_in), Lr(Lr_in), Lth(Lth_in), Lz(Lz_in), Lt(Lt_in), dr((Sr_in - r0_in) / Lr_in), dth(Sth_in / Lth_in), dz(Sz_in / Lz_in), dt(St_in / Lt_in)
 {
 }
 
@@ -42,7 +42,7 @@ double HCRC::CPU::DifferentialK(const double T0_in, const double TP_in, const do
     return coef_in * K_mean * diff;
 }
 
-void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double *Q_in, double amp, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
+void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double *Q_in, const double *T_amb, double amp, double r0, double h, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
 {
     unsigned index, indexQ;
     double acc;
@@ -85,6 +85,24 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
     {
         for (unsigned j = 0u; j < Lth; j++)
         {
+            index = Index(0u, j, k, Lr, Lth, Lz);
+            indexQ = Index(j, k, Lth, Lz);
+            diff_out[index] += h * (T_amb[0u] - T_in[index]) * r0 * dth * dz;
+        }
+    }
+    for (unsigned k = 0u; k < Lz; k++)
+    {
+        for (unsigned j = 0u; j < Lth; j++)
+        {
+            index = Index(Lr - 1u, j, k, Lr, Lth, Lz);
+            indexQ = Index(j, k, Lth, Lz);
+            diff_out[index] += h * (T_amb[0u] - T_in[index]) * (r0 + dr * Lr) * dth * dz;
+        }
+    }
+    for (unsigned k = 0u; k < Lz; k++)
+    {
+        for (unsigned j = 0u; j < Lth; j++)
+        {
             index = Index(Lr - 1u, j, k, Lr, Lth, Lz);
             indexQ = Index(j, k, Lth, Lz);
             diff_out[index] += amp * E(T_in[index]) * Q_in[indexQ] * (r0 + dr * Lr) * dth * dz;
@@ -117,10 +135,10 @@ void HCRC::CPU::FreeWorkspaceEuler(double *&workspace_in)
     workspace_in = NULL;
 }
 
-void HCRC::CPU::Euler(double *T_out, const double *T_in, const double *Q_in, HCRCProblem &problem_in, double *workspace)
+void HCRC::CPU::Euler(double *T_out, const double *T_in, const double *Q_in, const double *T_amb_in, HCRCProblem &problem_in, double *workspace)
 {
     unsigned L = problem_in.Lr * problem_in.Lth * problem_in.Lz;
-    Differential(workspace, T_in, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
+    Differential(workspace, T_in, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
     for (unsigned i = 0u; i < L; i++)
     {
         T_out[i] = T_in[i] + problem_in.dt * (workspace[i]);
@@ -138,7 +156,7 @@ void HCRC::CPU::FreeWorkspaceRK4(double *&workspace_in)
     workspace_in = NULL;
 }
 
-void HCRC::CPU::RK4(double *T_out, const double *T_in, const double *Q_in, HCRCProblem &problem_in, double *workspace)
+void HCRC::CPU::RK4(double *T_out, const double *T_in, const double *Q_in, const double *T_amb_in, HCRCProblem &problem_in, double *workspace)
 {
     unsigned L = problem_in.Lr * problem_in.Lth * problem_in.Lz;
     double *k1, *k2, *k3, *k4;
@@ -148,25 +166,25 @@ void HCRC::CPU::RK4(double *T_out, const double *T_in, const double *Q_in, HCRCP
     k2 = k1 + L;
     k3 = k2 + L;
     k4 = k3 + L;
-    Differential(k1, T_in, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
+    Differential(k1, T_in, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
 
     for (unsigned i = 0u; i < L; i++)
     {
         T_aux[i] = T_in[i] + 0.5 * problem_in.dt * k1[i];
     }
-    Differential(k2, T_aux, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
+    Differential(k2, T_aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
 
     for (unsigned i = 0u; i < L; i++)
     {
         T_aux[i] = T_in[i] + 0.5 * problem_in.dt * k2[i];
     }
-    Differential(k3, T_aux, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
+    Differential(k3, T_aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
 
     for (unsigned i = 0u; i < L; i++)
     {
         T_aux[i] = T_in[i] + problem_in.dt * k3[i];
     }
-    Differential(k4, T_aux, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
+    Differential(k4, T_aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
 
     for (unsigned i = 0u; i < L; i++)
     {
@@ -320,15 +338,18 @@ __global__ void DifferentialAxis(double *diff_out, const double *T_in, double r0
     }
 }
 
-__global__ void FluxContribution(double *diff_out, const double *T_in, const double *Q_in, double amp, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
+__global__ void FluxContribution(double *diff_out, const double *T_in, const double *Q_in, const double *T_amb, double amp, double r0, double h, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
 {
     unsigned yIndex = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned zIndex = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned index = Index3D(Lr - 1u, yIndex, zIndex, Lr, Lth, Lz);
+    unsigned indexRsup = Index3D(Lr - 1u, yIndex, zIndex, Lr, Lth, Lz);
+    unsigned indexRinf = Index3D(0u, yIndex, zIndex, Lr, Lth, Lz);
     unsigned indexQ = Index2D(yIndex, zIndex, Lth, Lz);
     if (yIndex < Lth && zIndex < Lz)
     {
-        diff_out[index] += amp * E(T_in[index]) * Q_in[indexQ] * (r0 + dr * Lr) * dth * dz;
+        diff_out[indexRsup] += h * (T_amb[0u] - T_in[indexRinf]) * (r0 + dr * Lr) * dth * dz;
+        diff_out[indexRsup] += h * (T_amb[0u] - T_in[indexRsup]) * (r0 + dr * Lr) * dth * dz;
+        diff_out[indexRsup] += amp * E(T_in[indexRsup]) * Q_in[indexQ] * (r0 + dr * Lr) * dth * dz;
     }
 }
 
@@ -346,7 +367,7 @@ __global__ void TermalCapacity(double *diff_out, const double *T_in, double r0, 
     }
 }
 
-void HCRC::GPU::Differential(double *diff_out, const double *T_in, const double *Q_in, double amp, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz, cublasHandle_t handle_in, cudaStream_t stream_in)
+void HCRC::GPU::Differential(double *diff_out, const double *T_in, const double *Q_in, const double *T_amb_in, double amp, double r0, double h, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
     cublasSetStream(handle_in, stream_in);
     // Temperature Diffusion
@@ -357,7 +378,7 @@ void HCRC::GPU::Differential(double *diff_out, const double *T_in, const double 
     // Flux Contribution
     dim3 Tq(16u, 16u);
     dim3 Bq((Lth + T.y - 1u) / T.y, (Lz + T.z - 1u) / T.z);
-    FluxContribution<<<Bq, Tq, size, stream_in>>>(diff_out, T_in, Q_in, amp, r0, dr, dth, dz, Lr, Lth, Lz);
+    FluxContribution<<<Bq, Tq, size, stream_in>>>(diff_out, T_in, Q_in, T_amb_in, amp, r0, h, dr, dth, dz, Lr, Lth, Lz);
     // Thermal Capacity
     TermalCapacity<<<B, T, size, stream_in>>>(diff_out, T_in, r0, dr, dth, dz, Lr, Lth, Lz);
 }
@@ -372,10 +393,10 @@ void HCRC::GPU::FreeWorkspaceEuler(double *&workspace_out, cudaStream_t stream_i
     cudaFreeAsync(workspace_out, stream_in);
 }
 
-void HCRC::GPU::Euler(double *T_out, double *T_in, double *Q_in, HCRCProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in)
+void HCRC::GPU::Euler(double *T_out, double *T_in, double *Q_in, double *T_amb_in, HCRCProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
     cublasDcopy(handle_in, problem_in.Lr * problem_in.Lth * problem_in.Lz, T_in, 1u, T_out, 1u);
-    Differential(workspace, T_in, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+    Differential(workspace, T_in, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
     double alpha = problem_in.dt;
     cublasDaxpy(handle_in, problem_in.Lr * problem_in.Lth * problem_in.Lz, &alpha, workspace, 1u, T_out, 1u);
 }
@@ -387,7 +408,7 @@ void HCRC::GPU::FreeWorkspaceRK4(double *&workspace_out, cudaStream_t stream_in)
 {
     cudaFreeAsync(workspace_out, stream_in);
 }
-void HCRC::GPU::RK4(double *T_out, double *T_in, double *Q_in, HCRCProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in)
+void HCRC::GPU::RK4(double *T_out, double *T_in, double *Q_in, double *T_amb_in, HCRCProblem &problem_in, double *workspace, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
     cublasSetStream(handle_in, stream_in);
     double alpha;
@@ -401,22 +422,22 @@ void HCRC::GPU::RK4(double *T_out, double *T_in, double *Q_in, HCRCProblem &prob
     k4 = k3 + L;
 
     cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
-    Differential(k1, aux, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+    Differential(k1, aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
 
     cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
     alpha = 0.5 * problem_in.dt;
     cublasDaxpy(handle_in, L, &alpha, k1, 1u, aux, 1u);
-    Differential(k2, aux, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+    Differential(k2, aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
 
     cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
     alpha = 0.5 * problem_in.dt;
     cublasDaxpy(handle_in, L, &alpha, k2, 1u, aux, 1u);
-    Differential(k3, aux, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+    Differential(k3, aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
 
     cublasDcopy(handle_in, L, T_in, 1u, aux, 1u);
     alpha = 1.0 * problem_in.dt;
     cublasDaxpy(handle_in, L, &alpha, k3, 1u, aux, 1u);
-    Differential(k4, aux, Q_in, problem_in.amp, problem_in.r0, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+    Differential(k4, aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
 
     cublasDcopy(handle_in, L, T_in, 1u, T_out, 1u);
 
@@ -493,6 +514,6 @@ void HCRC::GPU::SelectTemperatures(double *T_out, double *T_in, unsigned *indexR
 {
     for (unsigned i = 0u; i < length_in; i++)
     {
-        cudaMemcpy(T_out+i,T_in+Index3D(indexR_in[i], indexTh_in[i], indexZ_in[i], Lr, Lth, Lz),sizeof(double),cudaMemcpyDeviceToDevice);
+        cudaMemcpy(T_out + i, T_in + Index3D(indexR_in[i], indexTh_in[i], indexZ_in[i], Lr, Lth, Lz), sizeof(double), cudaMemcpyDeviceToDevice);
     }
 }
