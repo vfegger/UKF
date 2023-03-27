@@ -31,7 +31,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     unsigned iteration;
     std::string name_temperature_measured_input = "Temp" + std::to_string(projectCase);
     unsigned indexTemperatureMeasuredInput = parser.pointer[0u].OpenFileIn(path_binary_in, name_temperature_measured_input, extension_binary, std::ios::binary);
-    Parser::ImportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasuredInput), name, length, type, iteration);
+    Parser::ImportConfigurationBinary(parser.pointer[0u].GetStreamIn(indexTemperatureMeasuredInput), name, length, type, iteration);
     if(length != HCRC_Measures_Total) {
         std::cout << "Error: Input data do not match the expected size.\n";
         return;
@@ -75,7 +75,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexHeatFlux), "Heat Flux", Lth * Lz, ParserType::Double, positionHeatFlux);
 
     // Artificial Generation
-    HFG_CRC generator(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Amp, r0, h, type_in, context_in);
+    HFG_CRC generator(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Tamb0, Amp, r0, h, type_in, context_in);
     generator.Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
 
     Pointer<double> temperatureMeasured_generator = generator.GetTemperature(0u);
@@ -251,6 +251,8 @@ int main(int argc, char **argv)
     double sTm0 = HPParm[it++];
     double Q0 = HPParm[it++];
     double sQ0 = HPParm[it++];
+    double Tamb0 = HPParm[it++];
+    double sTamb0 = HPParm[it++];
     double Amp = HPParm[it++];
     double r0 = HPParm[it++];
     double h = HPParm[it++];
@@ -271,7 +273,8 @@ int main(int argc, char **argv)
     RunCase(path_binary_in, path_binary_out, extension_binary,
             Lr, Lth, Lz, Lt,
             Sr, Sth, Sz, St,
-            T0, sT0, sTm0, Q0, sQ0, Amp, r0, h, mean, sigma,
+            T0, sT0, sTm0, Q0, sQ0, Tamb0, sTamb0,
+            Amp, r0, h, mean, sigma,
             alpha, beta, kappa,
             projectCase,
             pointerType, pointerContext);

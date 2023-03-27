@@ -31,7 +31,7 @@ else
 fi
 
 echo "Running Parser for GNUPlot" 
-$BUILD_PATH_GRAPH/graph/Graph_UKF
+$BUILD_PATH_GRAPH/Graph_UKF
 echo "Finished GNUPlot Parser Execution"
 
 echo "Running GNUPlot for graph generation"
