@@ -13,8 +13,8 @@
 int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::string &extension_binary,
             unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt,
             double Sr, double Sth, double Sz, double St,
-            double T0, double sT0, double sTm0, double Q0, double sQ0,
-            double Amp, double r0, double mean, double sigma,
+            double T0, double sT0, double sTm0, double Q0, double sQ0, double Tamb0, double sTamb0,
+            double Amp, double r0, double h, double mean, double sigma,
             double alpha, double beta, double kappa,
             unsigned projectCase,
             PointerType type_in, PointerContext context_in)
@@ -75,7 +75,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexHeatFlux), "Heat Flux", Lth * Lz, ParserType::Double, positionHeatFlux);
 
     // Artificial Generation
-    HFG_CRC generator(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Amp, r0, type_in, context_in);
+    HFG_CRC generator(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Amp, r0, h, type_in, context_in);
     generator.Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
 
     Pointer<double> temperatureMeasured_generator = generator.GetTemperature(0u);
@@ -99,7 +99,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     }
 
     // Problem Definition
-    HFE_CRC problem(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, sT0, sTm0, Q0, sQ0, Amp, r0, type_in, context_in);
+    HFE_CRC problem(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, sT0, sTm0, Q0, sQ0, Tamb0, sTamb0, Amp, r0, h, type_in, context_in);
 
     problem.UpdateMeasure(generator.GetTemperature(0u), type_in, context_in);
 
@@ -253,6 +253,7 @@ int main(int argc, char **argv)
     double sQ0 = HPParm[it++];
     double Amp = HPParm[it++];
     double r0 = HPParm[it++];
+    double h = HPParm[it++];
     double mean = HPParm[it++];
     double sigma = HPParm[it++];
 
@@ -270,7 +271,7 @@ int main(int argc, char **argv)
     RunCase(path_binary_in, path_binary_out, extension_binary,
             Lr, Lth, Lz, Lt,
             Sr, Sth, Sz, St,
-            T0, sT0, sTm0, Q0, sQ0, Amp, r0, mean, sigma,
+            T0, sT0, sTm0, Q0, sQ0, Amp, r0, h, mean, sigma,
             alpha, beta, kappa,
             projectCase,
             pointerType, pointerContext);
