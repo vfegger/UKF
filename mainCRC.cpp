@@ -32,12 +32,27 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     std::string name_temperature_measured_input = "Temp" + std::to_string(projectCase);
     unsigned indexTemperatureMeasuredInput = parser.pointer[0u].OpenFileIn(path_binary_in, name_temperature_measured_input, extension_binary, std::ios::binary);
     Parser::ImportConfigurationBinary(parser.pointer[0u].GetStreamIn(indexTemperatureMeasuredInput), name, length, type, iteration);
-    if(length != HCRC_Measures_Total) {
+    if (length != HCRC_Measures_Total)
+    {
         std::cout << "Error: Input data do not match the expected size.\n";
-        return;
+        return 1;
     }
-    if(Lt >= iteration){
+    if (Lt >= iteration)
+    {
         Lt = iteration;
+    }
+    St = Lt * 0.2;
+    Parser::ImportAllValuesBinary(parser.pointer[0u].GetStreamIn(indexTemperatureMeasuredInput), HCRC_Measures_Total, ParserType::Double, pointer, Lt + 1);
+
+    Pointer<double> measures = MemoryHandler::Alloc<double>(HCRC_Measures * (Lt + 1), PointerType::CPU, PointerContext::CPU_Only);
+    for (unsigned i = 0u; i <= Lt + 1; i++)
+    {
+        unsigned j;
+        for (j = 0u; j < HCRC_Measures - 1u; j++)
+        {
+            measures.pointer[i * HCRC_Measures + j] = ((double *)pointer)[i * HCRC_Measures_Total + j];
+        }
+        measures.pointer[i * HCRC_Measures + j] = ((double *)pointer)[i * HCRC_Measures_Total + HCRC_Measures_Total - 1];
     }
 
     // Output Treatment
@@ -84,7 +99,8 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     {
         temperatureMeasured_parser = MemoryHandler::Alloc<double>(HCRC_Measures, PointerType::CPU, PointerContext::CPU_Only);
     }
-    for(unsigned i = 0u; i <= Lt; i++){
+    for (unsigned i = 0u; i <= Lt; i++)
+    {
         if (type_in == PointerType::GPU)
         {
             MemoryHandler::Copy(temperatureMeasured_parser, generator.GetTemperature(i), HCRC_Measures);
@@ -113,7 +129,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     Pointer<double> temperature_out = problem.GetMemory().pointer[0u].GetState().pointer[0u].GetPointer();
     Pointer<double> heatFlux_out = Pointer<double>(temperature_out.pointer + Lr * Lth * Lz, temperature_out.type, temperature_out.context);
 
-    Pointer<double> temperature_parser, heatFlux_parser;
+    Pointer<double> temperature_parser, heatFlux_parser, measures_aux;
     if (type_in == PointerType::GPU)
     {
         temperature_parser = MemoryHandler::Alloc<double>(Lr * Lth * Lz, PointerType::CPU, PointerContext::CPU_Only);
@@ -127,8 +143,9 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     for (unsigned i = 1u; i <= Lt; i++)
     {
         std::cout << "Iteration " << i << ":\n";
+        measures_aux = Pointer<double>(measures.pointer + i * HCRC_Measures,PointerType::CPU,PointerContext::CPU_Only);
         ukf.Iterate(timer.pointer[0u]);
-        problem.UpdateMeasure(generator.GetTemperature(i), type_in, context_in);
+        problem.UpdateMeasure(measures_aux, type_in, context_in);
 
         if (type_in == PointerType::GPU)
         {
@@ -184,9 +201,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if(pointerType == PointerType::GPU){
+    if (pointerType == PointerType::GPU)
+    {
         cudaDeviceReset();
-        MemoryHandler::CreateGPUContext(1u,1u,1u);
+        MemoryHandler::CreateGPUContext(1u, 1u, 1u);
     }
 
     std::string path_dir = std::filesystem::current_path().string();
@@ -212,7 +230,7 @@ int main(int argc, char **argv)
     unsigned indexSize = parser->OpenFileIn(path_binary_in, name_size, extension_binary, std::ios::binary);
     unsigned indexHPParm = parser->OpenFileIn(path_binary_in, name_heatProblem, extension_binary, std::ios::binary);
     unsigned indexUKFParm = parser->OpenFileIn(path_binary_in, name_UKFParm, extension_binary, std::ios::binary);
-   
+
     double *S = NULL;
     double *HPParm = NULL;
     double *UKFParm = NULL;
@@ -292,7 +310,8 @@ int main(int argc, char **argv)
     std::ofstream ok_file(ok_name);
     ok_file.close();
 
-    if(pointerType == PointerType::GPU){
+    if (pointerType == PointerType::GPU)
+    {
         MemoryHandler::DestroyGPUContext();
         cudaDeviceReset();
     }
