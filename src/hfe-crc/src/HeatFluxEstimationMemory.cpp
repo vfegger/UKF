@@ -32,6 +32,7 @@ void HFE_CRCMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasH
     Pointer<double> parms = parameter_in.GetPointer<double>(3u);
     problem.amp = parms.pointer[0u];
     problem.r0 = parms.pointer[1u];
+    problem.h = parms.pointer[2u];
     Pointer<double> pointer = data_inout.GetPointer();
     Pointer<double> T_inout = data_inout[0u];
     Pointer<double> Q_in = data_inout[1u];

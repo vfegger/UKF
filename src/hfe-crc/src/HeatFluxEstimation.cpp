@@ -30,7 +30,7 @@ HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr,
     S.pointer[1u] = Sth;
     S.pointer[2u] = Sz;
     S.pointer[3u] = St;
-    Pointer<double> P = MemoryHandler::Alloc<double>(2u, PointerType::CPU, PointerContext::CPU_Only);
+    Pointer<double> P = MemoryHandler::Alloc<double>(3u, PointerType::CPU, PointerContext::CPU_Only);
     P.pointer[0u] = Amp; // Amp
     P.pointer[1u] = r0;  // Radius
     P.pointer[2u] = h;   // Heat Convection Coefficient
