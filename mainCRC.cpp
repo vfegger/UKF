@@ -19,7 +19,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
             unsigned projectCase,
             PointerType type_in, PointerContext context_in)
 {
-    std::cout << std::cout.precision(3);
+    std::cout << std::setprecision(3);
 
     Pointer<Parser> parser = MemoryHandler::AllocValue<Parser, unsigned>(5u, PointerType::CPU, PointerContext::CPU_Only);
 
@@ -42,10 +42,10 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
         Lt = iteration;
     }
     St = Lt * 0.2;
-    Parser::ImportAllValuesBinary(parser.pointer[0u].GetStreamIn(indexTemperatureMeasuredInput), HCRC_Measures_Total, ParserType::Double, pointer, Lt + 1);
+    Parser::ImportAllValuesBinary(parser.pointer[0u].GetStreamIn(indexTemperatureMeasuredInput), HCRC_Measures_Total, ParserType::Double, pointer, Lt + 1u);
 
     Pointer<double> measures = MemoryHandler::Alloc<double>(HCRC_Measures * (Lt + 1), PointerType::CPU, PointerContext::CPU_Only);
-    for (unsigned i = 0u; i <= Lt + 1; i++)
+    for (unsigned i = 0u; i <= Lt; i++)
     {
         unsigned j;
         for (j = 0u; j < HCRC_Measures - 1u; j++)

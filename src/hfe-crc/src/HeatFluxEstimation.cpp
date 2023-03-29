@@ -13,7 +13,7 @@ HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr,
     indexL = parameter.pointer[0u].Add("Length", 4u, sizeof(unsigned));
     indexD = parameter.pointer[0u].Add("Delta", 4u, sizeof(double));
     indexS = parameter.pointer[0u].Add("Size", 4u, sizeof(double));
-    indexP = parameter.pointer[0u].Add("External Parms", 2u, sizeof(double));
+    indexP = parameter.pointer[0u].Add("External Parms", 3u, sizeof(double));
     parameter.pointer[0u].Initialize(PointerType::CPU, PointerContext::CPU_Only);
     Pointer<unsigned> L = MemoryHandler::Alloc<unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
     L.pointer[0u] = Lr;
@@ -33,12 +33,18 @@ HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr,
     Pointer<double> P = MemoryHandler::Alloc<double>(2u, PointerType::CPU, PointerContext::CPU_Only);
     P.pointer[0u] = Amp; // Amp
     P.pointer[1u] = r0;  // Radius
-    P.pointer[1u] = h;   // Heat Convection Coefficient
+    P.pointer[2u] = h;   // Heat Convection Coefficient
 
     parameter.pointer[0u].LoadData(indexL, L, 4u);
     parameter.pointer[0u].LoadData(indexD, D, 4u);
     parameter.pointer[0u].LoadData(indexS, S, 4u);
     parameter.pointer[0u].LoadData(indexP, P, 3u);
+
+    MemoryHandler::Free<unsigned>(L);
+    MemoryHandler::Free<double>(D);
+    MemoryHandler::Free<double>(S);
+    MemoryHandler::Free<double>(P);
+
     std::cout << "Input Initialization\n";
     input = MemoryHandler::AllocValue<Data, unsigned>(3u, PointerType::CPU, PointerContext::CPU_Only);
     unsigned indexT, indexQ, indexTamb;

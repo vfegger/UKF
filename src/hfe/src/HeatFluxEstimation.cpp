@@ -11,11 +11,11 @@ HeatFluxEstimation::HeatFluxEstimation(
 {
     std::cout << "Parameter Initialization\n";
     parameter = MemoryHandler::AllocValue<Parameter, unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
-    unsigned indexL, indexD, indexS, indexAmp;
+    unsigned indexL, indexD, indexS, indexP;
     indexL = parameter.pointer[0u].Add("Length", 4u, sizeof(unsigned));
     indexD = parameter.pointer[0u].Add("Delta", 4u, sizeof(double));
     indexS = parameter.pointer[0u].Add("Size", 4u, sizeof(double));
-    indexAmp = parameter.pointer[0u].Add("Amp", 1u, sizeof(double));
+    indexP = parameter.pointer[0u].Add("External Parms", 1u, sizeof(double));
     parameter.pointer[0u].Initialize(PointerType::CPU, PointerContext::CPU_Only);
     Pointer<unsigned> L = MemoryHandler::Alloc<unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
     L.pointer[0u] = Lx;
@@ -32,13 +32,19 @@ HeatFluxEstimation::HeatFluxEstimation(
     S.pointer[1u] = Sy;
     S.pointer[2u] = Sz;
     S.pointer[3u] = St;
-    Pointer<double> Amp = MemoryHandler::Alloc<double>(1u, PointerType::CPU, PointerContext::CPU_Only);
-    Amp.pointer[0u] = 5e4;
+    Pointer<double> P = MemoryHandler::Alloc<double>(1u, PointerType::CPU, PointerContext::CPU_Only);
+    P.pointer[0u] = 5e4;
 
     parameter.pointer[0u].LoadData(indexL, L, 4u);
     parameter.pointer[0u].LoadData(indexD, D, 4u);
     parameter.pointer[0u].LoadData(indexS, S, 4u);
-    parameter.pointer[0u].LoadData(indexAmp, Amp, 1u);
+    parameter.pointer[0u].LoadData(indexP, P, 1u);
+
+    MemoryHandler::Free<unsigned>(L);
+    MemoryHandler::Free<double>(D);
+    MemoryHandler::Free<double>(S);
+    MemoryHandler::Free<double>(P);
+
     std::cout << "Input Initialization\n";
     input = MemoryHandler::AllocValue<Data, unsigned>(2u, PointerType::CPU, PointerContext::CPU_Only);
     unsigned indexT, indexQ;
