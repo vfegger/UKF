@@ -35,17 +35,18 @@ void HFE_CRCMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasH
     Pointer<double> pointer = data_inout.GetPointer();
     Pointer<double> T_inout = data_inout[0u];
     Pointer<double> Q_in = data_inout[1u];
+    Pointer<double> Tamb_in = data_inout[2u];
     double *workspace = NULL;
     if (pointer.type == PointerType::CPU)
     {
         HCRC::CPU::AllocWorkspaceEuler(workspace, problem.Lr * problem.Lth * problem.Lz);
-        HCRC::CPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, problem, workspace);
+        HCRC::CPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace);
         HCRC::CPU::FreeWorkspaceEuler(workspace);
     }
     else if (pointer.type == PointerType::GPU)
     {
         HCRC::GPU::AllocWorkspaceRK4(workspace, problem.Lr * problem.Lth * problem.Lz, stream_in);
-        HCRC::GPU::RK4(T_inout.pointer, T_inout.pointer, Q_in.pointer, problem, workspace, cublasHandle_in, stream_in);
+        HCRC::GPU::RK4(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace, cublasHandle_in, stream_in);
         HCRC::GPU::FreeWorkspaceRK4(workspace, stream_in);
     }
 }
@@ -104,16 +105,16 @@ void HFE_CRCMemory::Observation(Data &data_in, Parameter &parameter_in, Data &da
     Pointer<double> T_in = data_in[0u];
     Pointer<double> T_amb_in = data_in[2u];
     Pointer<double> T_out = data_out[0u];
-    Pointer<double> T_amb_out = Pointer<double>(T_out.pointer + it);
+    Pointer<double> T_amb_out = Pointer<double>(T_out.pointer + it, T_out.type, T_out.context);
     if (pointer_in.type == PointerType::CPU && pointer_out.type == PointerType::CPU)
     {
-        HCRC::CPU::SelectTemperatures(T_out.pointer,T_in.pointer,i,j,k,it,Lr,Lth,Lz);
-        MemoryHandler::Copy(T_amb_out,T_amb_in,1u,stream_in);
+        HCRC::CPU::SelectTemperatures(T_out.pointer, T_in.pointer, i, j, k, it, Lr, Lth, Lz);
+        MemoryHandler::Copy(T_amb_out, T_amb_in, 1u, stream_in);
     }
     else if (pointer_in.type == PointerType::GPU && pointer_out.type == PointerType::GPU)
     {
-        HCRC::GPU::SelectTemperatures(T_out.pointer,T_in.pointer,i,j,k,it,Lr,Lth,Lz);
-        MemoryHandler::Copy(T_amb_out,T_amb_in,1u,stream_in);
+        HCRC::GPU::SelectTemperatures(T_out.pointer, T_in.pointer, i, j, k, it, Lr, Lth, Lz);
+        MemoryHandler::Copy(T_amb_out, T_amb_in, 1u, stream_in);
     }
     delete[] k;
     delete[] j;

@@ -16,13 +16,14 @@ add_subdirectory(src/ukf)
 add_subdirectory(src/math)
 add_subdirectory(src/timer)
 add_subdirectory(src/hfe)
+add_subdirectory(src/hfe-crc)
 add_subdirectory(src/graph)
 add_subdirectory(src/cuda)
 
 
 # Add the executable
 add_executable(${PROJECT_NAME} mainTest.cpp)
-add_executable(${PROJECT_NAME}_CRC mainTest.cpp)
+add_executable(${PROJECT_NAME}_CRC mainCRC.cpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Structure Math Parser Timer UKF HFE Graph)
-target_link_libraries(${PROJECT_NAME}_CRC PUBLIC Structure Math Parser Timer UKF HFE Graph)
+target_link_libraries(${PROJECT_NAME}_CRC PUBLIC Structure Math Parser Timer UKF HFE_CRC Graph)

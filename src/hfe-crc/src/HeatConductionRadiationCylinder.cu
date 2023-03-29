@@ -228,7 +228,7 @@ void HCRC::CPU::SelectTemperatures(double *T_out, double *T_in, unsigned *indexR
 {
     for (unsigned i = 0u; i < length_in; i++)
     {
-        T_out[i] = T_in[Index3D(indexR_in[i], indexTh_in[i], indexZ_in[i], Lr, Lth, Lz)];
+        T_out[i] = T_in[Index(indexR_in[i], indexTh_in[i], indexZ_in[i], Lr, Lth, Lz)];
     }
 }
 
@@ -514,6 +514,6 @@ void HCRC::GPU::SelectTemperatures(double *T_out, double *T_in, unsigned *indexR
 {
     for (unsigned i = 0u; i < length_in; i++)
     {
-        cudaMemcpy(T_out + i, T_in + Index3D(indexR_in[i], indexTh_in[i], indexZ_in[i], Lr, Lth, Lz), sizeof(double), cudaMemcpyDeviceToDevice);
+        cudaMemcpy(T_out + i, T_in + Index(indexR_in[i], indexTh_in[i], indexZ_in[i], Lr, Lth, Lz), sizeof(double), cudaMemcpyDeviceToDevice);
     }
 }

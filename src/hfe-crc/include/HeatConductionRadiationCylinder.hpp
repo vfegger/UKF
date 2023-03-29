@@ -8,8 +8,8 @@
 #include <random>
 #include "../../math/include/Math.hpp"
 
-#define HCRC_Measures 5
-#define HCRC_Measures_Total 12
+#define HCRC_Measures 5u
+#define HCRC_Measures_Total 12u
 
 namespace HCRC
 {

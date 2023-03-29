@@ -187,48 +187,48 @@ void MathCPU::MatrixMultiplication(double alpha,
     }
     if (weight_in.pointer == NULL)
     {
-        #pragma omp parallel private(i,j,k,auxAlpha,auxBeta) shared(pA,pB,pC,aux) 
+#pragma omp parallel private(i, j, k, auxAlpha, auxBeta) shared(pA, pB, pC, aux)
         {
-            #pragma omp for collapse(2)
+#pragma omp for collapse(2)
             for (j = 0; j < N; j++)
             {
                 for (i = 0; i < M; i++)
                 {
-                auxAlpha = 0.0;
-                auxBeta = aux[j * M + i];
-                for (k = 0; k < K; k++)
-                {
-                    auxAlpha += pA[k * sA2 + i * sA1] * pB[j * sB2 + k * sB1];
-                }
-                pC[j * M + i] = alpha * auxAlpha + beta * auxBeta;
+                    auxAlpha = 0.0;
+                    auxBeta = aux[j * M + i];
+                    for (k = 0; k < K; k++)
+                    {
+                        auxAlpha += pA[k * sA2 + i * sA1] * pB[j * sB2 + k * sB1];
+                    }
+                    pC[j * M + i] = alpha * auxAlpha + beta * auxBeta;
                 }
             }
         }
     }
-else
-{
-    #pragma omp parallel private(i,j,k,auxAlpha,auxBeta) shared(pA,pB,pC,aux) 
+    else
     {
-        #pragma omp for collapse(2)
-        for (j = 0; j < N; j++)
+#pragma omp parallel private(i, j, k, auxAlpha, auxBeta) shared(pA, pB, pC, aux)
         {
-            for (i = 0; i < M; i++)
+#pragma omp for collapse(2)
+            for (j = 0; j < N; j++)
             {
-                auxAlpha = 0.0;
-                auxBeta = aux[j * M + i];
-                for (k = 0; k < K; k++)
+                for (i = 0; i < M; i++)
                 {
-                    auxAlpha += weight_in.pointer[k] * pA[k * sA2 + i * sA1] * pB[j * sB2 + k * sB1];
+                    auxAlpha = 0.0;
+                    auxBeta = aux[j * M + i];
+                    for (k = 0; k < K; k++)
+                    {
+                        auxAlpha += weight_in.pointer[k] * pA[k * sA2 + i * sA1] * pB[j * sB2 + k * sB1];
+                    }
+                    pC[j * M + i] = alpha * auxAlpha + beta * auxBeta;
                 }
-                pC[j * M + i] = alpha * auxAlpha + beta * auxBeta;
             }
         }
     }
-}
-if (matrixOutStructure_in == MatrixStructure_Transposed && beta != 0.0)
-{
-    delete[] aux;
-}
+    if (matrixOutStructure_in == MatrixStructure_Transposed && beta != 0.0)
+    {
+        delete[] aux;
+    }
 }
 
 // Reducibles Operations
