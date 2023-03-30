@@ -7,7 +7,7 @@ Pointer<HeatFluxEstimationMemory> HeatFluxEstimation::GetMemory()
 
 HeatFluxEstimation::HeatFluxEstimation(
     unsigned Lx, unsigned Ly, unsigned Lz, unsigned Lt,
-    double Sx, double Sy, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, PointerType type_in, PointerContext context_in)
+    double Sx, double Sy, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, double Amp, PointerType type_in, PointerContext context_in)
 {
     std::cout << "Parameter Initialization\n";
     parameter = MemoryHandler::AllocValue<Parameter, unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
@@ -33,7 +33,7 @@ HeatFluxEstimation::HeatFluxEstimation(
     S.pointer[2u] = Sz;
     S.pointer[3u] = St;
     Pointer<double> P = MemoryHandler::Alloc<double>(1u, PointerType::CPU, PointerContext::CPU_Only);
-    P.pointer[0u] = 5e4;
+    P.pointer[0u] = Amp;
 
     parameter.pointer[0u].LoadData(indexL, L, 4u);
     parameter.pointer[0u].LoadData(indexD, D, 4u);

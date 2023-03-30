@@ -228,9 +228,9 @@ int main(int argc, char **argv)
 
     it = 0u;
     double Sr = S[it++];
-    double Sth = S[it++];
+    double Sth = std::acos(-1.0);
     double Sz = S[it++];
-    double St = S[it++];
+    double St = 0.0;
 
     it = 0u;
     double T0 = HPParm[it++];

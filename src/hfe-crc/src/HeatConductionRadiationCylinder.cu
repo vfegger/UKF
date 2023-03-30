@@ -81,6 +81,7 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
         }
     }
     // Influx Surfaces (Countour Region)
+    // Inside the Cylinder
     for (unsigned k = 0u; k < Lz; k++)
     {
         for (unsigned j = 0u; j < Lth; j++)
@@ -90,6 +91,7 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
             diff_out[index] += h * (T_amb[0u] - T_in[index]) * r0 * dth * dz;
         }
     }
+    // Outside the Cylinder
     for (unsigned k = 0u; k < Lz; k++)
     {
         for (unsigned j = 0u; j < Lth; j++)
@@ -99,6 +101,7 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
             diff_out[index] += h * (T_amb[0u] - T_in[index]) * (r0 + dr * Lr) * dth * dz;
         }
     }
+    // Outside the Cylinder
     for (unsigned k = 0u; k < Lz; k++)
     {
         for (unsigned j = 0u; j < Lth; j++)
