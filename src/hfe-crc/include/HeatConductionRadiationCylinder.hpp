@@ -30,6 +30,9 @@ namespace HCRC
         HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double h_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in);
     };
 
+    unsigned Index3D(unsigned i, unsigned j, unsigned k, unsigned Lr, unsigned Lth, unsigned Lz);
+    unsigned Index2D(unsigned j, unsigned k, unsigned Lth, unsigned Lz);
+
     namespace CPU
     {
         double C(double T_in);

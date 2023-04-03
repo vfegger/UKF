@@ -1,14 +1,14 @@
 #include "../include/HeatFluxEstimationMemory.hpp"
 
-HFE_CRCMemory::HFE_CRCMemory() : UKFMemory()
+HFE_CRCMemory::HFE_CRCMemory() : UKFMemory(), iteration(1u)
 {
 }
 
-HFE_CRCMemory::HFE_CRCMemory(Data &a, DataCovariance &b, DataCovariance &c, Data &d, DataCovariance &e, Parameter &f, PointerType type_in, PointerContext context_in) : UKFMemory(a, b, c, d, e, f, type_in, context_in)
+HFE_CRCMemory::HFE_CRCMemory(Data &a, DataCovariance &b, DataCovariance &c, Data &d, DataCovariance &e, Parameter &f, PointerType type_in, PointerContext context_in, unsigned iteration) : UKFMemory(a, b, c, d, e, f, type_in, context_in), iteration(iteration)
 {
 }
 
-HFE_CRCMemory::HFE_CRCMemory(const HFE_CRCMemory &memory_in) : UKFMemory(memory_in)
+HFE_CRCMemory::HFE_CRCMemory(const HFE_CRCMemory &memory_in) : UKFMemory(memory_in), iteration(memory_in.iteration)
 {
 }
 
@@ -41,13 +41,19 @@ void HFE_CRCMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasH
     if (pointer.type == PointerType::CPU)
     {
         HCRC::CPU::AllocWorkspaceEuler(workspace, problem.Lr * problem.Lth * problem.Lz);
-        HCRC::CPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace);
+        for (unsigned i = 0u; i < iteration; i++)
+        {
+            HCRC::CPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace);
+        }
         HCRC::CPU::FreeWorkspaceEuler(workspace);
     }
     else if (pointer.type == PointerType::GPU)
     {
         HCRC::GPU::AllocWorkspaceRK4(workspace, problem.Lr * problem.Lth * problem.Lz, stream_in);
-        HCRC::GPU::RK4(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace, cublasHandle_in, stream_in);
+        for (unsigned i = 0u; i < iteration; i++)
+        {
+            HCRC::GPU::RK4(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace, cublasHandle_in, stream_in);
+        }
         HCRC::GPU::FreeWorkspaceRK4(workspace, stream_in);
     }
 }
@@ -107,16 +113,15 @@ void HFE_CRCMemory::Observation(Data &data_in, Parameter &parameter_in, Data &da
     Pointer<double> T_amb_in = data_in[2u];
     Pointer<double> T_out = data_out[0u];
     Pointer<double> T_amb_out = Pointer<double>(T_out.pointer + it, T_out.type, T_out.context);
-    if (pointer_in.type == PointerType::CPU && pointer_out.type == PointerType::CPU)
-    {
-        HCRC::CPU::SelectTemperatures(T_out.pointer, T_in.pointer, i, j, k, it, Lr, Lth, Lz);
-        MemoryHandler::Copy(T_amb_out, T_amb_in, 1u, stream_in);
+    
+    Pointer<double> in, out;
+    for(unsigned ii = 0u; ii < it; ii++){
+        in = Pointer<double>(T_in.pointer + HCRC::Index3D(i[ii],j[ii],k[ii],Lr,Lth,Lz), T_in.type, T_in.context);
+        out = Pointer<double>(T_out.pointer + ii, T_out.type, T_out.context);
+        MemoryHandler::Copy(in,out,1u,stream_in);
     }
-    else if (pointer_in.type == PointerType::GPU && pointer_out.type == PointerType::GPU)
-    {
-        HCRC::GPU::SelectTemperatures(T_out.pointer, T_in.pointer, i, j, k, it, Lr, Lth, Lz);
-        MemoryHandler::Copy(T_amb_out, T_amb_in, 1u, stream_in);
-    }
+    MemoryHandler::Copy(T_amb_out, T_amb_in, 1u, stream_in);
+
     delete[] k;
     delete[] j;
     delete[] i;

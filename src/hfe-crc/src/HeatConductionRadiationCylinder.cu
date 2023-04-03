@@ -10,12 +10,12 @@ HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double
 
 // CPU Section
 
-inline unsigned Index(unsigned i, unsigned j, unsigned k, unsigned Lr, unsigned Lth, unsigned Lz)
+inline unsigned HCRC::Index3D(unsigned i, unsigned j, unsigned k, unsigned Lr, unsigned Lth, unsigned Lz)
 {
     return (std::clamp(k, 0u, Lz - 1) * Lth + (j % Lth)) * Lr + std::clamp(i, 0u, Lr - 1u);
 }
 
-inline unsigned Index(unsigned j, unsigned k, unsigned Lth, unsigned Lz)
+inline unsigned HCRC::Index2D(unsigned j, unsigned k, unsigned Lth, unsigned Lz)
 {
     return std::clamp(k, 0u, Lz - 1) * Lth + (j % Lth);
 }
@@ -32,7 +32,7 @@ inline double HCRC::CPU::K(double T_in)
 
 inline double HCRC::CPU::E(double T_in)
 {
-    return 0.5;
+    return 1.0;
 }
 
 double HCRC::CPU::DifferentialK(const double T0_in, const double TP_in, const double delta_in, const double coef_in)
@@ -54,14 +54,14 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
         {
             for (unsigned i = 0u; i < Lr; i++)
             {
-                index = Index(i, j, k, Lr, Lth, Lz);
+                index = Index3D(i, j, k, Lr, Lth, Lz);
                 T0 = T_in[index];
-                TiN = T_in[Index(i - 1, j, k, Lr, Lth, Lz)];
-                TiP = T_in[Index(i + 1, j, k, Lr, Lth, Lz)];
-                TjN = T_in[Index(i, j - 1, k, Lr, Lth, Lz)];
-                TjP = T_in[Index(i, j + 1, k, Lr, Lth, Lz)];
-                TkN = T_in[Index(i, j, k - 1, Lr, Lth, Lz)];
-                TkP = T_in[Index(i, j, k + 1, Lr, Lth, Lz)];
+                TiN = T_in[Index3D(i - 1, j, k, Lr, Lth, Lz)];
+                TiP = T_in[Index3D(i + 1, j, k, Lr, Lth, Lz)];
+                TjN = T_in[Index3D(i, j - 1, k, Lr, Lth, Lz)];
+                TjP = T_in[Index3D(i, j + 1, k, Lr, Lth, Lz)];
+                TkN = T_in[Index3D(i, j, k - 1, Lr, Lth, Lz)];
+                TkP = T_in[Index3D(i, j, k + 1, Lr, Lth, Lz)];
                 acc = 0.0;
                 // R dependency
                 double R_N = DifferentialK(T0, TiN, dr, (r0 + dr * i) * dth * dz);
@@ -86,8 +86,8 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
     {
         for (unsigned j = 0u; j < Lth; j++)
         {
-            index = Index(0u, j, k, Lr, Lth, Lz);
-            indexQ = Index(j, k, Lth, Lz);
+            index = Index3D(0u, j, k, Lr, Lth, Lz);
+            indexQ = Index2D(j, k, Lth, Lz);
             diff_out[index] += h * (T_amb[0u] - T_in[index]) * r0 * dth * dz;
         }
     }
@@ -96,8 +96,8 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
     {
         for (unsigned j = 0u; j < Lth; j++)
         {
-            index = Index(Lr - 1u, j, k, Lr, Lth, Lz);
-            indexQ = Index(j, k, Lth, Lz);
+            index = Index3D(Lr - 1u, j, k, Lr, Lth, Lz);
+            indexQ = Index2D(j, k, Lth, Lz);
             diff_out[index] += h * (T_amb[0u] - T_in[index]) * (r0 + dr * Lr) * dth * dz;
         }
     }
@@ -106,8 +106,8 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
     {
         for (unsigned j = 0u; j < Lth; j++)
         {
-            index = Index(Lr - 1u, j, k, Lr, Lth, Lz);
-            indexQ = Index(j, k, Lth, Lz);
+            index = Index3D(Lr - 1u, j, k, Lr, Lth, Lz);
+            indexQ = Index2D(j, k, Lth, Lz);
             diff_out[index] += amp * E(T_in[index]) * Q_in[indexQ] * (r0 + dr * Lr) * dth * dz;
         }
     }
@@ -118,7 +118,7 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
         {
             for (unsigned i = 0u; i < Lr; i++)
             {
-                index = Index(i, j, Lz - 1u, Lr, Lth, Lz);
+                index = Index3D(i, j, k, Lr, Lth, Lz);
                 double mR = r0 + dr * (i + 0.5);
                 double vol = dr * mR * dth * dz;
                 diff_out[index] /= vol * C(T_in[index]);
@@ -227,14 +227,6 @@ void HCRC::CPU::AddError(double *T_out, double mean_in, double sigma_in, unsigne
     }
 }
 
-void HCRC::CPU::SelectTemperatures(double *T_out, double *T_in, unsigned *indexR_in, unsigned *indexTh_in, unsigned *indexZ_in, unsigned length_in, unsigned Lr, unsigned Lth, unsigned Lz)
-{
-    for (unsigned i = 0u; i < length_in; i++)
-    {
-        T_out[i] = T_in[Index(indexR_in[i], indexTh_in[i], indexZ_in[i], Lr, Lth, Lz)];
-    }
-}
-
 // GPU Section
 
 __device__ inline double C(double T_in)
@@ -265,7 +257,7 @@ __device__ inline unsigned clamp(unsigned i, unsigned min, unsigned max)
     return (t > max) ? max : t;
 }
 
-__device__ inline unsigned Index3D(unsigned i, unsigned j, unsigned k, unsigned Li, unsigned Lj, unsigned Lk)
+__device__ inline unsigned Index3D_dev(unsigned i, unsigned j, unsigned k, unsigned Li, unsigned Lj, unsigned Lk)
 {
     return (clamp(k, 0u, Lk - 1u) * Lj + (j % Lj)) * Li + clamp(i, 0u, Li - 1u);
 }
@@ -275,7 +267,7 @@ __device__ inline unsigned IndexThread(unsigned i, unsigned j, unsigned k, unsig
     return (k * Lj + j) * Li + i;
 }
 
-__device__ inline unsigned Index2D(unsigned j, unsigned k, unsigned Lj, unsigned Lk)
+__device__ inline unsigned Index2D_dev(unsigned j, unsigned k, unsigned Lj, unsigned Lk)
 {
     return clamp(k, 0u, Lk - 1u) * Lj + (j % Lj);
 }
@@ -285,7 +277,7 @@ __global__ void DifferentialAxis(double *diff_out, const double *T_in, double r0
     unsigned xIndex = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned yIndex = blockIdx.y * blockDim.y + threadIdx.y;
     unsigned zIndex = blockIdx.z * blockDim.z + threadIdx.z;
-    unsigned index = Index3D(xIndex, yIndex, zIndex, Lr, Lth, Lz);
+    unsigned index = Index3D_dev(xIndex, yIndex, zIndex, Lr, Lth, Lz);
     extern __shared__ double T[];
     unsigned thread;
     unsigned threadDimX;
@@ -304,28 +296,28 @@ __global__ void DifferentialAxis(double *diff_out, const double *T_in, double r0
     __syncthreads();
     if (threadIdx.x == 0u && inside)
     {
-        T[thread - 1u] = T_in[Index3D(xIndex - 1u, yIndex, zIndex, Lr, Lth, Lz)];
+        T[thread - 1u] = T_in[Index3D_dev(xIndex - 1u, yIndex, zIndex, Lr, Lth, Lz)];
     }
-    if (threadIdx.x + 1u == blockDim.x || xIndex + 1u == Lr && inside)
+    if (threadIdx.x + 1u == blockDim.x || (xIndex + 1u == Lr && inside))
     {
-        T[thread + 1u] = T_in[Index3D(xIndex + 1u, yIndex, zIndex, Lr, Lth, Lz)];
+        T[thread + 1u] = T_in[Index3D_dev(xIndex + 1u, yIndex, zIndex, Lr, Lth, Lz)];
     }
 
     if (threadIdx.y == 0u && inside)
     {
-        T[thread - threadDimX] = T_in[Index3D(xIndex, yIndex - 1u, zIndex, Lr, Lth, Lz)];
+        T[thread - threadDimX] = T_in[Index3D_dev(xIndex, yIndex - 1u, zIndex, Lr, Lth, Lz)];
     }
-    if (threadIdx.y + 1u == blockDim.y || yIndex + 1u == Lth && inside)
+    if (threadIdx.y + 1u == blockDim.y || (yIndex + 1u == Lth && inside))
     {
-        T[thread + threadDimX] = T_in[Index3D(xIndex, yIndex + 1u, zIndex, Lr, Lth, Lz)];
+        T[thread + threadDimX] = T_in[Index3D_dev(xIndex, yIndex + 1u, zIndex, Lr, Lth, Lz)];
     }
     if (threadIdx.z == 0u && inside)
     {
-        T[thread - threadDimX * threadDimY] = T_in[Index3D(xIndex, yIndex, zIndex - 1u, Lr, Lth, Lz)];
+        T[thread - threadDimX * threadDimY] = T_in[Index3D_dev(xIndex, yIndex, zIndex - 1u, Lr, Lth, Lz)];
     }
-    if (threadIdx.z + 1u == blockDim.z || zIndex + 1u == Lz && inside)
+    if (threadIdx.z + 1u == blockDim.z || (zIndex + 1u == Lz && inside))
     {
-        T[thread + threadDimX * threadDimY] = T_in[Index3D(xIndex, yIndex, zIndex + 1u, Lr, Lth, Lz)];
+        T[thread + threadDimX * threadDimY] = T_in[Index3D_dev(xIndex, yIndex, zIndex + 1u, Lr, Lth, Lz)];
     }
     __syncthreads();
     diff_aux += DifferentialK(T[thread], T[thread - 1u], dr, (r0 + dr * xIndex) * dth * dz);
@@ -345,9 +337,9 @@ __global__ void FluxContribution(double *diff_out, const double *T_in, const dou
 {
     unsigned yIndex = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned zIndex = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned indexRsup = Index3D(Lr - 1u, yIndex, zIndex, Lr, Lth, Lz);
-    unsigned indexRinf = Index3D(0u, yIndex, zIndex, Lr, Lth, Lz);
-    unsigned indexQ = Index2D(yIndex, zIndex, Lth, Lz);
+    unsigned indexRsup = Index3D_dev(Lr - 1u, yIndex, zIndex, Lr, Lth, Lz);
+    unsigned indexRinf = Index3D_dev(0u, yIndex, zIndex, Lr, Lth, Lz);
+    unsigned indexQ = Index2D_dev(yIndex, zIndex, Lth, Lz);
     if (yIndex < Lth && zIndex < Lz)
     {
         diff_out[indexRsup] += h * (T_amb[0u] - T_in[indexRinf]) * (r0 + dr * Lr) * dth * dz;
@@ -361,7 +353,7 @@ __global__ void TermalCapacity(double *diff_out, const double *T_in, double r0, 
     unsigned xIndex = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned yIndex = blockIdx.y * blockDim.y + threadIdx.y;
     unsigned zIndex = blockIdx.z * blockDim.z + threadIdx.z;
-    unsigned index = Index3D(xIndex, yIndex, zIndex, Lr, Lth, Lz);
+    unsigned index = Index3D_dev(xIndex, yIndex, zIndex, Lr, Lth, Lz);
     if (xIndex < Lr && yIndex < Lth && zIndex < Lz)
     {
         double mR = r0 + dr * (xIndex + 0.5);
@@ -381,8 +373,10 @@ void HCRC::GPU::Differential(double *diff_out, const double *T_in, const double 
     // Flux Contribution
     dim3 Tq(16u, 16u);
     dim3 Bq((Lth + T.y - 1u) / T.y, (Lz + T.z - 1u) / T.z);
+    size = 0u;
     FluxContribution<<<Bq, Tq, size, stream_in>>>(diff_out, T_in, Q_in, T_amb_in, amp, r0, h, dr, dth, dz, Lr, Lth, Lz);
     // Thermal Capacity
+    size = 0u;
     TermalCapacity<<<B, T, size, stream_in>>>(diff_out, T_in, r0, dr, dth, dz, Lr, Lth, Lz);
 }
 
@@ -511,12 +505,4 @@ void HCRC::GPU::AddError(double *T_out, double mean_in, double sigma_in, unsigne
     MathGPU::Add(T, randomVector, length, stream_in);
     cudaStreamSynchronize(stream_in);
     cudaFree(randomVector.pointer);
-}
-
-void HCRC::GPU::SelectTemperatures(double *T_out, double *T_in, unsigned *indexR_in, unsigned *indexTh_in, unsigned *indexZ_in, unsigned length_in, unsigned Lr, unsigned Lth, unsigned Lz)
-{
-    for (unsigned i = 0u; i < length_in; i++)
-    {
-        cudaMemcpy(T_out + i, T_in + Index(indexR_in[i], indexTh_in[i], indexZ_in[i], Lr, Lth, Lz), sizeof(double), cudaMemcpyDeviceToDevice);
-    }
 }
