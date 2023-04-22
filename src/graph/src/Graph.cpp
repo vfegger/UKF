@@ -5,8 +5,8 @@ int main()
 {
     std::cout << "\nStart Execution\n\n";
     std::string path_dir = std::filesystem::current_path().string();
-    std::string path_text_in = path_dir + "/data/text/out/";
-    std::string path_text_out = path_dir + "/graph/data/";
+    std::string path_text_in = path_dir + "/graph/data/in/";
+    std::string path_text_out = path_dir + "/graph/data/out/";
 
     std::string extension_text_in = ".dat";
     std::string extension_text_out = ".dat";
