@@ -94,17 +94,17 @@ void UKF::Iterate(Timer &timer)
     MemoryHandler::Free(chol,stream0);
     timer.Save();
 
-    std::cout << "Observation Step\n";
-    for (unsigned i = 0u; i < sigmaPointsLength; i++)
-    {
-        memory.pointer[0u].Observation(sigmaPointsState.pointer[i], parameter.pointer[0u], sigmaPointsObservation.pointer[i],cublasHandle0,cusolverHandle0,stream0);
-    }
-    timer.Save();
-
     std::cout << "Evolution Step\n";
     for (unsigned i = 0u; i < sigmaPointsLength; i++)
     {
         memory.pointer[0u].Evolution(sigmaPointsState.pointer[i], parameter.pointer[0],cublasHandle0,cusolverHandle0,stream0);
+    }
+    timer.Save();
+
+    std::cout << "Observation Step\n";
+    for (unsigned i = 0u; i < sigmaPointsLength; i++)
+    {
+        memory.pointer[0u].Observation(sigmaPointsState.pointer[i], parameter.pointer[0u], sigmaPointsObservation.pointer[i],cublasHandle0,cusolverHandle0,stream0);
     }
     timer.Save();
 
