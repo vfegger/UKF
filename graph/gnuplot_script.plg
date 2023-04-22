@@ -7,7 +7,7 @@ isGPU = ARGV[5]
 set print "-"
 print sprintf('Sizes: %s %s %s %s %s', x, y, z, t, isGPU)
 
-file_path = "data/"
+file_path = "data/out/"
 output_path = "output/"
 if(ARGC > 5) file_path = ARG6
 if(ARGC > 6) output_path = ARG7
