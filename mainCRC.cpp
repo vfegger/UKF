@@ -16,7 +16,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
             double T0, double sT0, double sTm0, double Q0, double sQ0, double Tamb0, double sTamb0,
             double Amp, double r0, double h, double mean, double sigma,
             double alpha, double beta, double kappa,
-            unsigned projectCase,
+            unsigned caseType, unsigned projectCase,
             PointerType type_in, PointerContext context_in)
 {
     std::cout << std::setprecision(3);
@@ -55,6 +55,9 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
         measures.pointer[i * HCRC_Measures + j] = ((double *)pointer)[i * HCRC_Measures_Total + HCRC_Measures_Total - 1];
     }
 
+    HFG_CRC generator(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Tamb0, Amp, r0, h, type_in, context_in);
+    generator.Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
+
     // Output Treatment
     unsigned indexTimer;
     unsigned indexTemperature;
@@ -69,7 +72,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     std::string name_heatFlux = "HeatFlux";
     std::string name_type = (type_in == PointerType::CPU) ? "_CPU" : "_GPU";
 
-    std::string name_case = "R" + std::to_string(Lr) + "Th" + std::to_string(Lth) + "Z" + std::to_string(Lz) + "T" + std::to_string(Lt) + "C" + std::to_string(projectCase);
+    std::string name_case = "R" + std::to_string(Lr) + "Th" + std::to_string(Lth) + "Z" + std::to_string(Lz) + "T" + std::to_string(Lt) + "S" + std::to_string(caseType) + "C" + std::to_string(projectCase);
 
     std::string name_timer_aux = name_timer + name_case + name_type;
     std::string name_temperature_aux = name_temperature + name_case + name_type;
@@ -84,7 +87,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexHeatFlux), "Heat Flux", Lth * Lz, ParserType::Double, positionHeatFlux);
 
     // Problem Definition
-    HFE_CRC problem(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, sT0, sTm0, Q0, sQ0, Tamb0, sTamb0, Amp, r0, h, type_in, context_in);
+    HFE_CRC problem(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, sT0, sTm0, Q0, sQ0, Tamb0, sTamb0, Amp, r0, h, caseType, type_in, context_in);
 
     problem.UpdateMeasure(measures, type_in, context_in);
 
@@ -152,9 +155,10 @@ int main(int argc, char **argv)
     PointerType pointerType;
     PointerContext pointerContext;
 
+    unsigned caseType;
     unsigned projectCase;
 
-    if (argc == 1 + 4 + 2 + 1)
+    if (argc == 1 + 4 + 2 + 2)
     {
         Lr = (unsigned)std::stoi(argv[1u]);
         Lth = (unsigned)std::stoi(argv[2u]);
@@ -162,7 +166,8 @@ int main(int argc, char **argv)
         Lt = (unsigned)std::stoi(argv[4u]);
         pointerType = (PointerType)std::stoi(argv[5u]);
         pointerContext = (PointerContext)std::stoi(argv[6u]);
-        projectCase = (PointerContext)std::stoi(argv[7u]);
+        caseType = (unsigned)std::stoi(argv[7u]);
+        projectCase = (unsigned)std::stoi(argv[8u]);
     }
     else
     {
@@ -263,7 +268,7 @@ int main(int argc, char **argv)
             T0, sT0, sTm0, Q0, sQ0, Tamb0, sTamb0,
             Amp, r0, h, mean, sigma,
             alpha, beta, kappa,
-            projectCase,
+            caseType, projectCase,
             pointerType, pointerContext);
 
     Parser::ConvertToText(path_binary_out, path_text_out, extension_text);
@@ -274,6 +279,7 @@ int main(int argc, char **argv)
                           "Th" + std::to_string(Lth) +
                           "Z" + std::to_string(Lz) +
                           "T" + std::to_string(Lt) +
+                          "S" + std::to_string(caseType) +
                           "C" + std::to_string(projectCase) +
                           name_type + ".ok";
     std::ofstream ok_file(ok_name);

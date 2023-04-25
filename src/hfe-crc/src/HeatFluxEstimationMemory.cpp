@@ -51,7 +51,49 @@ void HFE_CRCMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasH
     }
 }
 
-void HFE_CRCMemory::Observation(Data &data_in, Parameter &parameter_in, Data &data_out, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in)
+void ObservationSimulation(Data &data_in, Parameter &parameter_in, Data &data_out, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in)
+{
+    unsigned Lr = parameter_in.GetPointer<unsigned>(0u).pointer[0u];
+    unsigned Lth = parameter_in.GetPointer<unsigned>(0u).pointer[1u];
+    unsigned Lz = parameter_in.GetPointer<unsigned>(0u).pointer[2u];
+    unsigned length = Lth * Lz;
+    unsigned *i = new unsigned[length];
+    unsigned *j = new unsigned[length];
+    unsigned *k = new unsigned[length];
+
+    for (unsigned kk = 0u; kk < Lz; kk++)
+    {
+        for (unsigned jj = 0u; jj < Lth; jj++)
+        {
+            i[kk * Lth + jj] = 0u;
+            j[kk * Lth + jj] = jj;
+            k[kk * Lth + jj] = kk;
+        }
+    }
+
+    Pointer<double> pointer_in = data_in.GetPointer();
+    Pointer<double> pointer_out = data_out.GetPointer();
+    Pointer<double> T_in = data_in[0u];
+    Pointer<double> T_out = data_out[0u];
+
+    if (pointer_in.type == PointerType::CPU && pointer_out.type == PointerType::CPU)
+    {
+        HCRC::CPU::SelectTemperatures(T_out.pointer, T_in.pointer, i, j, k, length, Lr, Lth, Lz);
+    }
+    else if (pointer_in.type == PointerType::GPU && pointer_out.type == PointerType::GPU)
+    {
+        HCRC::GPU::SelectTemperatures(T_out.pointer, T_in.pointer, i, j, k, length, Lr, Lth, Lz);
+    }
+    else
+    {
+        std::cout << "Error: Pointer Types do not match.\n";
+    }
+    delete[] k;
+    delete[] j;
+    delete[] i;
+}
+
+void ObservationMeasure(Data &data_in, Parameter &parameter_in, Data &data_out, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in)
 {
     // Observation should use the correct sensors and angle positions
     unsigned Lr = parameter_in.GetPointer<unsigned>(0u).pointer[0u];
@@ -116,7 +158,21 @@ void HFE_CRCMemory::Observation(Data &data_in, Parameter &parameter_in, Data &da
         HCRC::GPU::SelectTemperatures(T_out.pointer, T_in.pointer, i, j, k, it, Lr, Lth, Lz);
         MemoryHandler::Copy(T_amb_out, T_amb_in, 1u, stream_in);
     }
+    else
+    {
+        std::cout << "Error: Pointer Types do not match.\n";
+    }
     delete[] k;
     delete[] j;
     delete[] i;
+}
+
+void HFE_CRCMemory::Observation(Data &data_in, Parameter &parameter_in, Data &data_out, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in)
+{
+    unsigned caseType = parameter_in.GetPointer<unsigned>(4u).pointer[0u];
+    if(caseType == 0u) {
+        ObservationMeasure(data_in,parameter_in,data_out,cublasHandle_in,cusolverHandle_in,stream_in);
+    } else if(caseType == 1) {
+        ObservationSimulation(data_in,parameter_in,data_out,cublasHandle_in,cusolverHandle_in,stream_in);
+    }
 }

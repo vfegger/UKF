@@ -195,21 +195,21 @@ void HCRC::CPU::RK4(double *T_out, const double *T_in, const double *Q_in, const
 void HCRC::CPU::SetFlux(double *Q_out, HCRCProblem &problem_in, unsigned t_in)
 {
     bool xCondition, yCondition;
-    double dr, dth, Sr, Sth;
-    unsigned Lr, Lth;
-    dr = problem_in.dr;
+    double dth, dz, Sth, Sz;
+    unsigned Lth, Lz;
     dth = problem_in.dth;
-    Sr = problem_in.Sr;
+    dz = problem_in.dz;
     Sth = problem_in.Sth;
-    Lr = problem_in.Lr;
+    Sz = problem_in.Sz;
     Lth = problem_in.Lth;
-    for (unsigned j = 0u; j < Lth; j++)
+    Lz = problem_in.Lz;
+    for (unsigned k = 0u; k < Lz; k++)
     {
-        for (unsigned i = 0u; i < Lr; i++)
+        for (unsigned j = 0u; j < Lth; j++)
         {
-            xCondition = (i + 0.5) * dr >= 0.4 * Sr && (i + 0.5) * dr <= 0.7 * Sr;
-            yCondition = (j + 0.5) * dth >= 0.4 * Sth && (j + 0.5) * dth <= 0.7 * Sth;
-            Q_out[j * Lr + i] = (xCondition && yCondition) ? 100.0 : 0.0;
+            xCondition = (j + 0.5) * dth >= 0.4 * Sth && (j + 0.5) * dth <= 0.7 * Sth;
+            yCondition = (k + 0.5) * dz >= 0.4 * Sz && (k + 0.5) * dz <= 0.7 * Sz;
+            Q_out[k * Lth + j] = (xCondition && yCondition) ? 100.0 : 0.0;
         }
     }
 }
@@ -452,25 +452,25 @@ void HCRC::GPU::RK4(double *T_out, double *T_in, double *Q_in, double *T_amb_in,
     cublasDaxpy(handle_in, L, &alpha, aux, 1u, T_out, 1u);
 }
 
-__global__ void SetFluxDevice(double *Q_out, double dr, double dth, double Sr, double Sth, unsigned Lr, unsigned Lth)
+__global__ void SetFluxDevice(double *Q_out, double dth, double dz, double Sth, double Sz, unsigned Lth, unsigned Lz)
 {
     unsigned xIndex = blockDim.x * blockIdx.x + threadIdx.x;
     unsigned yIndex = blockDim.y * blockIdx.y + threadIdx.y;
 
     bool xCondition, yCondition;
-    if (xIndex < Lr && yIndex < Lth)
+    if (xIndex < Lth && yIndex < Lz)
     {
-        xCondition = (xIndex + 0.5) * dr >= 0.4 * Sr && (xIndex + 0.5) * dr <= 0.7 * Sr;
-        yCondition = (yIndex + 0.5) * dth >= 0.4 * Sth && (yIndex + 0.5) * dth <= 0.7 * Sth;
-        Q_out[yIndex * Lr + xIndex] = xCondition * yCondition * 100.0;
+        xCondition = (xIndex + 0.5) * dth >= 0.4 * Sth && (xIndex + 0.5) * dth <= 0.7 * Sz;
+        yCondition = (yIndex + 0.5) * dz >= 0.4 * Sz && (yIndex + 0.5) * dz <= 0.7 * Sz;
+        Q_out[yIndex * Lth + xIndex] = xCondition * yCondition * 100.0;
     }
 }
 
 void HCRC::GPU::SetFlux(double *Q_out, HCRCProblem &problem_in, unsigned t_in, cudaStream_t stream_in)
 {
     dim3 T(16u, 16u);
-    dim3 B((problem_in.Lr + T.x - 1u) / T.x, (problem_in.Lth + T.y - 1u) / T.y);
-    SetFluxDevice<<<B, T, 0, stream_in>>>(Q_out, problem_in.dr, problem_in.dth, problem_in.Sr, problem_in.Sth, problem_in.Lr, problem_in.Lth);
+    dim3 B((problem_in.Lth + T.x - 1u) / T.x, (problem_in.Lz + T.y - 1u) / T.y);
+    SetFluxDevice<<<B, T, 0, stream_in>>>(Q_out, problem_in.dth, problem_in.dz, problem_in.Sth, problem_in.Sz, problem_in.Lth, problem_in.Lz);
 }
 
 void HCRC::GPU::AddError(double *T_out, double mean_in, double sigma_in, unsigned length, cudaStream_t stream_in)

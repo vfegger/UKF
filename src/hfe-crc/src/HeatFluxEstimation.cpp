@@ -5,15 +5,16 @@ Pointer<HFE_CRCMemory> HFE_CRC::GetMemory()
     return memory;
 }
 
-HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr, double Sth, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, double Tamb0, double sTamb0, double Amp, double r0, double h, PointerType type_in, PointerContext context_in)
+HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr, double Sth, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, double Tamb0, double sTamb0, double Amp, double r0, double h, unsigned caseType, PointerType type_in, PointerContext context_in)
 {
     std::cout << "Parameter Initialization\n";
-    parameter = MemoryHandler::AllocValue<Parameter, unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
-    unsigned indexL, indexD, indexS, indexP;
+    parameter = MemoryHandler::AllocValue<Parameter, unsigned>(5u, PointerType::CPU, PointerContext::CPU_Only);
+    unsigned indexL, indexD, indexS, indexP, indexC;
     indexL = parameter.pointer[0u].Add("Length", 4u, sizeof(unsigned));
     indexD = parameter.pointer[0u].Add("Delta", 4u, sizeof(double));
     indexS = parameter.pointer[0u].Add("Size", 4u, sizeof(double));
     indexP = parameter.pointer[0u].Add("External Parms", 3u, sizeof(double));
+    indexC = parameter.pointer[0u].Add("Case", 1u, sizeof(double));
     parameter.pointer[0u].Initialize(PointerType::CPU, PointerContext::CPU_Only);
     Pointer<unsigned> L = MemoryHandler::Alloc<unsigned>(4u, PointerType::CPU, PointerContext::CPU_Only);
     L.pointer[0u] = Lr;
@@ -34,16 +35,20 @@ HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr,
     P.pointer[0u] = Amp; // Amp
     P.pointer[1u] = r0;  // Radius
     P.pointer[2u] = h;   // Heat Convection Coefficient
+    Pointer<unsigned> C = MemoryHandler::Alloc<unsigned>(1u, PointerType::CPU, PointerContext::CPU_Only);
+    C.pointer[0u] = caseType; // Case
 
     parameter.pointer[0u].LoadData(indexL, L, 4u);
     parameter.pointer[0u].LoadData(indexD, D, 4u);
     parameter.pointer[0u].LoadData(indexS, S, 4u);
     parameter.pointer[0u].LoadData(indexP, P, 3u);
+    parameter.pointer[0u].LoadData(indexC, C, 1u);
 
     MemoryHandler::Free<unsigned>(L);
     MemoryHandler::Free<double>(D);
     MemoryHandler::Free<double>(S);
     MemoryHandler::Free<double>(P);
+    MemoryHandler::Free<unsigned>(C);
 
     std::cout << "Input Initialization\n";
     input = MemoryHandler::AllocValue<Data, unsigned>(3u, PointerType::CPU, PointerContext::CPU_Only);
@@ -109,11 +114,26 @@ HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr,
 
 void HFE_CRC::UpdateMeasure(Pointer<double> T_in, PointerType type_in, PointerContext context_in)
 {
+    unsigned caseType = parameter.pointer[0u].GetPointer<unsigned>(4u).pointer[0u];
+    unsigned Lr = parameter.pointer[0u].GetPointer<unsigned>(0u).pointer[0u];
+    unsigned Lth = parameter.pointer[0u].GetPointer<unsigned>(0u).pointer[1u];
+    unsigned Lz = parameter.pointer[0u].GetPointer<unsigned>(0u).pointer[2u];
     Pointer<Data> measure_aux = MemoryHandler::AllocValue<Data, unsigned>(1u, PointerType::CPU, PointerContext::CPU_Only);
     unsigned indexT_meas;
-    indexT_meas = measure_aux.pointer[0u].Add("Temperature", HCRC_Measures);
-    measure_aux.pointer[0u].Initialize(type_in, context_in);
-    measure_aux.pointer[0u].LoadData(indexT_meas, T_in, HCRC_Measures);
+    if (caseType == 0u)
+    {
+        indexT_meas = measure_aux.pointer[0u].Add("Temperature", HCRC_Measures);
+        measure_aux.pointer[0u].Initialize(type_in, context_in);
+        measure_aux.pointer[0u].LoadData(indexT_meas, T_in, HCRC_Measures);
+    }
+    else if (caseType == 1u)
+    {
+        unsigned Lth = parameter.pointer[0u].GetPointer<unsigned>(0u).pointer[1u];
+        unsigned Lz = parameter.pointer[0u].GetPointer<unsigned>(0u).pointer[2u];
+        indexT_meas = measure_aux.pointer[0u].Add("Temperature", Lth * Lz);
+        measure_aux.pointer[0u].Initialize(type_in, context_in);
+        measure_aux.pointer[0u].LoadData(indexT_meas, T_in, Lth * Lz);
+    }
     memory.pointer[0u].UpdateMeasure(measure_aux.pointer[0u]);
     MemoryHandler::Free<Data>(measure_aux);
 }
