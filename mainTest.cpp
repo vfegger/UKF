@@ -53,7 +53,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     HeatFluxGenerator generator(Lx, Ly, Lz, Lt, Sx, Sy, Sz, St, T0, Q0, Amp, type_in, context_in);
     generator.Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
 
-    HeatFluxEstimation problem(Lx, Ly, Lz, Lt, Sx, Sy, Sz, St, T0, sT0, sTm0, Q0, sQ0, type_in, context_in);
+    HeatFluxEstimation problem(Lx, Ly, Lz, Lt, Sx, Sy, Sz, St, T0, sT0, sTm0, Q0, sQ0, Amp, type_in, context_in);
 
     problem.UpdateMeasure(generator.GetTemperature(0u), Lx, Ly, type_in, context_in);
 

@@ -16,7 +16,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
             double T0, double sT0, double sTm0, double Q0, double sQ0, double Tamb0, double sTamb0,
             double Amp, double r0, double h, double mean, double sigma,
             double alpha, double beta, double kappa,
-            unsigned caseType, unsigned projectCase,
+            unsigned iteration, unsigned caseType, unsigned projectCase,
             PointerType type_in, PointerContext context_in)
 {
     std::cout << std::setprecision(3);
@@ -28,21 +28,21 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     std::string name;
     unsigned length;
     ParserType type;
-    unsigned iteration;
+    unsigned it;
     std::string name_temperature_measured_input = "Temp" + std::to_string(projectCase);
     unsigned indexTemperatureMeasuredInput = parser.pointer[0u].OpenFileIn(path_binary_in, name_temperature_measured_input, extension_binary, std::ios::binary);
-    Parser::ImportConfigurationBinary(parser.pointer[0u].GetStreamIn(indexTemperatureMeasuredInput), name, length, type, iteration);
+    Parser::ImportConfigurationBinary(parser.pointer[0u].GetStreamIn(indexTemperatureMeasuredInput), name, length, type, it);
     if (length != HCRC_Measures_Total)
     {
         std::cout << "Error: Input data do not match the expected size.\n";
         return 1;
     }
-    if (Lt >= iteration)
+    if (Lt * iteration >= it)
     {
-        Lt = iteration;
+        Lt = it / iteration;
     }
     St = Lt * 0.2;
-    Parser::ImportAllValuesBinary(parser.pointer[0u].GetStreamIn(indexTemperatureMeasuredInput), HCRC_Measures_Total, ParserType::Double, pointer, Lt + 1u);
+    Parser::ImportAllValuesBinary(parser.pointer[0u].GetStreamIn(indexTemperatureMeasuredInput), HCRC_Measures_Total, ParserType::Double, pointer, (Lt + 1u) * iteration);
 
     Pointer<double> measures = MemoryHandler::Alloc<double>(HCRC_Measures * (Lt + 1), PointerType::CPU, PointerContext::CPU_Only);
     for (unsigned i = 0u; i <= Lt; i++)
@@ -50,9 +50,9 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
         unsigned j;
         for (j = 0u; j < HCRC_Measures - 1u; j++)
         {
-            measures.pointer[i * HCRC_Measures + j] = ((double *)pointer)[i * HCRC_Measures_Total + j];
+            measures.pointer[i * HCRC_Measures + j] = ((double *)pointer)[i * iteration * HCRC_Measures_Total + j];
         }
-        measures.pointer[i * HCRC_Measures + j] = ((double *)pointer)[i * HCRC_Measures_Total + HCRC_Measures_Total - 1];
+        measures.pointer[i * HCRC_Measures + j] = ((double *)pointer)[i * iteration * HCRC_Measures_Total + HCRC_Measures_Total - 1];
     }
 
     HFG_CRC generator(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Tamb0, Amp, r0, h, type_in, context_in);
@@ -87,7 +87,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexHeatFlux), "Heat Flux", Lth * Lz, ParserType::Double, positionHeatFlux);
 
     // Problem Definition
-    HFE_CRC problem(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, sT0, sTm0, Q0, sQ0, Tamb0, sTamb0, Amp, r0, h, caseType, type_in, context_in);
+    HFE_CRC problem(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, sT0, sTm0, Q0, sQ0, Tamb0, sTamb0, Amp, r0, h, caseType, type_in, context_in, iteration);
 
     problem.UpdateMeasure(measures, type_in, context_in);
 
@@ -155,10 +155,11 @@ int main(int argc, char **argv)
     PointerType pointerType;
     PointerContext pointerContext;
 
+    unsigned iteration;
     unsigned caseType;
     unsigned projectCase;
 
-    if (argc == 1 + 4 + 2 + 2)
+    if (argc == 1 + 4 + 2 + 3)
     {
         Lr = (unsigned)std::stoi(argv[1u]);
         Lth = (unsigned)std::stoi(argv[2u]);
@@ -166,8 +167,9 @@ int main(int argc, char **argv)
         Lt = (unsigned)std::stoi(argv[4u]);
         pointerType = (PointerType)std::stoi(argv[5u]);
         pointerContext = (PointerContext)std::stoi(argv[6u]);
-        caseType = (unsigned)std::stoi(argv[7u]);
-        projectCase = (unsigned)std::stoi(argv[8u]);
+        iteration = (unsigned)std::stoi(argv[7u]);
+        caseType = (unsigned)std::stoi(argv[8u]);
+        projectCase = (unsigned)std::stoi(argv[9u]);
     }
     else
     {
@@ -212,18 +214,18 @@ int main(int argc, char **argv)
     std::string name;
     unsigned length;
     ParserType type;
-    unsigned iteration;
+    unsigned iteration_file;
     void *pointer = NULL;
 
-    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexSize), name, length, type, iteration);
+    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexSize), name, length, type, iteration_file);
     Parser::ImportValuesBinary(parser->GetStreamIn(indexSize), length, type, pointer, 0u);
     S = (double *)pointer;
 
-    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexHPParm), name, length, type, iteration);
+    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexHPParm), name, length, type, iteration_file);
     Parser::ImportValuesBinary(parser->GetStreamIn(indexHPParm), length, type, pointer, 0u);
     HPParm = (double *)pointer;
 
-    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexUKFParm), name, length, type, iteration);
+    Parser::ImportConfigurationBinary(parser->GetStreamIn(indexUKFParm), name, length, type, iteration_file);
     Parser::ImportValuesBinary(parser->GetStreamIn(indexUKFParm), length, type, pointer, 0u);
     UKFParm = (double *)pointer;
 
@@ -233,9 +235,9 @@ int main(int argc, char **argv)
 
     it = 0u;
     double Sr = S[it++];
-    double Sth = S[it++];
+    double Sth = std::acos(-1.0);
     double Sz = S[it++];
-    double St = S[it++];
+    double St = 0.0;
 
     it = 0u;
     double T0 = HPParm[it++];
@@ -268,7 +270,7 @@ int main(int argc, char **argv)
             T0, sT0, sTm0, Q0, sQ0, Tamb0, sTamb0,
             Amp, r0, h, mean, sigma,
             alpha, beta, kappa,
-            caseType, projectCase,
+            iteration, caseType, projectCase,
             pointerType, pointerContext);
 
     Parser::ConvertToText(path_binary_out, path_text_out, extension_text);

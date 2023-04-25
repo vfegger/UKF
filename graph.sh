@@ -17,16 +17,26 @@ if [ ! -d "$GRAPH_PATH/data" ];
 then
     mkdir $GRAPH_PATH/data
 fi
+if [ ! -d "$GRAPH_PATH/data/in" ];
+then
+    mkdir $GRAPH_PATH/data/in
+fi
+if [ ! -d "$GRAPH_PATH/data/out" ];
+then
+    mkdir $GRAPH_PATH/data/out
+fi
 if [ ! -d "$GRAPH_PATH/output" ];
 then
     mkdir $GRAPH_PATH/output/
 fi
 
-rm $GRAPH_PATH/data/*
+rm $GRAPH_PATH/data/in/*
 if [ "$GPU" = "0" ];
 then
+    cp $DIR_PATH_GRAPH/data/text/out/*X${LX}Y${LY}Z${LZ}T${LT}_CPU* $GRAPH_PATH/data/in
     rm $GRAPH_PATH/output/*X${LX}Y${LY}Z${LZ}T${LT}_CPU*
 else
+    cp $DIR_PATH_GRAPH/data/text/out/*X${LX}Y${LY}Z${LZ}T${LT}_GPU* $GRAPH_PATH/data/in
     rm $GRAPH_PATH/output/*X${LX}Y${LY}Z${LZ}T${LT}_GPU*
 fi
 

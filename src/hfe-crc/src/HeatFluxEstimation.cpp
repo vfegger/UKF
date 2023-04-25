@@ -5,7 +5,7 @@ Pointer<HFE_CRCMemory> HFE_CRC::GetMemory()
     return memory;
 }
 
-HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr, double Sth, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, double Tamb0, double sTamb0, double Amp, double r0, double h, unsigned caseType, PointerType type_in, PointerContext context_in)
+HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr, double Sth, double Sz, double St, double T0, double sT0, double sTm0, double Q0, double sQ0, double Tamb0, double sTamb0, double Amp, double r0, double h, unsigned caseType, PointerType type_in, PointerContext context_in, unsigned iteration)
 {
     std::cout << "Parameter Initialization\n";
     parameter = MemoryHandler::AllocValue<Parameter, unsigned>(5u, PointerType::CPU, PointerContext::CPU_Only);
@@ -31,7 +31,7 @@ HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr,
     S.pointer[1u] = Sth;
     S.pointer[2u] = Sz;
     S.pointer[3u] = St;
-    Pointer<double> P = MemoryHandler::Alloc<double>(2u, PointerType::CPU, PointerContext::CPU_Only);
+    Pointer<double> P = MemoryHandler::Alloc<double>(3u, PointerType::CPU, PointerContext::CPU_Only);
     P.pointer[0u] = Amp; // Amp
     P.pointer[1u] = r0;  // Radius
     P.pointer[2u] = h;   // Heat Convection Coefficient
@@ -107,7 +107,7 @@ HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr,
 
     std::cout << "Memory Initialization\n";
     memory = MemoryHandler::Alloc<HFE_CRCMemory>(1u, PointerType::CPU, PointerContext::CPU_Only);
-    memory.pointer[0u] = HFE_CRCMemory(input.pointer[0u], inputCovariance.pointer[0u], inputNoise.pointer[0u], measure.pointer[0u], measureNoise.pointer[0u], parameter.pointer[0u], type_in, context_in);
+    memory.pointer[0u] = HFE_CRCMemory(input.pointer[0u], inputCovariance.pointer[0u], inputNoise.pointer[0u], measure.pointer[0u], measureNoise.pointer[0u], parameter.pointer[0u], type_in, context_in, iteration);
 
     std::cout << "End Initialization\n";
 }

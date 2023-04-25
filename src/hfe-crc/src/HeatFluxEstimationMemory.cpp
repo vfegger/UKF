@@ -1,14 +1,14 @@
 #include "../include/HeatFluxEstimationMemory.hpp"
 
-HFE_CRCMemory::HFE_CRCMemory() : UKFMemory()
+HFE_CRCMemory::HFE_CRCMemory() : UKFMemory(), iteration(1u)
 {
 }
 
-HFE_CRCMemory::HFE_CRCMemory(Data &a, DataCovariance &b, DataCovariance &c, Data &d, DataCovariance &e, Parameter &f, PointerType type_in, PointerContext context_in) : UKFMemory(a, b, c, d, e, f, type_in, context_in)
+HFE_CRCMemory::HFE_CRCMemory(Data &a, DataCovariance &b, DataCovariance &c, Data &d, DataCovariance &e, Parameter &f, PointerType type_in, PointerContext context_in, unsigned iteration) : UKFMemory(a, b, c, d, e, f, type_in, context_in), iteration(iteration)
 {
 }
 
-HFE_CRCMemory::HFE_CRCMemory(const HFE_CRCMemory &memory_in) : UKFMemory(memory_in)
+HFE_CRCMemory::HFE_CRCMemory(const HFE_CRCMemory &memory_in) : UKFMemory(memory_in), iteration(memory_in.iteration)
 {
 }
 
@@ -32,6 +32,7 @@ void HFE_CRCMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasH
     Pointer<double> parms = parameter_in.GetPointer<double>(3u);
     problem.amp = parms.pointer[0u];
     problem.r0 = parms.pointer[1u];
+    problem.h = parms.pointer[2u];
     Pointer<double> pointer = data_inout.GetPointer();
     Pointer<double> T_inout = data_inout[0u];
     Pointer<double> Q_in = data_inout[1u];
@@ -40,13 +41,19 @@ void HFE_CRCMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasH
     if (pointer.type == PointerType::CPU)
     {
         HCRC::CPU::AllocWorkspaceEuler(workspace, problem.Lr * problem.Lth * problem.Lz);
-        HCRC::CPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace);
+        for (unsigned i = 0u; i < iteration; i++)
+        {
+            HCRC::CPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace);
+        }
         HCRC::CPU::FreeWorkspaceEuler(workspace);
     }
     else if (pointer.type == PointerType::GPU)
     {
         HCRC::GPU::AllocWorkspaceRK4(workspace, problem.Lr * problem.Lth * problem.Lz, stream_in);
-        HCRC::GPU::RK4(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace, cublasHandle_in, stream_in);
+        for (unsigned i = 0u; i < iteration; i++)
+        {
+            HCRC::GPU::RK4(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace, cublasHandle_in, stream_in);
+        }
         HCRC::GPU::FreeWorkspaceRK4(workspace, stream_in);
     }
 }
@@ -76,17 +83,12 @@ void ObservationSimulation(Data &data_in, Parameter &parameter_in, Data &data_ou
     Pointer<double> T_in = data_in[0u];
     Pointer<double> T_out = data_out[0u];
 
-    if (pointer_in.type == PointerType::CPU && pointer_out.type == PointerType::CPU)
+    Pointer<double> in, out;
+    for (unsigned ii = 0u; ii < length; ii++)
     {
-        HCRC::CPU::SelectTemperatures(T_out.pointer, T_in.pointer, i, j, k, length, Lr, Lth, Lz);
-    }
-    else if (pointer_in.type == PointerType::GPU && pointer_out.type == PointerType::GPU)
-    {
-        HCRC::GPU::SelectTemperatures(T_out.pointer, T_in.pointer, i, j, k, length, Lr, Lth, Lz);
-    }
-    else
-    {
-        std::cout << "Error: Pointer Types do not match.\n";
+        in = Pointer<double>(T_in.pointer + HCRC::Index3D(i[ii], j[ii], k[ii], Lr, Lth, Lz), T_in.type, T_in.context);
+        out = Pointer<double>(T_out.pointer + ii, T_out.type, T_out.context);
+        MemoryHandler::Copy(in, out, 1u, stream_in);
     }
     delete[] k;
     delete[] j;
@@ -148,20 +150,16 @@ void ObservationMeasure(Data &data_in, Parameter &parameter_in, Data &data_out, 
     Pointer<double> T_amb_in = data_in[2u];
     Pointer<double> T_out = data_out[0u];
     Pointer<double> T_amb_out = Pointer<double>(T_out.pointer + it, T_out.type, T_out.context);
-    if (pointer_in.type == PointerType::CPU && pointer_out.type == PointerType::CPU)
+
+    Pointer<double> in, out;
+    for (unsigned ii = 0u; ii < it; ii++)
     {
-        HCRC::CPU::SelectTemperatures(T_out.pointer, T_in.pointer, i, j, k, it, Lr, Lth, Lz);
-        MemoryHandler::Copy(T_amb_out, T_amb_in, 1u, stream_in);
+        in = Pointer<double>(T_in.pointer + HCRC::Index3D(i[ii], j[ii], k[ii], Lr, Lth, Lz), T_in.type, T_in.context);
+        out = Pointer<double>(T_out.pointer + ii, T_out.type, T_out.context);
+        MemoryHandler::Copy(in, out, 1u, stream_in);
     }
-    else if (pointer_in.type == PointerType::GPU && pointer_out.type == PointerType::GPU)
-    {
-        HCRC::GPU::SelectTemperatures(T_out.pointer, T_in.pointer, i, j, k, it, Lr, Lth, Lz);
-        MemoryHandler::Copy(T_amb_out, T_amb_in, 1u, stream_in);
-    }
-    else
-    {
-        std::cout << "Error: Pointer Types do not match.\n";
-    }
+    MemoryHandler::Copy(T_amb_out, T_amb_in, 1u, stream_in);
+
     delete[] k;
     delete[] j;
     delete[] i;
@@ -170,9 +168,12 @@ void ObservationMeasure(Data &data_in, Parameter &parameter_in, Data &data_out, 
 void HFE_CRCMemory::Observation(Data &data_in, Parameter &parameter_in, Data &data_out, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in)
 {
     unsigned caseType = parameter_in.GetPointer<unsigned>(4u).pointer[0u];
-    if(caseType == 0u) {
-        ObservationMeasure(data_in,parameter_in,data_out,cublasHandle_in,cusolverHandle_in,stream_in);
-    } else if(caseType == 1) {
-        ObservationSimulation(data_in,parameter_in,data_out,cublasHandle_in,cusolverHandle_in,stream_in);
+    if (caseType == 0u)
+    {
+        ObservationMeasure(data_in, parameter_in, data_out, cublasHandle_in, cusolverHandle_in, stream_in);
+    }
+    else if (caseType == 1)
+    {
+        ObservationSimulation(data_in, parameter_in, data_out, cublasHandle_in, cusolverHandle_in, stream_in);
     }
 }

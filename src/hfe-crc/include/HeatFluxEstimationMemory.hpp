@@ -6,9 +6,11 @@
 
 class HFE_CRCMemory : public UKFMemory
 {
+private:
+    unsigned iteration = 0u;
 public:
     HFE_CRCMemory();
-    HFE_CRCMemory(Data &a, DataCovariance &b, DataCovariance &c, Data &d, DataCovariance &e, Parameter &f, PointerType type_in, PointerContext context_in);
+    HFE_CRCMemory(Data &a, DataCovariance &b, DataCovariance &c, Data &d, DataCovariance &e, Parameter &f, PointerType type_in, PointerContext context_in, unsigned it = 1u);
     HFE_CRCMemory(const HFE_CRCMemory &memory_in);
     
     void Evolution(Data &data_inout, Parameter &parameter_in, cublasHandle_t cublasHandle_in, cusolverDnHandle_t cusolverHandle_in, cudaStream_t stream_in = cudaStreamDefault) override;
