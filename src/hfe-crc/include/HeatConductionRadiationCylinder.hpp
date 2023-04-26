@@ -26,8 +26,10 @@ namespace HCRC
         double dr, dth, dz, dt;
         unsigned Lr, Lth, Lz, Lt;
 
+        unsigned iteration;
+
         HCRCProblem();
-        HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double h_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in);
+        HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double h_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in, unsigned iteration = 1u);
     };
 
     unsigned Index3D(unsigned i, unsigned j, unsigned k, unsigned Lr, unsigned Lth, unsigned Lz);

@@ -25,7 +25,7 @@ HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr,
     D.pointer[0u] = Sr / Lr;
     D.pointer[1u] = Sth / Lth;
     D.pointer[2u] = Sz / Lz;
-    D.pointer[3u] = St / Lt;
+    D.pointer[3u] = St / (iteration * Lt);
     Pointer<double> S = MemoryHandler::Alloc<double>(4u, PointerType::CPU, PointerContext::CPU_Only);
     S.pointer[0u] = Sr;
     S.pointer[1u] = Sth;

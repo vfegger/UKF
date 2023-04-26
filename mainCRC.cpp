@@ -41,23 +41,37 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     {
         Lt = it / iteration;
     }
-    St = Lt * 0.2;
+    St = Lt * iteration * 0.2;
     Parser::ImportAllValuesBinary(parser.pointer[0u].GetStreamIn(indexTemperatureMeasuredInput), HCRC_Measures_Total, ParserType::Double, pointer, (Lt + 1u) * iteration);
 
-    Pointer<double> measures = MemoryHandler::Alloc<double>(HCRC_Measures * (Lt + 1), PointerType::CPU, PointerContext::CPU_Only);
-    for (unsigned i = 0u; i <= Lt; i++)
+    // Input Choice
+    Pointer<double> measures;
+    if (caseType == 0u)
     {
-        unsigned j;
-        for (j = 0u; j < HCRC_Measures - 1u; j++)
+        measures = MemoryHandler::Alloc<double>(HCRC_Measures * (Lt + 1), PointerType::CPU, PointerContext::CPU_Only);
+        for (unsigned i = 0u; i <= Lt; i++)
         {
-            measures.pointer[i * HCRC_Measures + j] = ((double *)pointer)[i * iteration * HCRC_Measures_Total + j];
+            unsigned j;
+            for (j = 0u; j < HCRC_Measures - 1u; j++)
+            {
+                measures.pointer[i * HCRC_Measures + j] = ((double *)pointer)[i * iteration * HCRC_Measures_Total + j];
+            }
+            measures.pointer[i * HCRC_Measures + j] = ((double *)pointer)[i * iteration * HCRC_Measures_Total + HCRC_Measures_Total - 1];
         }
-        measures.pointer[i * HCRC_Measures + j] = ((double *)pointer)[i * iteration * HCRC_Measures_Total + HCRC_Measures_Total - 1];
     }
-
-    HFG_CRC generator(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Tamb0, Amp, r0, h, type_in, context_in);
-    generator.Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
-
+    else if (caseType == 1u)
+    {
+        HFG_CRC *generator = new HFG_CRC(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Tamb0, Amp, r0, h, type_in, context_in, iteration);
+        measures = MemoryHandler::Alloc<double>(Lth * Lz * (Lt + 1), PointerType::CPU, PointerContext::CPU_Only);
+        generator.Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
+        generator.GetCompleteTemperatureBoundary(measures, MemoryHandler::GetStream(0u));
+        cudaDeviceSynchronize();
+        delete generator;
+    }
+    else
+    {
+        std::cout << "Error: Case Type is not defined.\n";
+    }
     // Output Treatment
     unsigned indexTimer;
     unsigned indexTemperature;
@@ -116,7 +130,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     {
         std::cout << "Iteration " << i << ":\n";
         ukf.Iterate(timer.pointer[0u]);
-        measures_aux = Pointer<double>(measures.pointer + i * HCRC_Measures,PointerType::CPU,PointerContext::CPU_Only);
+        measures_aux = Pointer<double>(measures.pointer + i * HCRC_Measures, PointerType::CPU, PointerContext::CPU_Only);
         problem.UpdateMeasure(measures_aux, type_in, context_in);
 
         if (type_in == PointerType::GPU)

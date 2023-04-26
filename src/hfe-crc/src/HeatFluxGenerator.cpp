@@ -1,6 +1,6 @@
 #include "../include/HeatFluxGenerator.hpp"
 
-HFG_CRC::HFG_CRC(unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in, double Sr_in, double Sth_in, double Sz_in, double St_in, double T0_in, double Q0_in, double Tamb0_in, double Amp_in, double r0_in, double h_in, PointerType type_in, PointerContext context_in) : problem(T0_in, Q0_in, Amp_in, r0_in, h_in, Sr_in, Sth_in, Sz_in, St_in, Lr_in, Lth_in, Lz_in, Lt_in)
+HFG_CRC::HFG_CRC(unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in, double Sr_in, double Sth_in, double Sz_in, double St_in, double T0_in, double Q0_in, double Tamb0_in, double Amp_in, double r0_in, double h_in, PointerType type_in, PointerContext context_in, unsigned iteration) : problem(T0_in, Q0_in, Amp_in, r0_in, h_in, Sr_in, Sth_in, Sz_in, St_in, Lr_in, Lth_in, Lz_in, Lt_in, iteration)
 {
     T = MemoryHandler::Alloc<double>(Lr_in * Lth_in * Lz_in * (Lt_in + 1), type_in, context_in);
     MemoryHandler::Set<double>(T, T0_in, 0u, Lr_in * Lth_in * Lz_in);
@@ -45,6 +45,23 @@ Pointer<double> HFG_CRC::GetTemperature(unsigned t_in)
         return Pointer<double>();
     }
     return Pointer<double>(T.pointer + t_in * problem.Lr * problem.Lth * problem.Lz, T.type, T.context);
+}
+
+void HFG_CRC::GetCompleteTemperatureBoundary(Pointer<double> &T_out, cudaStream_t stream_in)
+{
+    Pointer<double> in, out;
+    for (unsigned t = 0u; t <= problem.Lt; t++)
+    {
+        for (unsigned k = 0u; k < problem.Lz; k++)
+        {
+            for (unsigned j = 0u; j < problem.Lth; j++)
+            {
+                in = Pointer<double>(T.pointer + HCRC::Index3D(0u, j, k, problem.Lr, problem.Lth, problem.Lz), T.type, T.context);
+                out = Pointer<double>(T_out.pointer + ((t * problem.Lz + k) * problem.Lth + j), T_out.type, T_out.context);
+                MemoryHandler::Copy(in, out, 1u, stream_in);
+            }
+        }
+    }
 }
 
 HFG_CRC::~HFG_CRC()

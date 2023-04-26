@@ -33,6 +33,7 @@ void HFE_CRCMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasH
     problem.amp = parms.pointer[0u];
     problem.r0 = parms.pointer[1u];
     problem.h = parms.pointer[2u];
+    problem.iteration = iteration;
     Pointer<double> pointer = data_inout.GetPointer();
     Pointer<double> T_inout = data_inout[0u];
     Pointer<double> Q_in = data_inout[1u];
@@ -41,19 +42,13 @@ void HFE_CRCMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasH
     if (pointer.type == PointerType::CPU)
     {
         HCRC::CPU::AllocWorkspaceEuler(workspace, problem.Lr * problem.Lth * problem.Lz);
-        for (unsigned i = 0u; i < iteration; i++)
-        {
-            HCRC::CPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace);
-        }
+        HCRC::CPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace);
         HCRC::CPU::FreeWorkspaceEuler(workspace);
     }
     else if (pointer.type == PointerType::GPU)
     {
         HCRC::GPU::AllocWorkspaceRK4(workspace, problem.Lr * problem.Lth * problem.Lz, stream_in);
-        for (unsigned i = 0u; i < iteration; i++)
-        {
-            HCRC::GPU::RK4(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace, cublasHandle_in, stream_in);
-        }
+        HCRC::GPU::RK4(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace, cublasHandle_in, stream_in);
         HCRC::GPU::FreeWorkspaceRK4(workspace, stream_in);
     }
 }

@@ -1,10 +1,10 @@
 #include "../include/HeatConductionRadiationCylinder.hpp"
 
-HCRC::HCRCProblem::HCRCProblem() : T0(0.0), Q0(0.0), amp(0.0), r0(0.0), h(0.0), Sr(0.0), Sth(0.0), Sz(0.0), St(0.0), Lr(0u), Lth(0u), Lz(0u), Lt(0u), dr(0.0), dth(0.0), dz(0.0), dt(0.0)
+HCRC::HCRCProblem::HCRCProblem() : T0(0.0), Q0(0.0), amp(0.0), r0(0.0), h(0.0), Sr(0.0), Sth(0.0), Sz(0.0), St(0.0), Lr(0u), Lth(0u), Lz(0u), Lt(0u), dr(0.0), dth(0.0), dz(0.0), dt(0.0), iteration(1u)
 {
 }
 
-HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double h_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in) : T0(T0_in), Q0(Q0_in), amp(amp_in), r0(r0_in), h(h_in), Sr(Sr_in - r0_in), Sth(Sth_in), Sz(Sz_in), St(St_in), Lr(Lr_in), Lth(Lth_in), Lz(Lz_in), Lt(Lt_in), dr((Sr_in - r0_in) / Lr_in), dth(Sth_in / Lth_in), dz(Sz_in / Lz_in), dt(St_in / Lt_in)
+HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double h_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in, unsigned iteration) : T0(T0_in), Q0(Q0_in), amp(amp_in), r0(r0_in), h(h_in), Sr(Sr_in - r0_in), Sth(Sth_in), Sz(Sz_in), St(St_in), Lr(Lr_in), Lth(Lth_in), Lz(Lz_in), Lt(Lt_in), dr((Sr_in - r0_in) / Lr_in), dth(Sth_in / Lth_in), dz(Sz_in / Lz_in), dt(St_in / (Lt_in * iteration)), iteration(iteration)
 {
 }
 
@@ -146,6 +146,14 @@ void HCRC::CPU::Euler(double *T_out, const double *T_in, const double *Q_in, con
     {
         T_out[i] = T_in[i] + problem_in.dt * (workspace[i]);
     }
+    for (unsigned it = 1u; it < problem_in.iteration; it++)
+    {
+        Differential(workspace, T_out, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
+        for (unsigned i = 0u; i < L; i++)
+        {
+            T_out[i] = T_out[i] + problem_in.dt * (workspace[i]);
+        }
+    }
 }
 
 void HCRC::CPU::AllocWorkspaceRK4(double *&workspace_out, unsigned length_in)
@@ -169,6 +177,7 @@ void HCRC::CPU::RK4(double *T_out, const double *T_in, const double *Q_in, const
     k2 = k1 + L;
     k3 = k2 + L;
     k4 = k3 + L;
+
     Differential(k1, T_in, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
 
     for (unsigned i = 0u; i < L; i++)
@@ -192,6 +201,34 @@ void HCRC::CPU::RK4(double *T_out, const double *T_in, const double *Q_in, const
     for (unsigned i = 0u; i < L; i++)
     {
         T_out[i] = T_in[i] + (problem_in.dt / 6.0) * (k1[i] + 2.0 * (k2[i] + k3[i]) + k4[i]);
+    }
+
+    for (unsigned it = 1u; it < problem_in.iteration; it++)
+    {
+        Differential(k1, T_out, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
+
+        for (unsigned i = 0u; i < L; i++)
+        {
+            T_aux[i] = T_out[i] + 0.5 * problem_in.dt * k1[i];
+        }
+        Differential(k2, T_aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
+
+        for (unsigned i = 0u; i < L; i++)
+        {
+            T_aux[i] = T_out[i] + 0.5 * problem_in.dt * k2[i];
+        }
+        Differential(k3, T_aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
+
+        for (unsigned i = 0u; i < L; i++)
+        {
+            T_aux[i] = T_out[i] + problem_in.dt * k3[i];
+        }
+        Differential(k4, T_aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz);
+
+        for (unsigned i = 0u; i < L; i++)
+        {
+            T_out[i] = T_out[i] + (problem_in.dt / 6.0) * (k1[i] + 2.0 * (k2[i] + k3[i]) + k4[i]);
+        }
     }
 }
 
@@ -396,6 +433,11 @@ void HCRC::GPU::Euler(double *T_out, double *T_in, double *Q_in, double *T_amb_i
     Differential(workspace, T_in, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
     double alpha = problem_in.dt;
     cublasDaxpy(handle_in, problem_in.Lr * problem_in.Lth * problem_in.Lz, &alpha, workspace, 1u, T_out, 1u);
+    for (unsigned it = 1u; it < problem_in.iteration; it++)
+    {
+        Differential(workspace, T_out, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+        cublasDaxpy(handle_in, problem_in.Lr * problem_in.Lth * problem_in.Lz, &alpha, workspace, 1u, T_out, 1u);
+    }
 }
 void HCRC::GPU::AllocWorkspaceRK4(double *&workspace_out, unsigned length_in, cudaStream_t stream_in)
 {
@@ -447,6 +489,37 @@ void HCRC::GPU::RK4(double *T_out, double *T_in, double *Q_in, double *T_amb_in,
 
     alpha = (problem_in.dt / 6.0);
     cublasDaxpy(handle_in, L, &alpha, aux, 1u, T_out, 1u);
+
+    for (unsigned it = 1u; it < problem_in.iteration; it++)
+    {
+        cublasDcopy(handle_in, L, T_out, 1u, aux, 1u);
+        Differential(k1, aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+
+        cublasDcopy(handle_in, L, T_out, 1u, aux, 1u);
+        alpha = 0.5 * problem_in.dt;
+        cublasDaxpy(handle_in, L, &alpha, k1, 1u, aux, 1u);
+        Differential(k2, aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+
+        cublasDcopy(handle_in, L, T_out, 1u, aux, 1u);
+        alpha = 0.5 * problem_in.dt;
+        cublasDaxpy(handle_in, L, &alpha, k2, 1u, aux, 1u);
+        Differential(k3, aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+
+        cublasDcopy(handle_in, L, T_out, 1u, aux, 1u);
+        alpha = 1.0 * problem_in.dt;
+        cublasDaxpy(handle_in, L, &alpha, k3, 1u, aux, 1u);
+        Differential(k4, aux, Q_in, T_amb_in, problem_in.amp, problem_in.r0, problem_in.h, problem_in.dr, problem_in.dth, problem_in.dz, problem_in.Lr, problem_in.Lth, problem_in.Lz, handle_in, stream_in);
+
+        cublasDcopy(handle_in, L, k1, 1u, aux, 1u);
+        alpha = 2.0;
+        cublasDaxpy(handle_in, L, &alpha, k2, 1u, aux, 1u);
+        cublasDaxpy(handle_in, L, &alpha, k3, 1u, aux, 1u);
+        alpha = 1.0;
+        cublasDaxpy(handle_in, L, &alpha, k4, 1u, aux, 1u);
+
+        alpha = (problem_in.dt / 6.0);
+        cublasDaxpy(handle_in, L, &alpha, aux, 1u, T_out, 1u);
+    }
 }
 
 __global__ void SetFluxDevice(double *Q_out, double dth, double dz, double Sth, double Sz, unsigned Lth, unsigned Lz)
