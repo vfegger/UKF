@@ -83,7 +83,7 @@ void ObservationSimulation(Data &data_in, Parameter &parameter_in, Data &data_ou
     {
         in = Pointer<double>(T_in.pointer + HCRC::Index3D(i[ii], j[ii], k[ii], Lr, Lth, Lz), T_in.type, T_in.context);
         out = Pointer<double>(T_out.pointer + ii, T_out.type, T_out.context);
-        MemoryHandler::Copy(in, out, 1u, stream_in);
+        MemoryHandler::Copy(out, in, 1u, stream_in);
     }
     delete[] k;
     delete[] j;
@@ -151,7 +151,7 @@ void ObservationMeasure(Data &data_in, Parameter &parameter_in, Data &data_out, 
     {
         in = Pointer<double>(T_in.pointer + HCRC::Index3D(i[ii], j[ii], k[ii], Lr, Lth, Lz), T_in.type, T_in.context);
         out = Pointer<double>(T_out.pointer + ii, T_out.type, T_out.context);
-        MemoryHandler::Copy(in, out, 1u, stream_in);
+        MemoryHandler::Copy(out, in, 1u, stream_in);
     }
     MemoryHandler::Copy(T_amb_out, T_amb_in, 1u, stream_in);
 

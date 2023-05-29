@@ -88,7 +88,7 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
         {
             index = Index3D(0u, j, k, Lr, Lth, Lz);
             indexQ = Index2D(j, k, Lth, Lz);
-            diff_out[index] += h * (T_amb[0u] - T_in[index]) * r0 * dth * dz;
+            //diff_out[index] += h * (T_amb[0u] - T_in[index]) * r0 * dth * dz;
         }
     }
     // Outside the Cylinder
@@ -98,7 +98,7 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
         {
             index = Index3D(Lr - 1u, j, k, Lr, Lth, Lz);
             indexQ = Index2D(j, k, Lth, Lz);
-            diff_out[index] += h * (T_amb[0u] - T_in[index]) * (r0 + dr * Lr) * dth * dz;
+            //diff_out[index] += h * (T_amb[0u] - T_in[index]) * (r0 + dr * Lr) * dth * dz;
         }
     }
     // Outside the Cylinder

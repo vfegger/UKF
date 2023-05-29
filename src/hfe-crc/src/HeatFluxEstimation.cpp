@@ -89,21 +89,31 @@ HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr,
     MemoryHandler::Free<double>(T);
 
     std::cout << "Measure Initialization\n";
+    unsigned measureLength = 0u;
+    if (caseType == 0u)
+    {
+        measureLength = HCRC_Measures;
+    }
+    else if (caseType == 1u)
+    {
+        measureLength = Lth * Lz;
+    }
+    else
+    {
+        std::cout << "\tError: Measure Initialization Failed at Length\n";
+    }
     measure = MemoryHandler::AllocValue<Data, unsigned>(1u, PointerType::CPU, PointerContext::CPU_Only);
     unsigned indexT_meas;
-    indexT_meas = measure.pointer[0u].Add("Temperature", HCRC_Measures);
+    indexT_meas = measure.pointer[0u].Add("Temperature", measureLength);
     measure.pointer[0u].Initialize(type_in, context_in);
 
-    Pointer<double> T_meas = MemoryHandler::Alloc<double>(HCRC_Measures, type_in, context_in);
-    Pointer<double> sigmaT_meas = MemoryHandler::Alloc<double>(HCRC_Measures, type_in, context_in);
-    MemoryHandler::Set<double>(T_meas, T0, 0, HCRC_Measures);
-    MemoryHandler::Set<double>(sigmaT_meas, sTm0, 0, HCRC_Measures);
-    measure.pointer[0u].LoadData(indexT_meas, T_meas, HCRC_Measures);
+    Pointer<double> T_meas = MemoryHandler::Alloc<double>(measureLength, type_in, context_in);
+    Pointer<double> sigmaT_meas = MemoryHandler::Alloc<double>(measureLength, type_in, context_in);
+    MemoryHandler::Set<double>(T_meas, T0, 0, measureLength);
+    MemoryHandler::Set<double>(sigmaT_meas, sTm0, 0, measureLength);
+    measure.pointer[0u].LoadData(indexT_meas, T_meas, measureLength);
     measureNoise = MemoryHandler::AllocValue<DataCovariance, Data>(measure.pointer[0u], PointerType::CPU, PointerContext::CPU_Only);
-    measureNoise.pointer[0u].LoadData(indexT_meas, sigmaT_meas, HCRC_Measures, DataCovarianceMode::Compact);
-
-    MemoryHandler::Free<double>(sigmaT_meas);
-    MemoryHandler::Free<double>(T_meas);
+    measureNoise.pointer[0u].LoadData(indexT_meas, sigmaT_meas, measureLength, DataCovarianceMode::Compact);
 
     std::cout << "Memory Initialization\n";
     memory = MemoryHandler::Alloc<HFE_CRCMemory>(1u, PointerType::CPU, PointerContext::CPU_Only);
