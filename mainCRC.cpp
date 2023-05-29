@@ -63,8 +63,8 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     {
         HFG_CRC *generator = new HFG_CRC(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Tamb0, Amp, r0, h, type_in, context_in, iteration);
         measures = MemoryHandler::Alloc<double>(Lth * Lz * (Lt + 1), PointerType::CPU, PointerContext::CPU_Only);
-        generator.Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
-        generator.GetCompleteTemperatureBoundary(measures, MemoryHandler::GetStream(0u));
+        generator->Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
+        generator->GetCompleteTemperatureBoundary(measures, MemoryHandler::GetStream(0u));
         cudaDeviceSynchronize();
         delete generator;
     }
