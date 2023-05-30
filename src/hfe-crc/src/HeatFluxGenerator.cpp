@@ -56,9 +56,9 @@ void HFG_CRC::GetCompleteTemperatureBoundary(Pointer<double> &T_out, cudaStream_
         {
             for (unsigned j = 0u; j < problem.Lth; j++)
             {
-                in = Pointer<double>(T.pointer + HCRC::Index3D(0u, j, k, problem.Lr, problem.Lth, problem.Lz), T.type, T.context);
+                in = Pointer<double>(T.pointer + t * problem.Lz * problem.Lth * problem.Lr + HCRC::Index3D(0u, j, k, problem.Lr, problem.Lth, problem.Lz), T.type, T.context);
                 out = Pointer<double>(T_out.pointer + ((t * problem.Lz + k) * problem.Lth + j), T_out.type, T_out.context);
-                MemoryHandler::Copy(in, out, 1u, stream_in);
+                MemoryHandler::Copy(out, in, 1u, stream_in);
             }
         }
     }

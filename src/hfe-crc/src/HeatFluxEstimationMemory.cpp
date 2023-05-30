@@ -47,9 +47,9 @@ void HFE_CRCMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasH
     }
     else if (pointer.type == PointerType::GPU)
     {
-        HCRC::GPU::AllocWorkspaceRK4(workspace, problem.Lr * problem.Lth * problem.Lz, stream_in);
-        HCRC::GPU::RK4(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace, cublasHandle_in, stream_in);
-        HCRC::GPU::FreeWorkspaceRK4(workspace, stream_in);
+        HCRC::GPU::AllocWorkspaceEuler(workspace, problem.Lr * problem.Lth * problem.Lz, stream_in);
+        HCRC::GPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace, cublasHandle_in, stream_in);
+        HCRC::GPU::FreeWorkspaceEuler(workspace, stream_in);
     }
 }
 

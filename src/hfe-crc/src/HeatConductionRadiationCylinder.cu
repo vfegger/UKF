@@ -4,7 +4,7 @@ HCRC::HCRCProblem::HCRCProblem() : T0(0.0), Q0(0.0), amp(0.0), r0(0.0), h(0.0), 
 {
 }
 
-HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double h_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in, unsigned iteration) : T0(T0_in), Q0(Q0_in), amp(amp_in), r0(r0_in), h(h_in), Sr(Sr_in - r0_in), Sth(Sth_in), Sz(Sz_in), St(St_in), Lr(Lr_in), Lth(Lth_in), Lz(Lz_in), Lt(Lt_in), dr((Sr_in - r0_in) / Lr_in), dth(Sth_in / Lth_in), dz(Sz_in / Lz_in), dt(St_in / (Lt_in * iteration)), iteration(iteration)
+HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double h_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in, unsigned iteration) : T0(T0_in), Q0(Q0_in), amp(amp_in), r0(r0_in), h(h_in), Sr(Sr_in), Sth(Sth_in), Sz(Sz_in), St(St_in), Lr(Lr_in), Lth(Lth_in), Lz(Lz_in), Lt(Lt_in), dr(Sr_in / Lr_in), dth(Sth_in / Lth_in), dz(Sz_in / Lz_in), dt(St_in / (Lt_in * iteration)), iteration(iteration)
 {
 }
 
@@ -249,7 +249,7 @@ void HCRC::CPU::SetFlux(double *Q_out, HCRCProblem &problem_in, unsigned t_in)
         {
             xCondition = (j + 0.5) * dth >= 0.4 * Sth && (j + 0.5) * dth <= 0.7 * Sth;
             yCondition = (k + 0.5) * dz >= 0.4 * Sz && (k + 0.5) * dz <= 0.7 * Sz;
-            Q_out[k * Lth + j] = (xCondition && yCondition) ? 100.0 : 0.0;
+            Q_out[k * Lth + j] = (xCondition && yCondition) ? 1000.0 : 0.0;
         }
     }
 }
@@ -532,7 +532,7 @@ __global__ void SetFluxDevice(double *Q_out, double dth, double dz, double Sth, 
     {
         xCondition = (xIndex + 0.5) * dth >= 0.4 * Sth && (xIndex + 0.5) * dth <= 0.7 * Sz;
         yCondition = (yIndex + 0.5) * dz >= 0.4 * Sz && (yIndex + 0.5) * dz <= 0.7 * Sz;
-        Q_out[yIndex * Lth + xIndex] = xCondition * yCondition * 100.0;
+        Q_out[yIndex * Lth + xIndex] = xCondition * yCondition * 1000.0;
     }
 }
 

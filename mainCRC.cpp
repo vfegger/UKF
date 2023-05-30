@@ -46,8 +46,10 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
 
     // Input Choice
     Pointer<double> measures;
+    unsigned measuresLength = 0u;
     if (caseType == 0u)
     {
+        measuresLength = HCRC_Measures;
         measures = MemoryHandler::Alloc<double>(HCRC_Measures * (Lt + 1), PointerType::CPU, PointerContext::CPU_Only);
         for (unsigned i = 0u; i <= Lt; i++)
         {
@@ -61,6 +63,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     }
     else if (caseType == 1u)
     {
+        measuresLength = Lth * Lz;
         HFG_CRC *generator = new HFG_CRC(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Tamb0, Amp, r0, h, type_in, context_in, iteration);
         measures = MemoryHandler::Alloc<double>(Lth * Lz * (Lt + 1), PointerType::CPU, PointerContext::CPU_Only);
         generator->Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
@@ -130,7 +133,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     {
         std::cout << "Iteration " << i << ":\n";
         ukf.Iterate(timer.pointer[0u]);
-        measures_aux = Pointer<double>(measures.pointer + i * HCRC_Measures, PointerType::CPU, PointerContext::CPU_Only);
+        measures_aux = Pointer<double>(measures.pointer + i * measuresLength, PointerType::CPU, PointerContext::CPU_Only);
         problem.UpdateMeasure(measures_aux, type_in, context_in);
 
         if (type_in == PointerType::GPU)
