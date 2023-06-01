@@ -369,6 +369,17 @@ bool MathGPU::Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight
     return out;
 }
 
+void MathGPU::Diag(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned length_in, unsigned lengthX_in, unsigned lengthY_in, unsigned strideX_in, unsigned strideY_in, cublasHandle_t handle_in, cudaStream_t stream_in)
+{
+    if (length_in > lengthX_in + strideX_in || length_in > lengthY_in + strideY_in)
+    {
+        return;
+    }
+    cublasSetStream(handle_in, stream_in);
+
+    cublasDcopy(handle_in, length_in, matrix_in.pointer + strideY_in * lengthX_in + strideX_in, lengthX_in + 1u, vector_out.pointer, 1u);
+}
+
 // Linear System Solvers
 
 // Helper Functions

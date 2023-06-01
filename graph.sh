@@ -46,7 +46,7 @@ echo "Finished GNUPlot Parser Execution"
 
 echo "Running GNUPlot for graph generation"
 cd $GRAPH_PATH
-gnuplot -c gnuplot_script.plg $LX $LY $LZ $LT $GPU
+gnuplot -c gnuplot_script_case1.gnu $LX $LY $LZ $LT $GPU
 cd $CURRENT_PATH
 echo "Finished GNUPlot Execution"
 

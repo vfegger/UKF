@@ -276,6 +276,19 @@ bool MathCPU::Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight
     return true;
 }
 
+void MathCPU::Diag(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned length_in, unsigned lengthX_in, unsigned lengthY_in, unsigned strideX_in, unsigned strideY_in)
+{
+    if (length_in > lengthX_in + strideX_in || length_in > lengthY_in + strideY_in)
+    {
+        return;
+    }
+    for (unsigned i = 0u; i < length_in; i++)
+    {
+        vector_out.pointer[i] = matrix_in.pointer[(i + strideY_in) * lengthX_in + (i + strideX_in)];
+    }
+    return;
+}
+
 // Linear System Solvers
 
 // Helper Functions

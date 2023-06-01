@@ -322,7 +322,7 @@ void Math::Operation(void (*operation_in)(Pointer<double> vector_inout, double v
 }
 
 // Reducibles Operations
-void Math::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in, unsigned cublasIndex, unsigned streamIndex_in)
+void Math::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned lengthX_in, unsigned lengthY_in, Pointer<double> weight_in, unsigned cublasIndex_in, unsigned streamIndex_in)
 {
     if ((!CheckType(vector_out.type, matrix_in.type)) || (weight_in.pointer != NULL && (!CheckType(vector_out.type, weight_in.type))))
     {
@@ -334,7 +334,7 @@ void Math::Mean(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned 
         MathCPU::Mean(vector_out, matrix_in, lengthX_in, lengthY_in, weight_in);
         break;
     case PointerType::GPU:
-        MathGPU::Mean(vector_out, matrix_in, lengthX_in, lengthY_in, MemoryHandler::GetCuBLASHandle(cublasIndex), MemoryHandler::GetStream(streamIndex_in), weight_in);
+        MathGPU::Mean(vector_out, matrix_in, lengthX_in, lengthY_in, MemoryHandler::GetCuBLASHandle(cublasIndex_in), MemoryHandler::GetStream(streamIndex_in), weight_in);
         break;
     default:
         std::cout << "Error: Type not defined for this operation.\n";
@@ -362,6 +362,27 @@ bool Math::Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in
         break;
     }
     return false;
+}
+
+void Math::Diag(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned length_in, unsigned lengthX_in, unsigned lengthY_in, unsigned strideX_in, unsigned strideY_in, unsigned cublasIndex_in, unsigned streamIndex_in)
+{
+    if (!CheckType(vector_out.type, matrix_in.type))
+    {
+        return;
+    }
+    switch (vector_out.type)
+    {
+    case PointerType::CPU:
+        MathCPU::Diag(vector_out, matrix_in, length_in, lengthX_in, lengthY_in, strideX_in, strideY_in);
+        break;
+    case PointerType::GPU:
+        MathGPU::Diag(vector_out, matrix_in, length_in, lengthX_in, lengthY_in, strideX_in, strideY_in, MemoryHandler::GetCuBLASHandle(cublasIndex_in), MemoryHandler::GetStream(streamIndex_in));
+        break;
+    default:
+        std::cout << "Error: Type not defined for this operation.\n";
+        break;
+    }
+    return;
 }
 
 // Linear System Solvers
