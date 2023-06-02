@@ -9,7 +9,7 @@ HFG_CRC::HFG_CRC(unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in
     MemoryHandler::Set<double>(Tamb, Tamb0_in, 0u, 1u);
 }
 
-void HFG_CRC::Generate(double mean_in, double sigma_in, cublasHandle_t handle_in, cudaStream_t stream_in)
+void HFG_CRC::Generate(Pointer<double> Q_in, double mean_in, double sigma_in, cublasHandle_t handle_in, cudaStream_t stream_in)
 {
     double *workspace = NULL;
     unsigned L = problem.Lr * problem.Lth * problem.Lz;

@@ -21,7 +21,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
 {
     std::cout << std::setprecision(3);
 
-    Pointer<Parser> parser = MemoryHandler::AllocValue<Parser, unsigned>(5u, PointerType::CPU, PointerContext::CPU_Only);
+    Pointer<Parser> parser = MemoryHandler::AllocValue<Parser, unsigned>(6u, PointerType::CPU, PointerContext::CPU_Only);
 
     // Input Treatment
     void *pointer = NULL;
@@ -63,10 +63,29 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     }
     else if (caseType == 1u)
     {
+        double q_rad = 1.020667395420000e+02;
+        void *pointer_F = NULL;
+        std::string name_F;
+        unsigned length_F;
+        ParserType type_F;
+        unsigned it_F;
+
+        std::string nameFile_F = "ViewFactor" + "R" + std::to_string(Lr) + "Th" + std::to_string(Lth) + "Z" + std::to_string(Lz);
+        unsigned index_F = parser.pointer[0u].OpenFileIn(path_binary_in, nameFile_F, extension_binary, std::ios::binary);
+        Parser::ImportConfigurationBinary(parser.pointer[0u].GetStreamIn(index_F), name_F, length_F, type_F, it_F);
+        Parser::ImportAllValuesBinary(parser.pointer[0u].GetStreamIn(index_F), Lth * Lz, ParserType::Double, pointer_F, it_F);
+
+        Pointer<double> Q_input = MemoryHandler::Alloc<double>(Lth * Lz, PointerType::CPU, PointerContext::CPU_Only);
+        for (unsigned i = 0u; i < Lth * Lz; i++)
+        {
+            Q_input[i] = ((double *)pointer_F)[i];
+        }
+        Parser::DeleteValues(pointer_F, ParserType::Double);
+
         measuresLength = Lth * Lz;
         HFG_CRC *generator = new HFG_CRC(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Tamb0, Amp, r0, h, type_in, context_in, iteration);
         measures = MemoryHandler::Alloc<double>(Lth * Lz * (Lt + 1), PointerType::CPU, PointerContext::CPU_Only);
-        generator->Generate(mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
+        generator->Generate(Q_input, mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
         generator->GetCompleteTemperatureBoundary(measures, MemoryHandler::GetStream(0u));
         cudaDeviceSynchronize();
         delete generator;
@@ -75,6 +94,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
     {
         std::cout << "Error: Case Type is not defined.\n";
     }
+    Parser::DeleteValues(pointer, ParserType::Double);
     // Output Treatment
     unsigned indexTimer;
     unsigned indexTemperature;
@@ -152,6 +172,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
 
     MemoryHandler::Free<Parser>(parser);
     MemoryHandler::Free<Timer>(timer);
+    MemoryHandler::Free<double>(measures);
     if (type_in == PointerType::GPU)
     {
         MemoryHandler::Free(temperature_parser);
