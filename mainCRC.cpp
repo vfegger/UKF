@@ -70,8 +70,8 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
         ParserType type_F;
         unsigned it_F;
 
-        std::string nameFile_F = "ViewFactor"; 
-        std::string nameFile_F += "Th" + std::to_string(Lth) + "Z" + std::to_string(Lz);
+        std::string nameFile_F = "ViewFactor";
+        nameFile_F += "Th" + std::to_string(Lth) + "Z" + std::to_string(Lz);
         unsigned index_F = parser.pointer[0u].OpenFileIn(path_binary_in, nameFile_F, extension_binary, std::ios::binary);
         Parser::ImportConfigurationBinary(parser.pointer[0u].GetStreamIn(index_F), name_F, length_F, type_F, it_F);
         Parser::ImportAllValuesBinary(parser.pointer[0u].GetStreamIn(index_F), Lth * Lz, ParserType::Double, pointer_F, it_F);
@@ -79,7 +79,7 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
         Pointer<double> Q_input = MemoryHandler::Alloc<double>(Lth * Lz, PointerType::CPU, PointerContext::CPU_Only);
         for (unsigned i = 0u; i < Lth * Lz; i++)
         {
-            Q_input[i] = ((double *)pointer_F)[i];
+            Q_input.pointer[i] = ((double *)pointer_F)[i];
         }
         Parser::DeleteValues(pointer_F, ParserType::Double);
 
