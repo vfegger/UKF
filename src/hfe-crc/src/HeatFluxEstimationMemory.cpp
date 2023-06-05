@@ -36,20 +36,22 @@ void HFE_CRCMemory::Evolution(Data &data_inout, Parameter &parameter_in, cublasH
     problem.iteration = iteration;
     Pointer<double> pointer = data_inout.GetPointer();
     Pointer<double> T_inout = data_inout[0u];
-    Pointer<double> Q_in = data_inout[1u];
-    Pointer<double> Tamb_in = data_inout[2u];
+    Pointer<double> Q_inout = data_inout[1u];
+    Pointer<double> Tamb_inout = data_inout[2u];
     double *workspace = NULL;
     if (pointer.type == PointerType::CPU)
     {
         HCRC::CPU::AllocWorkspaceEuler(workspace, problem.Lr * problem.Lth * problem.Lz);
-        HCRC::CPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace);
+        HCRC::CPU::Euler(T_inout.pointer, T_inout.pointer, Q_inout.pointer, Tamb_inout.pointer, problem, workspace);
         HCRC::CPU::FreeWorkspaceEuler(workspace);
+        //HCRC::CPU::AddError(Q_inout.pointer,0.0,1.0,problem.Lth * problem.Lz);
     }
     else if (pointer.type == PointerType::GPU)
     {
         HCRC::GPU::AllocWorkspaceEuler(workspace, problem.Lr * problem.Lth * problem.Lz, stream_in);
-        HCRC::GPU::Euler(T_inout.pointer, T_inout.pointer, Q_in.pointer, Tamb_in.pointer, problem, workspace, cublasHandle_in, stream_in);
+        HCRC::GPU::Euler(T_inout.pointer, T_inout.pointer, Q_inout.pointer, Tamb_inout.pointer, problem, workspace, cublasHandle_in, stream_in);
         HCRC::GPU::FreeWorkspaceEuler(workspace, stream_in);
+        //HCRC::GPU::AddError(Q_inout.pointer,0.0,0.1,problem.Lth * problem.Lz,stream_in);
     }
 }
 

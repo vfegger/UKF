@@ -12,12 +12,12 @@ HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double
 
 inline unsigned HCRC::Index3D(unsigned i, unsigned j, unsigned k, unsigned Lr, unsigned Lth, unsigned Lz)
 {
-    return (std::clamp(k, 0u, Lz - 1) * Lth + (j % Lth)) * Lr + std::clamp(i, 0u, Lr - 1u);
+    return (k * Lth + j)* Lr + i;
 }
 
 inline unsigned HCRC::Index2D(unsigned j, unsigned k, unsigned Lth, unsigned Lz)
 {
-    return std::clamp(k, 0u, Lz - 1) * Lth + (j % Lth);
+    return k * Lth + j;
 }
 
 inline double HCRC::CPU::C(double T_in)
@@ -56,12 +56,19 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
             {
                 index = Index3D(i, j, k, Lr, Lth, Lz);
                 T0 = T_in[index];
-                TiN = T_in[Index3D(i - 1, j, k, Lr, Lth, Lz)];
-                TiP = T_in[Index3D(i + 1, j, k, Lr, Lth, Lz)];
-                TjN = T_in[Index3D(i, j - 1, k, Lr, Lth, Lz)];
-                TjP = T_in[Index3D(i, j + 1, k, Lr, Lth, Lz)];
-                TkN = T_in[Index3D(i, j, k - 1, Lr, Lth, Lz)];
-                TkP = T_in[Index3D(i, j, k + 1, Lr, Lth, Lz)];
+                unsigned iP, jP, kP, iN, jN, kN;
+                iP = (i == Lr - 1u) ? Lr - 1u : i + 1u;
+                jP = (j == Lth - 1u) ? 0u : j + 1u;
+                kP = (k == Lz - 1u) ? Lz - 1u : k + 1u;
+                iN = (i == 0u) ? 0u : i - 1u;
+                jN = (j == 0u) ? Lth - 1u : j - 1u;
+                kN = (k == 0u) ? 0u : k - 1u;
+                TiN = T_in[Index3D(iN, j, k, Lr, Lth, Lz)];
+                TiP = T_in[Index3D(iP, j, k, Lr, Lth, Lz)];
+                TjN = T_in[Index3D(i, jN, k, Lr, Lth, Lz)];
+                TjP = T_in[Index3D(i, jP, k, Lr, Lth, Lz)];
+                TkN = T_in[Index3D(i, j, kN, Lr, Lth, Lz)];
+                TkP = T_in[Index3D(i, j, kP, Lr, Lth, Lz)];
                 acc = 0.0;
                 // R dependency
                 double R_N = DifferentialK(T0, TiN, dr, (r0 + dr * i) * dth * dz);
@@ -88,7 +95,7 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
         {
             index = Index3D(0u, j, k, Lr, Lth, Lz);
             indexQ = Index2D(j, k, Lth, Lz);
-            //diff_out[index] += h * (T_amb[0u] - T_in[index]) * r0 * dth * dz;
+            diff_out[index] += h * (T_amb[0u] - T_in[index]) * r0 * dth * dz;
         }
     }
     // Outside the Cylinder
@@ -98,7 +105,7 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
         {
             index = Index3D(Lr - 1u, j, k, Lr, Lth, Lz);
             indexQ = Index2D(j, k, Lth, Lz);
-            //diff_out[index] += h * (T_amb[0u] - T_in[index]) * (r0 + dr * Lr) * dth * dz;
+            diff_out[index] += h * (T_amb[0u] - T_in[index]) * (r0 + dr * Lr) * dth * dz;
         }
     }
     // Outside the Cylinder
@@ -108,7 +115,7 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
         {
             index = Index3D(Lr - 1u, j, k, Lr, Lth, Lz);
             indexQ = Index2D(j, k, Lth, Lz);
-            diff_out[index] += amp * E(T_in[index]) * Q_in[indexQ] * (r0 + dr * Lr) * dth * dz;
+            diff_out[index] += amp * E(T_in[index]) * Q_in[indexQ];
         }
     }
     // Calculation of the temporal derivative

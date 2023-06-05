@@ -18,22 +18,23 @@ void HFG_CRC::Generate(Pointer<double> Q_in, double mean_in, double sigma_in, cu
         HCRC::CPU::AllocWorkspaceRK4(workspace, L);
         for (unsigned t = 0u; t < problem.Lt; t++)
         {
-            HCRC::CPU::SetFlux(Q.pointer, problem, t * problem.dt);
-            HCRC::CPU::RK4(T.pointer + (t + 1) * L, T.pointer + t * L, Q.pointer, Tamb.pointer, problem, workspace);
+            HCRC::CPU::RK4(T.pointer + (t + 1) * L, T.pointer + t * L, Q_in.pointer, Tamb.pointer, problem, workspace);
         }
         HCRC::CPU::FreeWorkspaceRK4(workspace);
         HCRC::CPU::AddError(T.pointer, mean_in, sigma_in, (problem.Lt + 1) * L);
     }
     else if (T.type == PointerType::GPU)
     {
+        Pointer<double> Q_aux = MemoryHandler::Alloc<double>(problem.Lth * problem.Lz, PointerType::GPU, PointerContext::GPU_Aware);
+        MemoryHandler::Copy(Q_aux, Q_in, problem.Lth * problem.Lz, stream_in);
         HCRC::GPU::AllocWorkspaceRK4(workspace, L, stream_in);
         for (unsigned t = 0u; t < problem.Lt; t++)
         {
-            HCRC::GPU::SetFlux(Q.pointer, problem, t * problem.dt, stream_in);
-            HCRC::GPU::RK4(T.pointer + (t + 1) * L, T.pointer + t * L, Q.pointer, Tamb.pointer, problem, workspace, handle_in, stream_in);
+            HCRC::GPU::RK4(T.pointer + (t + 1) * L, T.pointer + t * L, Q_in.pointer, Tamb.pointer, problem, workspace, handle_in, stream_in);
         }
         HCRC::GPU::FreeWorkspaceRK4(workspace, stream_in);
         HCRC::GPU::AddError(T.pointer, mean_in, sigma_in, (problem.Lt + 1) * L, stream_in);
+        MemoryHandler::Free<double>(Q_aux, stream_in);
     }
 }
 

@@ -115,6 +115,9 @@ HFE_CRC::HFE_CRC(unsigned Lr, unsigned Lth, unsigned Lz, unsigned Lt, double Sr,
     measureNoise = MemoryHandler::AllocValue<DataCovariance, Data>(measure.pointer[0u], PointerType::CPU, PointerContext::CPU_Only);
     measureNoise.pointer[0u].LoadData(indexT_meas, sigmaT_meas, measureLength, DataCovarianceMode::Compact);
 
+    MemoryHandler::Free<double>(sigmaT_meas);
+    MemoryHandler::Free<double>(T_meas);
+
     std::cout << "Memory Initialization\n";
     memory = MemoryHandler::Alloc<HFE_CRCMemory>(1u, PointerType::CPU, PointerContext::CPU_Only);
     memory.pointer[0u] = HFE_CRCMemory(input.pointer[0u], inputCovariance.pointer[0u], inputNoise.pointer[0u], measure.pointer[0u], measureNoise.pointer[0u], parameter.pointer[0u], type_in, context_in, iteration);
