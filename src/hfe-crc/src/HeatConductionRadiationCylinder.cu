@@ -295,81 +295,83 @@ __device__ double DifferentialK(const double T0_in, const double TP_in, const do
     return coef_in * K_mean * diff;
 }
 
-__device__ inline unsigned clamp(unsigned i, unsigned min, unsigned max)
+__device__ inline int clamp(int i, int min, int max)
 {
-    const unsigned t = (i < min) ? min : i;
+    const int t = (i < min) ? min : i;
     return (t > max) ? max : t;
 }
 
-__device__ inline unsigned Index3D_dev(unsigned i, unsigned j, unsigned k, unsigned Li, unsigned Lj, unsigned Lk)
-{
-    return (clamp(k, 0u, Lk - 1u) * Lj + (j % Lj)) * Li + clamp(i, 0u, Li - 1u);
-}
-
-__device__ inline unsigned IndexThread(unsigned i, unsigned j, unsigned k, unsigned Li, unsigned Lj)
+__device__ inline int Index3D_dev(int i, int j, int k, int Li, int Lj, int Lk)
 {
     return (k * Lj + j) * Li + i;
 }
 
-__device__ inline unsigned Index2D_dev(unsigned j, unsigned k, unsigned Lj, unsigned Lk)
+__device__ inline int Index2D_dev(int j, int k, int Lj, int Lk)
 {
-    return clamp(k, 0u, Lk - 1u) * Lj + (j % Lj);
+    return k * Lj + j;
 }
 
-__global__ void DifferentialAxis(double *diff_out, const double *T_in, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
+__global__ void DifferentialAxis(double *diff_out, const double *T_in, double r0, double dr, double dth, double dz, int Lr, int Lth, int Lz)
 {
-    unsigned xIndex = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned yIndex = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned zIndex = blockIdx.z * blockDim.z + threadIdx.z;
-    unsigned index = Index3D_dev(xIndex, yIndex, zIndex, Lr, Lth, Lz);
+    int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
+    int zIndex = blockIdx.z * blockDim.z + threadIdx.z;
+    int index = Index3D_dev(xIndex, yIndex, zIndex, Lr, Lth, Lz);
     extern __shared__ double T[];
-    unsigned thread;
-    unsigned threadDimX;
-    unsigned threadDimY;
-    double T_aux = 0.0;
-    double diff_aux = 0.0;
+    int thread;
+    int threadDimX, threadDimY, threadDimZ;
+    int threadStrideX, threadStrideY, threadStrideZ;
+    double T_aux = 0.0, diff_aux = 0.0;
+    threadDimX = blockDim.x + 2;
+    threadDimY = blockDim.y + 2;
+    threadDimZ = blockDim.z + 2;
+    threadStrideX = 1;
+    threadStrideY = threadDimX;
+    threadStrideZ = threadDimX * threadDimY;
+    thread = Index3D_dev(threadIdx.x + 1, threadIdx.y + 1, threadIdx.z + 1, threadDimX, threadDimY, threadDimZ);
+    
     bool inside = xIndex < Lr && yIndex < Lth && zIndex < Lz;
     if (inside)
     {
         T_aux = T_in[index];
     }
-    threadDimX = blockDim.x + 2u;
-    threadDimY = blockDim.y + 2u;
-    thread = IndexThread(threadIdx.x + 1u, threadIdx.y + 1u, threadIdx.z + 1u, threadDimX, threadDimY);
     T[thread] = T_aux;
     __syncthreads();
-    if (threadIdx.x == 0u && inside)
+
+    if (threadIdx.x == 0 && inside)
     {
-        T[thread - 1u] = T_in[Index3D_dev(xIndex - 1u, yIndex, zIndex, Lr, Lth, Lz)];
+        T[thread - threadStrideX] = T_in[Index3D_dev(max(xIndex - 1, 0), yIndex, zIndex, Lr, Lth, Lz)];
     }
-    if (threadIdx.x + 1u == blockDim.x || (xIndex + 1u == Lr && inside))
+    if (threadIdx.x + 1 == blockDim.x || (xIndex + 1u == Lr && inside))
     {
-        T[thread + 1u] = T_in[Index3D_dev(xIndex + 1u, yIndex, zIndex, Lr, Lth, Lz)];
+        T[thread + threadStrideX] = T_in[Index3D_dev(min(xIndex + 1, 0), yIndex, zIndex, Lr, Lth, Lz)];
     }
 
-    if (threadIdx.y == 0u && inside)
+    if (threadIdx.y == 0 && inside)
     {
-        T[thread - threadDimX] = T_in[Index3D_dev(xIndex, yIndex - 1u, zIndex, Lr, Lth, Lz)];
+        T[thread - threadStrideY] = T_in[Index3D_dev(xIndex, (yIndex == 0) * (Lth - 1) + (yIndex != 0) * (yIndex - 1), zIndex, Lr, Lth, Lz)];
     }
-    if (threadIdx.y + 1u == blockDim.y || (yIndex + 1u == Lth && inside))
+    if (threadIdx.y + 1 == blockDim.y || (yIndex + 1u == Lth && inside))
     {
-        T[thread + threadDimX] = T_in[Index3D_dev(xIndex, yIndex + 1u, zIndex, Lr, Lth, Lz)];
+        T[thread + threadStrideY] = T_in[Index3D_dev(xIndex, (yIndex + 1 != Lth) * (yIndex + 1), zIndex, Lr, Lth, Lz)];
     }
-    if (threadIdx.z == 0u && inside)
+
+    if (threadIdx.z == 0 && inside)
     {
-        T[thread - threadDimX * threadDimY] = T_in[Index3D_dev(xIndex, yIndex, zIndex - 1u, Lr, Lth, Lz)];
+        T[thread - threadStrideZ] = T_in[Index3D_dev(xIndex, yIndex, max(zIndex - 1, 0), Lr, Lth, Lz)];
     }
-    if (threadIdx.z + 1u == blockDim.z || (zIndex + 1u == Lz && inside))
+    if (threadIdx.z + 1 == blockDim.z || (zIndex + 1 == Lz && inside))
     {
-        T[thread + threadDimX * threadDimY] = T_in[Index3D_dev(xIndex, yIndex, zIndex + 1u, Lr, Lth, Lz)];
+        T[thread + threadStrideZ] = T_in[Index3D_dev(xIndex, yIndex, min(zIndex + 1, 0), Lr, Lth, Lz)];
     }
     __syncthreads();
-    diff_aux += DifferentialK(T[thread], T[thread - 1u], dr, (r0 + dr * xIndex) * dth * dz);
-    diff_aux += DifferentialK(T[thread], T[thread + 1u], dr, (r0 + dr * (xIndex + 1u)) * dth * dz);
-    diff_aux += DifferentialK(T[thread], T[thread - threadDimX], dth * (r0 + dr * xIndex), dr * dz);
-    diff_aux += DifferentialK(T[thread], T[thread + threadDimX], dth * (r0 + dr * (xIndex + 1u)), dr * dz);
-    diff_aux += DifferentialK(T[thread], T[thread - threadDimX * threadDimY], dz, dr * (r0 + dr * xIndex) * dth);
-    diff_aux += DifferentialK(T[thread], T[thread + threadDimX * threadDimY], dz, dr * (r0 + dr * (xIndex + 1u)) * dth);
+
+    diff_aux += DifferentialK(T[thread], T[thread - threadStrideX], dr, (r0 + dr * xIndex) * dth * dz);
+    diff_aux += DifferentialK(T[thread], T[thread + threadStrideX], dr, (r0 + dr * (xIndex + 1)) * dth * dz);
+    diff_aux += DifferentialK(T[thread], T[thread - threadStrideY], dth * (r0 + dr * xIndex), dr * dz);
+    diff_aux += DifferentialK(T[thread], T[thread + threadStrideY], dth * (r0 + dr * (xIndex + 1)), dr * dz);
+    diff_aux += DifferentialK(T[thread], T[thread - threadStrideZ], dz, dr * (r0 + dr * xIndex) * dth);
+    diff_aux += DifferentialK(T[thread], T[thread + threadStrideZ], dz, dr * (r0 + dr * (xIndex + 1)) * dth);
 
     if (inside)
     {
@@ -377,27 +379,27 @@ __global__ void DifferentialAxis(double *diff_out, const double *T_in, double r0
     }
 }
 
-__global__ void FluxContribution(double *diff_out, const double *T_in, const double *Q_in, const double *T_amb, double amp, double r0, double h, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
+__global__ void FluxContribution(double *diff_out, const double *T_in, const double *Q_in, const double *T_amb, double amp, double r0, double h, double dr, double dth, double dz, int Lr, int Lth, int Lz)
 {
-    unsigned yIndex = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned zIndex = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned indexRsup = Index3D_dev(Lr - 1u, yIndex, zIndex, Lr, Lth, Lz);
-    unsigned indexRinf = Index3D_dev(0u, yIndex, zIndex, Lr, Lth, Lz);
-    unsigned indexQ = Index2D_dev(yIndex, zIndex, Lth, Lz);
+    int yIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    int zIndex = blockIdx.y * blockDim.y + threadIdx.y;
+    int indexRinf = Index3D_dev(0u, yIndex, zIndex, Lr, Lth, Lz);
+    int indexRsup = Index3D_dev(Lr - 1u, yIndex, zIndex, Lr, Lth, Lz);
+    int indexQ = Index2D_dev(yIndex, zIndex, Lth, Lz);
     if (yIndex < Lth && zIndex < Lz)
     {
-        diff_out[indexRsup] += h * (T_amb[0u] - T_in[indexRinf]) * (r0 + dr * Lr) * dth * dz;
+        diff_out[indexRinf] += h * (T_amb[0u] - T_in[indexRinf]) * (r0 + dr * Lr) * dth * dz;
         diff_out[indexRsup] += h * (T_amb[0u] - T_in[indexRsup]) * (r0 + dr * Lr) * dth * dz;
         diff_out[indexRsup] += amp * E(T_in[indexRsup]) * Q_in[indexQ];
     }
 }
 
-__global__ void TermalCapacity(double *diff_out, const double *T_in, double r0, double dr, double dth, double dz, unsigned Lr, unsigned Lth, unsigned Lz)
+__global__ void TermalCapacity(double *diff_out, const double *T_in, double r0, double dr, double dth, double dz, int Lr, int Lth, int Lz)
 {
-    unsigned xIndex = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned yIndex = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned zIndex = blockIdx.z * blockDim.z + threadIdx.z;
-    unsigned index = Index3D_dev(xIndex, yIndex, zIndex, Lr, Lth, Lz);
+    int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
+    int zIndex = blockIdx.z * blockDim.z + threadIdx.z;
+    int index = Index3D_dev(xIndex, yIndex, zIndex, Lr, Lth, Lz);
     if (xIndex < Lr && yIndex < Lth && zIndex < Lz)
     {
         double mR = r0 + dr * (xIndex + 0.5);
@@ -413,15 +415,15 @@ void HCRC::GPU::Differential(double *diff_out, const double *T_in, const double 
     dim3 T(8u, 8u, 4u);
     dim3 B((Lr + T.x - 1u) / T.x, (Lth + T.y - 1u) / T.y, (Lz + T.z - 1u) / T.z);
     unsigned size = sizeof(double) * (T.x + 2u) * (T.y + 2u) * (T.z + 2u);
-    DifferentialAxis<<<B, T, size, stream_in>>>(diff_out, T_in, r0, dr, dth, dz, Lr, Lth, Lz);
+    DifferentialAxis<<<B, T, size, stream_in>>>(diff_out, T_in, r0, dr, dth, dz, (int)Lr, (int)Lth, (int)Lz);
     // Flux Contribution
     dim3 Tq(16u, 16u);
     dim3 Bq((Lth + T.y - 1u) / T.y, (Lz + T.z - 1u) / T.z);
     size = 0u;
-    FluxContribution<<<Bq, Tq, size, stream_in>>>(diff_out, T_in, Q_in, T_amb_in, amp, r0, h, dr, dth, dz, Lr, Lth, Lz);
+    FluxContribution<<<Bq, Tq, size, stream_in>>>(diff_out, T_in, Q_in, T_amb_in, amp, r0, h, dr, dth, dz, (int)Lr, (int)Lth, (int)Lz);
     // Thermal Capacity
     size = 0u;
-    TermalCapacity<<<B, T, size, stream_in>>>(diff_out, T_in, r0, dr, dth, dz, Lr, Lth, Lz);
+    TermalCapacity<<<B, T, size, stream_in>>>(diff_out, T_in, r0, dr, dth, dz, (int)Lr, (int)Lth, (int)Lz);
 }
 
 void HCRC::GPU::AllocWorkspaceEuler(double *&workspace_out, unsigned length_in, cudaStream_t stream_in)
