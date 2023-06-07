@@ -3,8 +3,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${env:CUDA_PATH}/**"
+                "${workspaceFolder}${pathSeparator}**",
+                "${env:CUDA_PATH}${pathSeparator}**"
             ],
             "defines": [
                 "_DEBUG",

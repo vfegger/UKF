@@ -1,7 +1,7 @@
 #!
 
 DEBUG=$1
-CLEAN=$2
+MEMCHECK=$2
 RUN_CPU=$3
 RUN_GPU=$4
 
@@ -14,7 +14,6 @@ DATA_PATH=$DIR_PATH/data
 BUILD_DIR="build"
 BUILD_PATH=
 BUILD_PATH_GRAPH=
-BUILD_OPTIONS=
 
 MEMORY_CHECK_FILENAME="valgrindOutput.txt"
 MEMORY_CHECK_OPTIONS="--log-file=$MEMORY_CHECK_FILENAME"
@@ -24,49 +23,11 @@ then
     echo "Debug Mode"
     BUILD_PATH=$DIR_PATH/$BUILD_DIR"-debug"
     BUILD_PATH_GRAPH=$BUILD_PATH/src/graph
-    BUILD_OPTIONS=$BUILD_OPTIONS" -DCMAKE_BUILD_TYPE=Debug"
     MEMORY_CHECK_OPTIONS=$MEMORY_CHECK_OPTIONS" --leak-check=full --track-origins=yes"
 else
     echo "Normal Mode"
     BUILD_PATH=$DIR_PATH/$BUILD_DIR
     BUILD_PATH_GRAPH=$BUILD_PATH/src/graph
-fi
-rm -r $BUILD_PATH
-
-if [ "$CLEAN" = "-clean" ];
-then
-    rm $DATA_PATH/binary/in/*.bin
-    rm $DATA_PATH/binary/out/*.bin
-    rm $DATA_PATH/text/out/*.dat
-    rm $DATA_PATH/text/out/*.ok
-fi
-
-cmake -S $SOURCE_PATH -B $BUILD_PATH $BUILD_OPTIONS
-cmake --build $BUILD_PATH
-
-if [ ! -d "$DATA_PATH/text" ];
-then
-    mkdir "$DATA_PATH/text"
-fi
-if [ ! -d "$DATA_PATH/text/in" ];
-then
-    mkdir "$DATA_PATH/text/in"
-fi
-if [ ! -d "$DATA_PATH/text/out" ];
-then
-    mkdir "$DATA_PATH/text/out"
-fi
-if [ ! -d "$DATA_PATH/binary" ];
-then
-    mkdir "$DATA_PATH/binary"
-fi
-if [ ! -d "$DATA_PATH/binary/in" ];
-then
-    mkdir "$DATA_PATH/binary/in"
-fi
-if [ ! -d "$DATA_PATH/binary/out" ];
-then
-    mkdir "$DATA_PATH/binary/out"
 fi
 
 LX_REF=24
@@ -95,7 +56,7 @@ LT_LOWER=50
 LT_UPPER=150
 LT_STRIDE=10
 
-if [ "$DEBUG" = "-d" ] || [ "$DEBUG" = "-debug" ] || [ "$DEBUG" = "-DEBUG" ] || [ "$DEBUG" = "-Debug" ];
+if [ "$MEMCHECK" = "-m" ] || [ "$MEMCHECK" = "-memory" ];
 then
     valgrind $MEMORY_CHECK_OPTIONS $BUILD_PATH/UKF_1 $LX_DEB $LY_DEB $LZ_DEB $LT_DEB 0 0
 fi
@@ -109,7 +70,7 @@ then
             rm $DATA_PATH/binary/in/*.bin
             rm $DATA_PATH/binary/out/*.bin
             $BUILD_PATH/UKF_1 $i $LY_REF $LZ_REF $LT_REF 0 0
-            bash $DIR_PATH/graph.sh $BUILD_PATH_GRAPH $i $LY_REF $LZ_REF $LT_REF 0
+            bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $i $LY_REF $LZ_REF $LT_REF 0
         fi
     done
     for i in $(seq $LY_LOWER $LY_STRIDE $LY_UPPER); do
@@ -119,7 +80,7 @@ then
             rm $DATA_PATH/binary/in/*.bin
             rm $DATA_PATH/binary/out/*.bin
             $BUILD_PATH/UKF_1 $LX_REF $i $LZ_REF $LT_REF 0 0
-            bash $DIR_PATH/graph.sh $BUILD_PATH_GRAPH $LX_REF $i $LZ_REF $LT_REF 0
+            bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF $i $LZ_REF $LT_REF 0
         fi
     done
     for i in $(seq $LZ_LOWER $LZ_STRIDE $LZ_UPPER); do
@@ -129,7 +90,7 @@ then
             rm $DATA_PATH/binary/in/*.bin
             rm $DATA_PATH/binary/out/*.bin
             $BUILD_PATH/UKF_1 $LX_REF $LY_REF $i $LT_REF 0 0
-            bash $DIR_PATH/graph.sh $BUILD_PATH_GRAPH $LX_REF $LY_REF $i $LT_REF 0
+            bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF $LY_REF $i $LT_REF 0
         fi
     done
     for i in $(seq $LT_LOWER $LT_STRIDE $LT_UPPER); do
@@ -139,7 +100,7 @@ then
             rm $DATA_PATH/binary/in/*.bin
             rm $DATA_PATH/binary/out/*.bin
             $BUILD_PATH/UKF_1 $LX_REF $LY_REF $LZ_REF $i 0 0
-            bash $DIR_PATH/graph.sh $BUILD_PATH_GRAPH $LX_REF $LY_REF $LZ_REF $i 0
+            bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF $LY_REF $LZ_REF $i 0
         fi
     done
 else
@@ -155,7 +116,7 @@ then
             rm $DATA_PATH/binary/in/*.bin
             rm $DATA_PATH/binary/out/*.bin
             $BUILD_PATH/UKF_1 $i $LY_REF $LZ_REF $LT_REF 1 1
-            bash $DIR_PATH/graph.sh $BUILD_PATH_GRAPH $i $LY_REF $LZ_REF $LT_REF 1
+            bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $i $LY_REF $LZ_REF $LT_REF 1
         fi
     done
     for i in $(seq $LY_LOWER $LY_STRIDE $LY_UPPER); do
@@ -165,7 +126,7 @@ then
             rm $DATA_PATH/binary/in/*.bin
             rm $DATA_PATH/binary/out/*.bin
             $BUILD_PATH/UKF_1 $LX_REF $i $LZ_REF $LT_REF 1 1
-            bash $DIR_PATH/graph.sh $BUILD_PATH_GRAPH $LX_REF $i $LZ_REF $LT_REF 1
+            bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF $i $LZ_REF $LT_REF 1
         fi
     done
     for i in $(seq $LZ_LOWER $LZ_STRIDE $LZ_UPPER); do
@@ -175,7 +136,7 @@ then
             rm $DATA_PATH/binary/in/*.bin
             rm $DATA_PATH/binary/out/*.bin
             $BUILD_PATH/UKF_1 $LX_REF $LY_REF $i $LT_REF 1 1
-            bash $DIR_PATH/graph.sh $BUILD_PATH_GRAPH $LX_REF $LY_REF $i $LT_REF 1
+            bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF $LY_REF $i $LT_REF 1
         fi
     done
     for i in $(seq $LT_LOWER $LT_STRIDE $LT_UPPER); do
@@ -185,7 +146,7 @@ then
             rm $DATA_PATH/binary/in/*.bin
             rm $DATA_PATH/binary/out/*.bin
             $BUILD_PATH/UKF_1 $LX_REF $LY_REF $LZ_REF $i 1 1
-            bash $DIR_PATH/graph.sh $BUILD_PATH_GRAPH $LX_REF $LY_REF $LZ_REF $i 1
+            bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF $LY_REF $LZ_REF $i 1
         fi
     done
 else

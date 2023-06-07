@@ -120,7 +120,7 @@ void UKFMemory::UpdateMeasure(Data &measureData_in)
     }
     else
     {
-        std::cout << "Error: Measured data update is not valid or do not match the old size";
+        std::cout << "Error: Measured data update is not valid or do not match the old size\n";
     }
 }
 

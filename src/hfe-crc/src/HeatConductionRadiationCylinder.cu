@@ -4,7 +4,7 @@ HCRC::HCRCProblem::HCRCProblem() : T0(0.0), Q0(0.0), amp(0.0), r0(0.0), h(0.0), 
 {
 }
 
-HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double h_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in, unsigned iteration) : T0(T0_in), Q0(Q0_in), amp(amp_in), r0(r0_in), h(h_in), Sr(Sr_in - r0_in), Sth(Sth_in), Sz(Sz_in), St(St_in), Lr(Lr_in), Lth(Lth_in), Lz(Lz_in), Lt(Lt_in), dr((Sr_in - r0_in) / Lr_in), dth(Sth_in / Lth_in), dz(Sz_in / Lz_in), dt(St_in / (Lt_in * iteration)), iteration(iteration)
+HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double r0_in, double h_in, double Sr_in, double Sth_in, double Sz_in, double St_in, unsigned Lr_in, unsigned Lth_in, unsigned Lz_in, unsigned Lt_in, unsigned iteration) : T0(T0_in), Q0(Q0_in), amp(amp_in), r0(r0_in), h(h_in), Sr(Sr_in), Sth(Sth_in), Sz(Sz_in), St(St_in), Lr(Lr_in), Lth(Lth_in), Lz(Lz_in), Lt(Lt_in), dr(Sr_in / Lr_in), dth(Sth_in / Lth_in), dz(Sz_in / Lz_in), dt(St_in / (Lt_in * iteration)), iteration(iteration)
 {
 }
 
@@ -12,12 +12,12 @@ HCRC::HCRCProblem::HCRCProblem(double T0_in, double Q0_in, double amp_in, double
 
 inline unsigned HCRC::Index3D(unsigned i, unsigned j, unsigned k, unsigned Lr, unsigned Lth, unsigned Lz)
 {
-    return (std::clamp(k, 0u, Lz - 1) * Lth + (j % Lth)) * Lr + std::clamp(i, 0u, Lr - 1u);
+    return (k * Lth + j)* Lr + i;
 }
 
 inline unsigned HCRC::Index2D(unsigned j, unsigned k, unsigned Lth, unsigned Lz)
 {
-    return std::clamp(k, 0u, Lz - 1) * Lth + (j % Lth);
+    return k * Lth + j;
 }
 
 inline double HCRC::CPU::C(double T_in)
@@ -56,12 +56,19 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
             {
                 index = Index3D(i, j, k, Lr, Lth, Lz);
                 T0 = T_in[index];
-                TiN = T_in[Index3D(i - 1, j, k, Lr, Lth, Lz)];
-                TiP = T_in[Index3D(i + 1, j, k, Lr, Lth, Lz)];
-                TjN = T_in[Index3D(i, j - 1, k, Lr, Lth, Lz)];
-                TjP = T_in[Index3D(i, j + 1, k, Lr, Lth, Lz)];
-                TkN = T_in[Index3D(i, j, k - 1, Lr, Lth, Lz)];
-                TkP = T_in[Index3D(i, j, k + 1, Lr, Lth, Lz)];
+                unsigned iP, jP, kP, iN, jN, kN;
+                iP = (i == Lr - 1u) ? Lr - 1u : i + 1u;
+                jP = (j == Lth - 1u) ? 0u : j + 1u;
+                kP = (k == Lz - 1u) ? Lz - 1u : k + 1u;
+                iN = (i == 0u) ? 0u : i - 1u;
+                jN = (j == 0u) ? Lth - 1u : j - 1u;
+                kN = (k == 0u) ? 0u : k - 1u;
+                TiN = T_in[Index3D(iN, j, k, Lr, Lth, Lz)];
+                TiP = T_in[Index3D(iP, j, k, Lr, Lth, Lz)];
+                TjN = T_in[Index3D(i, jN, k, Lr, Lth, Lz)];
+                TjP = T_in[Index3D(i, jP, k, Lr, Lth, Lz)];
+                TkN = T_in[Index3D(i, j, kN, Lr, Lth, Lz)];
+                TkP = T_in[Index3D(i, j, kP, Lr, Lth, Lz)];
                 acc = 0.0;
                 // R dependency
                 double R_N = DifferentialK(T0, TiN, dr, (r0 + dr * i) * dth * dz);
@@ -108,7 +115,7 @@ void HCRC::CPU::Differential(double *diff_out, const double *T_in, const double 
         {
             index = Index3D(Lr - 1u, j, k, Lr, Lth, Lz);
             indexQ = Index2D(j, k, Lth, Lz);
-            diff_out[index] += amp * E(T_in[index]) * Q_in[indexQ] * (r0 + dr * Lr) * dth * dz;
+            diff_out[index] += amp * E(T_in[index]) * Q_in[indexQ];
         }
     }
     // Calculation of the temporal derivative
@@ -249,7 +256,7 @@ void HCRC::CPU::SetFlux(double *Q_out, HCRCProblem &problem_in, unsigned t_in)
         {
             xCondition = (j + 0.5) * dth >= 0.4 * Sth && (j + 0.5) * dth <= 0.7 * Sth;
             yCondition = (k + 0.5) * dz >= 0.4 * Sz && (k + 0.5) * dz <= 0.7 * Sz;
-            Q_out[k * Lth + j] = (xCondition && yCondition) ? 100.0 : 0.0;
+            Q_out[k * Lth + j] = (xCondition && yCondition) ? 1000.0 : 0.0;
         }
     }
 }
@@ -532,7 +539,7 @@ __global__ void SetFluxDevice(double *Q_out, double dth, double dz, double Sth, 
     {
         xCondition = (xIndex + 0.5) * dth >= 0.4 * Sth && (xIndex + 0.5) * dth <= 0.7 * Sz;
         yCondition = (yIndex + 0.5) * dz >= 0.4 * Sz && (yIndex + 0.5) * dz <= 0.7 * Sz;
-        Q_out[yIndex * Lth + xIndex] = xCondition * yCondition * 100.0;
+        Q_out[yIndex * Lth + xIndex] = xCondition * yCondition * 1000.0;
     }
 }
 

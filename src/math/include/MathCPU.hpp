@@ -46,6 +46,8 @@ namespace MathCPU
 
     bool Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in);
 
+    void Diag(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned length_in, unsigned lengthX_in, unsigned lengthY_in, unsigned strideX_in, unsigned strideY_in);
+
     // Linear System Solvers
 
     // Helper Functions

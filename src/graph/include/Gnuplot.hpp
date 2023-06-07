@@ -18,9 +18,12 @@ public:
     static void ImportIndexValues(std::ifstream &file_in, unsigned length_in, void *&values_out);
     template <typename T>
     static void ExportIndexValues(std::ofstream &file_in, unsigned iteration_in, unsigned length_in, void *values_in);
+    template <typename T>
+    static void ExportIndexMultipleValues(std::ofstream &file_in, unsigned iteration_in, unsigned length_in, unsigned number_in, void **values_in);
 
     static void ImportAllIndexValues(std::ifstream &file_in, unsigned length_in, ParserType type_in, void *&values_out, unsigned iteration_in = 1u);
     static void ExportAllIndexValues(std::ofstream &file_in, unsigned length_in, ParserType type_in, void *values_in, std::streampos &iterationPosition_in, unsigned iteration_in = 1u);
+    static void ExportAllIndexMultipleValues(std::ofstream &file_in, unsigned length_in, unsigned number_in, ParserType type_in, void **values_in, std::streampos &iterationPosition_in, unsigned iteration_in = 1u);
 
     static void ConvertToGnuplot(std::string path_in, std::string path_out, std::string extension_in, std::string extension_out);
 };
@@ -42,6 +45,19 @@ void GnuplotParser::ExportIndexValues(std::ofstream &file_in, unsigned iteration
     for (unsigned i = 0u; i < length_in; i++)
     {
         file_in << iteration_in * length_in + i << "\t" << ((T *)values_in)[i] << "\n";
+    }
+}
+
+template <typename T>
+void GnuplotParser::ExportIndexMultipleValues(std::ofstream &file_in, unsigned iteration_in, unsigned length_in, unsigned number_in, void **values_in)
+{
+    for (unsigned i = 0u; i < length_in; i++)
+    {
+        file_in << iteration_in * length_in + i;
+        for(unsigned j = 0u; j < number_in; j++){
+            file_in << "\t" << ((T *)(values_in[j]))[i];
+        }
+        file_in << "\n";
     }
 }
 

@@ -260,13 +260,67 @@ void GnuplotParser::ExportAllIndexValues(std::ofstream &file_in, unsigned length
     }
 }
 
+
+void GnuplotParser::ExportAllIndexMultipleValues(std::ofstream &file_in, unsigned length_in, unsigned number_in, ParserType type_in, void **values_in, std::streampos &iterationPosition_in, unsigned iteration_in)
+{
+    std::streampos position = file_in.tellp();
+    file_in.seekp(iterationPosition_in);
+    file_in << iteration_in;
+    file_in.seekp(position);
+    unsigned size = length_in * iteration_in;
+    switch (type_in)
+    {
+    case ParserType::Char:
+        ExportIndexMultipleValues<char>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::UChar:
+        ExportIndexMultipleValues<unsigned char>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::SInt:
+        ExportIndexMultipleValues<short int>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::SUInt:
+        ExportIndexMultipleValues<short unsigned int>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::Int:
+        ExportIndexMultipleValues<int>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::UInt:
+        ExportIndexMultipleValues<unsigned int>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::LInt:
+        ExportIndexMultipleValues<long int>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::LUInt:
+        ExportIndexMultipleValues<long unsigned int>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::LLInt:
+        ExportIndexMultipleValues<long long int>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::LLUInt:
+        ExportIndexMultipleValues<long long unsigned int>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::Float:
+        ExportIndexMultipleValues<float>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::Double:
+        ExportIndexMultipleValues<double>(file_in, 0u, size, number_in, values_in);
+        break;
+    case ParserType::LDouble:
+        ExportIndexMultipleValues<long double>(file_in, 0u, size, number_in, values_in);
+        break;
+    default:
+        break;
+    }
+}
+
+
 void GnuplotParser::ConvertToGnuplot(std::string path_in, std::string path_out, std::string extension_in, std::string extension_out)
 {
     std::string name;
     unsigned length;
     ParserType type;
     void *values;
-    unsigned sizeType;
     std::string name_in;
     std::string name_out;
     for (const auto &entry : std::filesystem::directory_iterator(path_in))

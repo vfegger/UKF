@@ -51,6 +51,8 @@ namespace MathGPU
 
     bool Compare(Pointer<double> vectorLeft_in, Pointer<double> vectorRight_in, unsigned length_in, cudaStream_t stream_in = cudaStreamDefault);
 
+    void Diag(Pointer<double> vector_out, Pointer<double> matrix_in, unsigned length_in, unsigned lengthX_in, unsigned lengthY_in, unsigned strideX_in, unsigned strideY_in, cublasHandle_t handle_in, cudaStream_t stream_in);
+
     // Linear System Solvers
 
     // Helper Functions
