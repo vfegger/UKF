@@ -103,12 +103,23 @@ int RunCase(std::string &path_binary_in, std::string &path_binary_out, std::stri
             Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexHeatFluxSimulation), Lthz, ParserType::Double, Q_input.pointer, positionHeatFluxSimulation, ii);
         }
 
+        Pointer<double> Q_aux; 
+        if(type_in == PointerType::GPU){
+            Q_aux = MemoryHandler::Alloc<double>(Lthz,PointerType::GPU, PointerContext::GPU_Aware,MemoryHandler::GetStream(0u));
+            MemoryHandler::Copy(Q_aux,Q_input,Lthz,MemoryHandler::GetStream(0u));
+        } else {
+            Q_aux = Q_input;
+        }
+
         measuresLength = Lthz;
         HFG_CRC *generator = new HFG_CRC(Lr, Lth, Lz, Lt, Sr, Sth, Sz, St, T0, Q0, Tamb0, Amp, r0, h, type_in, context_in, iteration);
         measures = MemoryHandler::Alloc<double>(Lthz * (Lt + 1), PointerType::CPU, PointerContext::CPU_Only);
-        generator->Generate(Q_input, mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
+        generator->Generate(Q_aux, mean, sigma, MemoryHandler::GetCuBLASHandle(0u), MemoryHandler::GetStream(0u));
         generator->GetCompleteTemperatureBoundary(measures, MemoryHandler::GetStream(0u));
         cudaDeviceSynchronize();
+        if(type_in == PointerType::GPU){
+            MemoryHandler::Free(Q_aux);
+        }
         MemoryHandler::Free(Q_input);
         delete generator;
     }

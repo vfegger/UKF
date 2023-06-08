@@ -63,6 +63,8 @@ profTempMeasFile = filePath."ProfileTemperature_measured".idName.ext
 timeStepFile = outPath."TimeSteps".idName.out_ext
 tempEvolFile = outPath."TemperatureEvolution".idName.out_ext
 heatFluxEvolFile = outPath."HeatFluxEvolution".idName.out_ext
+simTempEvolFile = outPath."SimulationTemperatureEvolution".idName.out_ext
+simHeatFluxEvolFile = outPath."SimulationHeatFluxEvolution".idName.out_ext
 correlationFile = outPath."Correlation".idName.out_ext
 
 # Profile Files Output
@@ -97,6 +99,24 @@ plot[:][-2:10] simHeatFluxFile using (St*floor(($1)/(thth*zz))/tt):($2) every (t
     heatFluxFile using (St*floor(($1)/(thth*zz))/tt):($2) every (thth*zz)::(floor(zz/2)*thth+ceil(thth/4 + 1.5)) title titleIdName w lp ps 1, \
     heatFluxFile using (St*floor(($1)/(thth*zz))/tt):($2+1.96*sqrt(abs($3))) every (thth*zz)::(floor(zz/2)*thth+ceil(thth/4 + 1.5)) title "95% Confidence" w l lc -1 dt 4, \
     heatFluxFile using (St*floor(($1)/(thth*zz))/tt):($2-1.96*sqrt(abs($3))) every (thth*zz)::(floor(zz/2)*thth+ceil(thth/4 + 1.5)) notitle w l lc -1 dt 4;
+unset ylabel;
+unset xlabel;
+unset title;
+unset output;
+
+set output simTempEvolFile;
+set title "Temperature's Evolution";
+set xlabel "Time [s]";
+set ylabel "Temperature [K]";
+plot[:][275:325] tempMeasFile using (St*floor(($1)/(thth*zz))/tt):($2) every (thth*zz)::(floor(zz/2)*thth+ceil(thth/4)) title "Simulated Temperature"
+unset title;
+unset output;
+
+set output simHeatFluxEvolFile;
+set title "Heat Flux's Evolution";
+set xlabel "Time [s]";
+set ylabel "Heat Flux [W]";
+plot[:][-2:10] simHeatFluxFile using (St*floor(($1)/(thth*zz))/tt):($2) every (thth*zz)::((floor(zz/2))*thth+ceil(thth/4 + 1.5)) title "Simulated Heat Flux"
 unset ylabel;
 unset xlabel;
 unset title;

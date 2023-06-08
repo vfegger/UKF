@@ -56,6 +56,8 @@ profTempMeasFile = filePath."ProfileTemperature_measured".idName.ext
 timeStepFile = outPath."TimeSteps".idName.out_ext
 tempEvolFile = outPath."TemperatureEvolution".idName.out_ext
 heatFluxEvolFile = outPath."HeatFluxEvolution".idName.out_ext
+simTempEvolFile = outPath."SimulationTemperatureEvolution".idName.out_ext
+simHeatFluxEvolFile = outPath."SimulationHeatFluxEvolution".idName.out_ext
 correlationFile = outPath."Correlation".idName.out_ext
 
 # Profile Files Output

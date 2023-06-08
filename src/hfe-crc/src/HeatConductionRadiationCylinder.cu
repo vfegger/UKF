@@ -285,7 +285,7 @@ __device__ inline double K(double T_in)
 
 __device__ inline double E(double T_in)
 {
-    return 0.5;
+    return 1.0;
 }
 
 __device__ double DifferentialK(const double T0_in, const double TP_in, const double delta_in, const double coef_in)
