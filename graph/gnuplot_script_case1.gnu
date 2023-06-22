@@ -64,7 +64,7 @@ correlationFile = outPath."Correlation".idName.out_ext
 tempProfFile = outPath."TemperatureProfile".idName.out_ext
 heatFluxProfFile = outPath."HeatFluxProfile".idName.out_ext
 simTempProfFile = outPath."SimulationTemperatureProfile".idName.out_ext
-#simHeatFluxProfFile = outPath."SimulationHeatFluxProfile".idName.out_ext
+simHeatFluxProfFile = outPath."SimulationHeatFluxProfile".idName.out_ext
 tempMeasProfFile = outPath."TemperatureMeasuredProfile".idName.out_ext
 tempProfErrorFile = outPath."ErrorTemperatureProfile".idName.out_ext
 heatFluxProfErrorFile = outPath."ErrorHeatFluxProfile".idName.out_ext
@@ -91,7 +91,16 @@ plot[:][0:1100] tempMeasFile using (St*floor(($1)/(xx*yy))/tt):($2) every (xx*yy
 unset title;
 unset output;
 
-expHeat(x) = 100
+set output simTempEvolFile;
+set title "Simulated Temperature's Evolution";
+set xlabel "Time [s]";
+set ylabel "Temperature [K]";
+plot[:][0:1100] tempMeasFile using (St*floor(($1)/(xx*yy))/tt):($2) every (xx*yy)::(floor(yy/2)*xx+floor(xx/2)) title "Simulated Temperature"
+unset title;
+unset output;
+
+expHeat(t) = 100
+expHeat2D(x,y) = (x > (0.4 * Sx) && x < (0.7 * Sx) && y > (0.4 * Sy) && y < (0.7 * Sy)) ? 100 : 0
 set output heatFluxEvolFile;
 set title "Heat Flux's Evolution";
 set xlabel "Time [s]";
@@ -112,40 +121,101 @@ unset title;
 unset output;
 
 # Profile Graphs
-set xrange[-0.5:xx-0.5]
-set yrange[-0.5:yy-0.5]
-set xtics 0,1,xx
-set ytics 0,1,yy
+
+set xrange[0:Sx]
+set yrange[0:Sy]
+set xtics 0,0.2*Sx,Sx
+set ytics 0,0.2*Sy,Sy
+
+fx(x) = Sx*((x+0.5)/xx)
+fy(y) = Sy*((y+0.5)/yy)
 
 set output tempProfFile;
+set title "Temperature's Profile";
 set cbrange[*:*];
-plot profTempFile matrix with image pixels notitle
+set xlabel "X-axis [m]";
+set ylabel "Y-axis [m]";
+set cblabel "Temperature [K]";
+plot profTempFile matrix using (fx($1)):(fy($2)):3 with image pixels notitle
 unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
 
 set output tempProfErrorFile;
+set title "Temperature Error's Profile";
 set cbrange[*:*];
-plot profErrorTempFile matrix with image pixels notitle
+set xlabel "X-axis [m]";
+set ylabel "Y-axis [m]";
+set cblabel "Temperature [K]";
+plot profErrorTempFile matrix using (fx($1)):(fy($2)):(sqrt(abs($3))) with image pixels notitle
 unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
 
 set output simTempProfFile;
+set title "Simulated Temperature's Profile";
 set cbrange[*:*];
-plot profTempMeasFile matrix with image pixels notitle
+set xlabel "X-axis [m]";
+set ylabel "Y-axis [m]";
+set cblabel "Temperature [K]";
+plot profTempMeasFile matrix using (fx($1)):(fy($2)):3 with image pixels notitle
 unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
 
 set output heatFluxProfFile;
+set title "Heat Flux's Profile";
 set cbrange[*:*];
-plot profHeatFluxFile matrix with image pixels notitle
+set xlabel "X-axis [m]";
+set ylabel "Y-axis [m]";
+set cblabel "Heat Flux [W/m^2]";
+plot profHeatFluxFile matrix using (fx($1)):(fy($2)):3 with image pixels notitle
 unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
 
 set output heatFluxProfErrorFile;
+set title "Heat Flux Error's Profile";
 set cbrange[*:*];
-plot profErrorHeatFluxFile matrix with image pixels notitle
+set xlabel "X-axis [m]";
+set ylabel "Y-axis [m]";
+set cblabel "Heat Flux [W/m^2]";
+plot profErrorHeatFluxFile matrix using (fx($1)):(fy($2)):(sqrt(abs($3))) with image pixels notitle
 unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
 
-#set output simHeatFluxProfFile;
-#set cbrange[*:*];
-#plot profSimHeatFluxFile matrix with image pixels notitle
-#unset output;
+set output simHeatFluxProfFile;
+set title "Simulated Heat Flux's Profile";
+set isosample 500;
+set xrange[0:Sx];
+set yrange[0:Sy];
+set cbrange[-10:110];
+set xtics 0,0.2*Sx,Sx;
+set ytics 0,0.2*Sy,Sy;
+set pm3d;
+set hidden3d;
+set dgrid3d 4*xx,4*yy,16;
+set view map;
+set xlabel "X-axis [m]";
+set ylabel "Y-axis [m]";
+set cblabel "Heat Flux [W/m^2]";
+splot expHeat2D(x,y) notitle
+unset output;
+unset pm3d;
+unset hidden3d;
+unset dgrid3d;
+unset isosample;
+unset view;
+unset xlabel;
+unset ylabel;
+unset cblabel;
+unset title;
 
 unset xrange
 unset yrange

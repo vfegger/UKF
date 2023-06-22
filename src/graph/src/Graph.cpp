@@ -145,6 +145,9 @@ int main(int argc, char **argv)
         {
             continue;
         }
+        if(bTempMeas && name_aux.find("S0",0) != std::string::npos){
+            continue;
+        }
         name_in = path_text_in + name_aux + extension_text_in;
         name_out = path_text_out + "Profile" + name_aux + extension_text_out;
 

@@ -361,7 +361,7 @@ int main(int argc, char **argv)
 
     it = 0u;
     double Sr = S[it++];
-    double Sth = std::acos(-1.0);
+    double Sth = 2.0 * std::acos(-1.0);
     double Sz = S[it++];
     double St = 0.0;
 

@@ -30,10 +30,21 @@ else
     BUILD_PATH_GRAPH=$BUILD_PATH/src/graph
 fi
 
+
+LX_REF_INF=12
+LY_REF_INF=12
+LZ_REF_INF=6
+LT_REF_INF=100
+
 LX_REF=24
 LY_REF=24
 LZ_REF=6
 LT_REF=100
+
+LX_REF_SUP=32
+LY_REF_SUP=32
+LZ_REF_SUP=6
+LT_REF_SUP=100
 
 LX_DEB=8
 LY_DEB=8
@@ -103,6 +114,22 @@ then
             bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF $LY_REF $LZ_REF $i 0
         fi
     done
+    FILE_OK=$DATA_PATH/text/out/X${LX_REF_INF}Y${LY_REF_INF}Z${LZ_REF_INF}T${LT_REF_INF}_CPU.ok
+    if [ ! -f "$FILE_OK" ]; then
+        echo "Run case ("$LX_REF_INF $LY_REF_INF $LZ_REF_INF $LT_REF_INF")"
+        rm $DATA_PATH/binary/in/*.bin
+        rm $DATA_PATH/binary/out/*.bin
+        $BUILD_PATH/UKF_1 $LX_REF_INF $LY_REF_INF $LZ_REF_INF $LT_REF_INF 0 0
+        bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF_INF $LY_REF_INF $LZ_REF_INF $LT_REF_INF 0
+    fi
+    FILE_OK=$DATA_PATH/text/out/X${LX_REF_SUP}Y${LY_REF_SUP}Z${LZ_REF_SUP}T${LT_REF_SUP}_CPU.ok
+    if [ ! -f "$FILE_OK" ]; then
+        echo "Run case ("$LX_REF_SUP $LY_REF_SUP $LZ_REF_SUP $LT_REF_SUP")"
+        rm $DATA_PATH/binary/in/*.bin
+        rm $DATA_PATH/binary/out/*.bin
+        $BUILD_PATH/UKF_1 $LX_REF_SUP $LY_REF_SUP $LZ_REF_SUP $LT_REF_SUP 0 0
+        bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF_SUP $LY_REF_SUP $LZ_REF_SUP $LT_REF_SUP 0
+    fi
 else
     echo "Skipping all CPU runs"
 fi
@@ -149,6 +176,22 @@ then
             bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF $LY_REF $LZ_REF $i 1
         fi
     done
+    FILE_OK=$DATA_PATH/text/out/X${LX_REF_INF}Y${LY_REF_INF}Z${LZ_REF_INF}T${LT_REF_INF}_GPU.ok
+    if [ ! -f "$FILE_OK" ]; then
+        echo "Run case ("$LX_REF_INF $LY_REF_INF $LZ_REF_INF $LT_REF_INF")"
+        rm $DATA_PATH/binary/in/*.bin
+        rm $DATA_PATH/binary/out/*.bin
+        $BUILD_PATH/UKF_1 $LX_REF_INF $LY_REF_INF $LZ_REF_INF $LT_REF_INF 1 1
+        bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF_INF $LY_REF_INF $LZ_REF_INF $LT_REF_INF 1
+    fi
+    FILE_OK=$DATA_PATH/text/out/X${LX_REF_SUP}Y${LY_REF_SUP}Z${LZ_REF_SUP}T${LT_REF_SUP}_GPU.ok
+    if [ ! -f "$FILE_OK" ]; then
+        echo "Run case ("$LX_REF_SUP $LY_REF_SUP $LZ_REF_SUP $LT_REF_SUP")"
+        rm $DATA_PATH/binary/in/*.bin
+        rm $DATA_PATH/binary/out/*.bin
+        $BUILD_PATH/UKF_1 $LX_REF_SUP $LY_REF_SUP $LZ_REF_SUP $LT_REF_SUP 1 1
+        bash $DIR_PATH/graph1.sh $BUILD_PATH_GRAPH $LX_REF_SUP $LY_REF_SUP $LZ_REF_SUP $LT_REF_SUP 1
+    fi
 else
     echo "Skipping all GPU runs"
 fi

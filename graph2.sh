@@ -48,7 +48,12 @@ echo "Finished GNUPlot Parser Execution"
 
 echo "Running GNUPlot for graph generation"
 cd $GRAPH_PATH
-gnuplot -c gnuplot_script_case2.gnu $LR $LTh $LZ $LT $LS $LC $GPU
+if [ "$LS" = "0" ];
+then
+    gnuplot -c gnuplot_script_case2_meas.gnu $LR $LTh $LZ $LT $LS $LC $GPU
+else
+    gnuplot -c gnuplot_script_case2_sim.gnu $LR $LTh $LZ $LT $LS $LC $GPU
+fi
 cd $CURRENT_PATH
 echo "Finished GNUPlot Execution"
 
