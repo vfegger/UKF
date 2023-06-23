@@ -104,7 +104,7 @@ expHeat2D(x,y) = (x > (0.4 * Sx) && x < (0.7 * Sx) && y > (0.4 * Sy) && y < (0.7
 set output heatFluxEvolFile;
 set title "Heat Flux's Evolution";
 set xlabel "Time [s]";
-set ylabel "Heat Flux [W]";
+set ylabel "Heat Flux [W/m^2]";
 plot[:][-10:150] expHeat(x) title "Expected Heat Flux", \
     heatFluxFile using (St*floor(($1)/(xx*yy))/tt):($2) every xx*yy::floor(yy/2)*xx+floor(xx/2) title titleIdName w lp ps 1, \
     heatFluxFile using (St*floor(($1)/(xx*yy))/tt):($2+1.96*sqrt(abs($3))) every xx*yy::floor(yy/2)*xx+floor(xx/2) title "95% Confidence" w l lc -1 dt 4, \

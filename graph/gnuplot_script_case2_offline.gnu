@@ -6,8 +6,13 @@ strz = ARGV[2]
 thth = int(strth)
 zz = int(strz)
 
+rMin = 0.153
+rMax = 0.169
+
+Sr = rMax-rMin
 Sth = 2*pi
-Sz = 0.8
+Sz = 0.81
+St = 0.2 * tt * 50
 
 filePath = "data/out/"
 outPath = "output/"
@@ -27,16 +32,22 @@ factorProfFile = outPath."ViewFactorProfile".idName.out_ext
 set term pngcairo dashed size 650,600;
 set size square;
 
+fx(x) = rMax*Sth*((x+0.5)/thth)
+fy(y) = Sz*((y+0.5)/zz)
+
 # Profile Graphs
-set xrange[-0.5:thth-0.5]
-set yrange[-0.5:zz-0.5]
-set xtics 0,4,thth
-set ytics 0,4,zz
+set xrange[0:rMax*Sth]
+set yrange[0:Sz]
+set xtics 0,0.2*rMax*Sth,rMax*Sth
+set ytics 0,0.2*Sz,Sz
 
 set pal gray;
 set output factorProfFile;
 set title "View Factor";
 set cbrange[:];
+set xlabel "{/Symbol Q}-axis [m]";
+set ylabel "Z-axis [m]";
+set cblabel "View Factor [-]";
 plot profFactorFile matrix with image pixels notitle
 unset output;
 

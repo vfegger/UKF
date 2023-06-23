@@ -128,41 +128,86 @@ plot[0:tt][0:] for[i=1:12] timeFile using (floor($1/12)):($2) every 12::i notitl
 unset title;
 unset output;
 
+fx(x) = rMax*Sth*((x+0.5)/thth)
+fy(y) = Sz*((y+0.5)/zz)
+
 # Profile Graphs
-set xrange[-0.5:thth-0.5]
-set yrange[-0.5:zz-0.5]
-set xtics 0,1,thth
-set ytics 0,1,zz
+set xrange[0:rMax*Sth]
+set yrange[0:Sz]
+set xtics 0,0.2*rMax*Sth,rMax*Sth
+set ytics 0,0.2*Sz,Sz
 
 set output tempProfFile;
+set title "Temperature's Profile";
 set cbrange[290:325];
-plot profTempFile matrix with image pixels notitle
+set xlabel "{/Symbol Q}-axis [m]";
+set ylabel "Z-axis [m]";
+set cblabel "Temperature [K]";
+plot profTempFile matrix using (fx($1)):(fy($2)):3 with image pixels notitle
 unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
 
 set output tempProfErrorFile;
+set title "Temperature Error's Profile";
 set cbrange[*:*];
-plot profErrorTempFile matrix with image pixels notitle
+set xlabel "{/Symbol Q}-axis [m]";
+set ylabel "Z-axis [m]";
+set cblabel "Temperature [K]";
+plot profErrorTempFile matrix using (fx($1)):(fy($2)):(sqrt(abs($3))) with image pixels notitle
 unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
 
 set output simTempProfFile;
+set title "Simulated Temperature's Profile";
 set cbrange[290:325];
-plot profTempMeasFile matrix with image pixels notitle
+set xlabel "{/Symbol Q}-axis [m]";
+set ylabel "Z-axis [m]";
+set cblabel "Temperature [K]";
+plot profTempMeasFile matrix using (fx($1)):(fy($2)):3 with image pixels notitle
 unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
 
 set output heatFluxProfFile;
+set title "Heat Flux's Profile";
 set cbrange[-4:10];
-plot profHeatFluxFile matrix with image pixels notitle
+set xlabel "{/Symbol Q}-axis [m]";
+set ylabel "Z-axis [m]";
+set cblabel "Heat Flux [W]";
+plot profHeatFluxFile matrix using (fx($1)):(fy($2)):3 with image pixels notitle
 unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
 
 set output heatFluxProfErrorFile;
+set title "Heat Flux Error's Profile";
 set cbrange[*:*];
-plot profErrorHeatFluxFile matrix with image pixels notitle
+set xlabel "{/Symbol Q}-axis [m]";
+set ylabel "Z-axis [m]";
+set cblabel "Heat Flux [W]";
+plot profErrorHeatFluxFile matrix using (fx($1)):(fy($2)):(sqrt(abs($3))) with image pixels notitle
 unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
 
 set output simHeatFluxProfFile;
+set title "Simulated Heat Flux's Profile";
 set cbrange[-4:10];
-plot profSimHeatFluxFile matrix with image pixels notitle
+set xlabel "{/Symbol Q}-axis [m]";
+set ylabel "Z-axis [m]";
+set cblabel "Heat Flux [W]";
+plot profSimHeatFluxFile matrix using (fx($1)):(fy($2)):3 with image pixels notitle
 unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
 
 unset xrange
 unset yrange
