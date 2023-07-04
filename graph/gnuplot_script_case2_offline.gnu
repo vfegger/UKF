@@ -8,8 +8,8 @@ thth = int(strth)
 zz = int(strz)
 tt = int(strt)
 
-rMin = 0.153
-rMax = 0.169
+rMin = 0.153/2.0
+rMax = 0.169/2.0
 
 Sr = rMax-rMin
 Sth = 2*pi
