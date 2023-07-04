@@ -24,7 +24,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     unsigned L = Lxyz + Lxy;
     
     // Parser Initialization
-    Pointer<Parser> parser = MemoryHandler::AllocValue<Parser, unsigned>(7u, PointerType::CPU, PointerContext::CPU_Only);
+    Pointer<Parser> parser = MemoryHandler::AllocValue<Parser, unsigned>(8u, PointerType::CPU, PointerContext::CPU_Only);
 
     // Output Setup
     unsigned indexTimer;
@@ -34,6 +34,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     unsigned indexTemperatureError;
     unsigned indexHeatFluxError;
     unsigned indexCovariance;
+    unsigned indexTemperatureResidue;
 
     std::streampos positionTimer;
     std::streampos positionTemperature;
@@ -42,6 +43,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     std::streampos positionTemperatureError;
     std::streampos positionHeatFluxError;
     std::streampos positionCovariance;
+    std::streampos positionTemperatureResidue;
 
     std::string name_timer = "Timer";
     std::string name_temperature = "Temperature";
@@ -50,6 +52,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     std::string name_temperatureError = "ErrorTemperature";
     std::string name_heatFluxError = "ErrorHeatFlux";
     std::string name_covariance = "Covariance";
+    std::string name_temperatureResidue = "Temperature_Residue";
     std::string name_type = (type_in == PointerType::CPU) ? "_CPU" : "_GPU";
     std::string name_case = "X" + std::to_string(Lx) + "Y" + std::to_string(Ly) + "Z" + std::to_string(Lz) + "T" + std::to_string(Lt);
 
@@ -60,6 +63,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     std::string name_temperatureError_aux = name_temperatureError + name_case + name_type;
     std::string name_heatFluxError_aux = name_heatFluxError + name_case + name_type;
     std::string name_covariance_aux = name_covariance + name_case + name_type;
+    std::string name_temperatureResidue_aux = name_temperatureResidue + name_case + name_type;
 
     indexTimer = parser.pointer[0u].OpenFileOut(path_binary, name_timer_aux, extension_binary, std::ios::binary);
     indexTemperature = parser.pointer[0u].OpenFileOut(path_binary, name_temperature_aux, extension_binary, std::ios::binary);
@@ -68,6 +72,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     indexTemperatureError = parser.pointer[0u].OpenFileOut(path_binary, name_temperatureError_aux, extension_binary, std::ios::binary);
     indexHeatFluxError = parser.pointer[0u].OpenFileOut(path_binary, name_heatFluxError_aux, extension_binary, std::ios::binary);
     indexCovariance = parser.pointer[0u].OpenFileOut(path_binary, name_covariance_aux, extension_binary, std::ios::binary);
+    indexTemperatureResidue = parser.pointer[0u].OpenFileOut(path_binary, name_temperatureResidue_aux, extension_binary, std::ios::binary);
 
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexTimer), "Timer", UKF_TIMER + 1, ParserType::Double, positionTimer);
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexTemperature), "Temperature", Lxyz, ParserType::Double, positionTemperature);
@@ -76,6 +81,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexTemperatureError), "Temperature Error", Lxyz, ParserType::Double, positionTemperatureError);
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexHeatFluxError), "Heat Flux Error", Lxy, ParserType::Double, positionHeatFluxError);
     Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexCovariance), "Covariance", L * L, ParserType::Double, positionCovariance);
+    Parser::ExportConfigurationBinary(parser.pointer[0u].GetStreamOut(indexTemperatureResidue), "Temperature Residue", Lxy, ParserType::Double, positionTemperatureResidue);
 
     // Input Setup
     HeatFluxGenerator generator(Lx, Ly, Lz, Lt, Sx, Sy, Sz, St, T0, Q0, Amp, type_in, context_in);
@@ -98,10 +104,11 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     Pointer<double> temperatureMeasured_out = problem.GetMemory().pointer[0u].GetMeasure().pointer[0u].GetPointer();
     Pointer<double> covariance_out = problem.GetMemory().pointer[0u].GetStateCovariance().pointer[0u].GetPointer();
 
-    Pointer<double> temperature_parser, heatFlux_parser, temperatureMeasured_parser, covariance_parser, error_parser;
+    Pointer<double> temperature_parser, heatFlux_parser, temperatureMeasured_parser, covariance_parser, error_parser, temperatureResidue_parser;
     error_parser = MemoryHandler::Alloc<double>(L, PointerType::CPU, PointerContext::CPU_Only);
     Pointer<double> temperatureError_parser = Pointer<double>(error_parser.pointer, error_parser.type, error_parser.context);
     Pointer<double> heatFluxError_parser = Pointer<double>(error_parser.pointer + Lxyz, error_parser.type, error_parser.context);
+    temperatureResidue_parser = MemoryHandler::Alloc<double>(Lxy, PointerType::CPU, PointerContext::CPU_Only);
 
     if (type_in == PointerType::GPU)
     {
@@ -121,6 +128,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
         temperatureMeasured_parser = temperatureMeasured_out;
         covariance_parser = covariance_out;
     }
+    Math::Sub(temperatureResidue_parser,temperature_parser,temperatureMeasured_parser,Lxy,0u);
     Math::Diag(error_parser, covariance_parser, L, L, L, 0u, 0u);
 
     // Export initial values
@@ -128,8 +136,9 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexHeatFlux), Lxy, ParserType::Double, heatFlux_parser.pointer, positionHeatFlux, 0u);
     Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), Lxy, ParserType::Double, temperatureMeasured_parser.pointer, positionTemperatureMeasured, 0u);
     Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureError), Lxyz, ParserType::Double, temperatureError_parser.pointer, positionTemperatureError, 0u);
-    Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexHeatFluxError), Lxy, ParserType::Double, heatFlux_parser.pointer, positionHeatFluxError, 0u);
+    Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexHeatFluxError), Lxy, ParserType::Double, heatFluxError_parser.pointer, positionHeatFluxError, 0u);
     Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexCovariance), L * L, ParserType::Double, covariance_parser.pointer, positionCovariance, 0u);
+    Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureResidue), Lxy, ParserType::Double, temperatureResidue_parser.pointer, positionTemperatureResidue, 0u);
 
     for (unsigned i = 1u; i <= Lt; i++)
     {
@@ -146,22 +155,25 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
             MemoryHandler::Copy(covariance_parser, covariance_out, L * L);
             cudaDeviceSynchronize();
         }
+        Math::Sub(temperatureResidue_parser,temperature_parser,temperatureMeasured_parser,Lxy, 0u);
         Math::Diag(error_parser, covariance_parser, L, L, L, 0u, 0u);
 
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperature), Lxyz, ParserType::Double, temperature_parser.pointer, positionTemperature, i);
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexHeatFlux), Lxy, ParserType::Double, heatFlux_parser.pointer, positionHeatFlux, i);
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureError), Lxyz, ParserType::Double, temperatureError_parser.pointer, positionTemperatureError, i);
-        Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexHeatFluxError), Lxy, ParserType::Double, heatFlux_parser.pointer, positionHeatFluxError, i);
+        Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexHeatFluxError), Lxy, ParserType::Double, heatFluxError_parser.pointer, positionHeatFluxError, i);
         timer.pointer[0u].Save();
         timer.pointer[0u].SetValues();
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTimer), UKF_TIMER + 1, ParserType::Double, timer_pointer, positionTimer, i - 1u);
         Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureMeasured), Lxy, ParserType::Double, temperatureMeasured_parser.pointer, positionTemperatureMeasured, i);
+        Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexTemperatureResidue), Lxy, ParserType::Double, temperatureResidue_parser.pointer, positionTemperatureResidue, i);
     }
     Parser::ExportValuesBinary(parser.pointer[0u].GetStreamOut(indexCovariance), L * L, ParserType::Double, covariance_parser.pointer, positionCovariance, 1u);
 
     MemoryHandler::Free<Parser>(parser);
     MemoryHandler::Free<Timer>(timer);
     MemoryHandler::Free(error_parser);
+    MemoryHandler::Free(heatFluxError_parser);
     if (type_in == PointerType::GPU)
     {
         MemoryHandler::Free(temperature_parser);

@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     // External Treatment for Error data
     std::cout << "Concat Errors to Heat Flux and Temperature File\n";
 
-    std::string name_aux, name_Heat, name_Temp, name_Temp_Meas, name_Heat_Sim, name_ErrorHeat, name_ErrorTemp;
+    std::string name_aux, name_Heat, name_Temp, name_Temp_Meas, name_Heat_Sim, name_ErrorHeat, name_ErrorTemp, name_Temp_Resd;
 
     std::string name_in, name_Error_in;
     std::string name_out;
@@ -133,6 +133,7 @@ int main(int argc, char **argv)
         name_ErrorHeat = "ErrorHeatFlux";
         name_ErrorTemp = "ErrorTemperature";
         name_Temp_Meas = "Temperature_measured";
+        name_Temp_Resd = "Temperature_Residue";
         name_Heat_Sim = "SimulationHeatFlux";
 
         bool bHeat = name_aux.compare(0, name_Heat.size(), name_Heat) == 0;
@@ -140,12 +141,16 @@ int main(int argc, char **argv)
         bool bErrorHeat = name_aux.compare(0, name_ErrorHeat.size(), name_ErrorHeat) == 0;
         bool bErrorTemp = name_aux.compare(0, name_ErrorTemp.size(), name_ErrorTemp) == 0;
         bool bTempMeas = name_aux.compare(0, name_Temp_Meas.size(), name_Temp_Meas) == 0;
+        bool bTempResd = name_aux.compare(0, name_Temp_Resd.size(), name_Temp_Resd) == 0;
         bool bHeatSim = name_aux.compare(0, name_Heat_Sim.size(), name_Heat_Sim) == 0;
-        if (!bHeat && !bTemp && !bErrorHeat && !bErrorTemp && !bTempMeas && !bHeatSim)
+        if (!bHeat && !bTemp && !bErrorHeat && !bErrorTemp && !bTempMeas && !bTempResd && !bHeatSim)
         {
             continue;
         }
         if(bTempMeas && name_aux.find("S0",0) != std::string::npos){
+            continue;
+        }
+        if(bTempResd && name_aux.find("S0",0) != std::string::npos){
             continue;
         }
         name_in = path_text_in + name_aux + extension_text_in;
@@ -156,7 +161,7 @@ int main(int argc, char **argv)
         std::ofstream out(name_out, std::ios::trunc);
 
         unsigned stride[4u] = {1u, Li, Li * Lj, Li * Lj * Lk};
-        if (bHeat || bTempMeas || bHeatSim || bErrorHeat)
+        if (bHeat || bTempMeas || bHeatSim || bErrorHeat || bTempResd)
         {
             stride[index1] = 1u;
             stride[index2] = L[index1];
