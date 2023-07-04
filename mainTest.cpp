@@ -174,6 +174,7 @@ int RunCase(std::string &path_binary, std::string &extension_binary,
     MemoryHandler::Free<Timer>(timer);
     MemoryHandler::Free(error_parser);
     MemoryHandler::Free(heatFluxError_parser);
+    MemoryHandler::Free(temperatureResidue_parser);
     if (type_in == PointerType::GPU)
     {
         MemoryHandler::Free(temperature_parser);

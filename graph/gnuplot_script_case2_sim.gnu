@@ -49,6 +49,7 @@ tempFile = filePath.valerror."Temperature".idName.ext
 heatFluxFile = filePath.valerror."HeatFlux".idName.ext
 simHeatFluxFile = filePath."SimulationHeatFlux".idName.ext
 tempMeasFile = filePath."Temperature_measured".idName.ext
+tempRedsFile = filePath."Temperature_Residue".idName.ext
 covarianceFile = filePath."Covariance".idName.ext
 
 # Profile Files Input
@@ -58,6 +59,7 @@ profErrorTempFile = filePath."ProfileErrorTemperature".idName.ext
 profErrorHeatFluxFile = filePath."ProfileErrorHeatFlux".idName.ext
 profSimHeatFluxFile = filePath."ProfileSimulationHeatFlux".idName.ext
 profTempMeasFile = filePath."ProfileTemperature_measured".idName.ext
+profTempRedsFile = filePath."ProfileTemperature_Residue".idName.ext
 
 # Evolution Files Output
 timeStepFile = outPath."TimeSteps".idName.out_ext
@@ -66,6 +68,7 @@ heatFluxEvolFile = outPath."HeatFluxEvolution".idName.out_ext
 simTempEvolFile = outPath."SimulationTemperatureEvolution".idName.out_ext
 simHeatFluxEvolFile = outPath."SimulationHeatFluxEvolution".idName.out_ext
 correlationFile = outPath."Correlation".idName.out_ext
+redsTempFile = outPath."TemperatureResidueEvolution".idName.out_ext
 
 # Profile Files Output
 tempProfFile = outPath."TemperatureProfile".idName.out_ext
@@ -75,6 +78,7 @@ simHeatFluxProfFile = outPath."SimulationHeatFluxProfile".idName.out_ext
 tempMeasProfFile = outPath."TemperatureMeasuredProfile".idName.out_ext
 tempProfErrorFile = outPath."ErrorTemperatureProfile".idName.out_ext
 heatFluxProfErrorFile = outPath."ErrorHeatFluxProfile".idName.out_ext
+redsTempProfFile = outPath."TemperatureResidueProfile".idName.out_ext
 
 set term pngcairo dashed size 650,600;
 set size square;
@@ -122,6 +126,14 @@ unset xlabel;
 unset title;
 unset output;
 
+set output redsTempFile;
+set title "Temperature Residue's Evolution";
+set xlabel "Time [s]";
+set ylabel "Temperature [K]";
+plot[:][275:325] tempRedsFile using (St*floor(($1)/(thth*zz))/tt):($2) every (thth*zz)::(floor(zz/2)*thth+ceil(thth/4)) title "Temperature Residue"
+unset title;
+unset output;
+
 set output timeStepFile;
 set title "Time Spent by Code Section";
 plot[0:tt][0:] for[i=1:12] timeFile using (floor($1/12)):($2) every 12::i notitle w lp ps 1
@@ -150,7 +162,7 @@ unset ylabel;
 unset cblabel;
 
 set output tempProfErrorFile;
-set title "Temperature Error's Profile";
+set title "Temperature Standard Deviation's Profile";
 set cbrange[*:*];
 set xlabel "{/Symbol Q}-axis [m]";
 set ylabel "Z-axis [m]";
@@ -186,7 +198,7 @@ unset ylabel;
 unset cblabel;
 
 set output heatFluxProfErrorFile;
-set title "Heat Flux Error's Profile";
+set title "Heat Flux Standard Deviation's Profile";
 set cbrange[*:*];
 set xlabel "{/Symbol Q}-axis [m]";
 set ylabel "Z-axis [m]";
@@ -204,6 +216,18 @@ set xlabel "{/Symbol Q}-axis [m]";
 set ylabel "Z-axis [m]";
 set cblabel "Heat Flux [W]";
 plot profSimHeatFluxFile matrix using (fx($1)):(fy($2)):3 with image pixels notitle
+unset output;
+unset xlabel;
+unset ylabel;
+unset cblabel;
+
+set output redsTempProfFile;
+set title "Temperature Residue's Profile";
+set cbrange[290:325];
+set xlabel "{/Symbol Q}-axis [m]";
+set ylabel "Z-axis [m]";
+set cblabel "Temperature [K]";
+plot profTempRedsFile matrix using (fx($1)):(fy($2)):3 with image pixels notitle
 unset output;
 unset xlabel;
 unset ylabel;
