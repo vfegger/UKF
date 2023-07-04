@@ -33,11 +33,12 @@ int main(int argc, char **argv)
         name_Heat = "HeatFlux";
         name_Temp = "Temperature";
         name_Temp_Meas = "Temperature_measured";
+        name_Temp_Resd = "Temperature_Residue";
         if (name_aux.compare(0, name_Heat.size(), name_Heat) != 0 && name_aux.compare(0, name_Temp.size(), name_Temp) != 0)
         {
             continue;
         }
-        else if (name_aux.compare(0, name_Temp_Meas.size(), name_Temp_Meas) == 0)
+        else if (name_aux.compare(0, name_Temp_Meas.size(), name_Temp_Meas) == 0 || name_aux.compare(0, name_Temp_Resd.size(), name_Temp_Resd) == 0)
         {
             continue;
         }

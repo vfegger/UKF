@@ -16,8 +16,8 @@ ss = int(strs)
 cc = int(strc)
 isGPU = int(strisGPU)
 
-rMin = 0.153
-rMax = 0.169
+rMin = 0.153/2.0
+rMax = 0.169/2.0
 
 Sr = rMax-rMin
 Sth = 2*pi
@@ -76,7 +76,7 @@ tempMeasProfFile = outPath."TemperatureMeasuredProfile".idName.out_ext
 tempProfErrorFile = outPath."ErrorTemperatureProfile".idName.out_ext
 heatFluxProfErrorFile = outPath."ErrorHeatFluxProfile".idName.out_ext
 
-set term pngcairo dashed size 650,600;
+set term pngcairo dashed size 700,600;
 set size square;
 
 # Evolution Graphs

@@ -73,7 +73,7 @@ tempProfErrorFile = outPath."ErrorTemperatureProfile".idName.out_ext
 heatFluxProfErrorFile = outPath."ErrorHeatFluxProfile".idName.out_ext
 redsTempProfFile = outPath."TemperatureResidueProfile".idName.out_ext
 
-set term pngcairo dashed size 650,600;
+set term pngcairo dashed size 700,600;
 set size square;
 
 # Evolution Graphs
@@ -99,8 +99,8 @@ unset output;
 set output redsTempFile;
 set title "Temperature Residue's Evolution";
 set xlabel "Time [s]";
-set ylabel "Temperature Residue [K]";
-plot[:][0:1100] tempRedsFile using (St*floor(($1)/(xx*yy))/tt):($2) every (xx*yy)::(floor(yy/2)*xx+floor(xx/2)) title "Temperature Residue"
+set ylabel "Temperature [K]";
+plot[:][*:*] tempRedsFile using (St*floor(($1)/(xx*yy))/tt):($2) every (xx*yy)::(floor(yy/2)*xx+floor(xx/2)) title "Temperature Residue"
 unset title;
 unset output;
 
@@ -200,7 +200,7 @@ set title "Temperature Residue's Profile";
 set cbrange[*:*];
 set xlabel "{/Symbol Q}-axis [m]";
 set ylabel "Z-axis [m]";
-set cblabel "Temperature Residue [K]";
+set cblabel "Temperature [K]";
 plot profTempRedsFile matrix using (fx($1)):(fy($2)):3 with image pixels notitle
 unset output;
 unset xlabel;

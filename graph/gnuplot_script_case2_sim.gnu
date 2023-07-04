@@ -16,8 +16,8 @@ ss = int(strs)
 cc = int(strc)
 isGPU = int(strisGPU)
 
-rMin = 0.153
-rMax = 0.169
+rMin = 0.153/2.0
+rMax = 0.169/2.0
 
 Sr = rMax-rMin
 Sth = 2*pi
@@ -80,7 +80,7 @@ tempProfErrorFile = outPath."ErrorTemperatureProfile".idName.out_ext
 heatFluxProfErrorFile = outPath."ErrorHeatFluxProfile".idName.out_ext
 redsTempProfFile = outPath."TemperatureResidueProfile".idName.out_ext
 
-set term pngcairo dashed size 650,600;
+set term pngcairo dashed size 700,600;
 set size square;
 
 # Evolution Graphs
@@ -130,7 +130,7 @@ set output redsTempFile;
 set title "Temperature Residue's Evolution";
 set xlabel "Time [s]";
 set ylabel "Temperature [K]";
-plot[:][275:325] tempRedsFile using (St*floor(($1)/(thth*zz))/tt):($2) every (thth*zz)::(floor(zz/2)*thth+ceil(thth/4)) title "Temperature Residue"
+plot[:][*:*] tempRedsFile using (St*floor(($1)/(thth*zz))/tt):($2) every (thth*zz)::(floor(zz/2)*thth+ceil(thth/4)) title "Temperature Residue"
 unset title;
 unset output;
 
@@ -223,7 +223,7 @@ unset cblabel;
 
 set output redsTempProfFile;
 set title "Temperature Residue's Profile";
-set cbrange[290:325];
+set cbrange[*:*];
 set xlabel "{/Symbol Q}-axis [m]";
 set ylabel "Z-axis [m]";
 set cblabel "Temperature [K]";
