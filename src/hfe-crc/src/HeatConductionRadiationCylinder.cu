@@ -388,7 +388,7 @@ __global__ void FluxContribution(double *diff_out, const double *T_in, const dou
     int indexQ = Index2D_dev(yIndex, zIndex, Lth, Lz);
     if (yIndex < Lth && zIndex < Lz)
     {
-        diff_out[indexRinf] += h * (T_amb[0u] - T_in[indexRinf]) * (r0 + dr * Lr) * dth * dz;
+        diff_out[indexRinf] += h * (T_amb[0u] - T_in[indexRinf]) * (r0) * dth * dz;
         diff_out[indexRsup] += h * (T_amb[0u] - T_in[indexRsup]) * (r0 + dr * Lr) * dth * dz;
         diff_out[indexRsup] += amp * E(T_in[indexRsup]) * Q_in[indexQ];
     }

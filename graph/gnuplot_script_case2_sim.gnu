@@ -88,7 +88,7 @@ set output tempEvolFile;
 set title "Temperature's Evolution";
 set xlabel "Time [s]";
 set ylabel "Temperature [K]";
-plot[:][275:325] tempMeasFile using (St*floor(($1)/(thth*zz))/tt):($2) every (thth*zz)::(floor(zz/2)*thth+ceil(thth/4)) title "Measures", \
+plot[:][275:350] tempMeasFile using (St*floor(($1)/(thth*zz))/tt):($2) every (thth*zz)::(floor(zz/2)*thth+ceil(thth/4)) title "Measures", \
     tempFile using (St*floor(($1)/(rr*thth*zz))/tt):($2) every rr*thth*zz::(floor(zz/2)*thth+ceil(thth/4))*rr title titleIdName, \
     tempFile using (St*floor(($1)/(rr*thth*zz))/tt):($2+1.96*sqrt(abs($3))) every rr*thth*zz::(floor(zz/2)*thth+ceil(thth/4))*rr title "95% Confidence" w l lc -1 dt 4, \
     tempFile using (St*floor(($1)/(rr*thth*zz))/tt):($2-1.96*sqrt(abs($3))) every rr*thth*zz::(floor(zz/2)*thth+ceil(thth/4))*rr notitle w l lc -1 dt 4;
@@ -112,7 +112,7 @@ set output simTempEvolFile;
 set title "Temperature's Evolution";
 set xlabel "Time [s]";
 set ylabel "Temperature [K]";
-plot[:][275:325] tempMeasFile using (St*floor(($1)/(thth*zz))/tt):($2) every (thth*zz)::(floor(zz/2)*thth+ceil(thth/4)) title "Simulated Temperature"
+plot[:][275:350] tempMeasFile using (St*floor(($1)/(thth*zz))/tt):($2) every (thth*zz)::(floor(zz/2)*thth+ceil(thth/4)) title "Simulated Temperature"
 unset title;
 unset output;
 
@@ -151,7 +151,7 @@ set ytics 0,0.2*Sz,Sz
 
 set output tempProfFile;
 set title "Temperature's Profile";
-set cbrange[290:325];
+set cbrange[290:350];
 set xlabel "{/Symbol Q}-axis [m]";
 set ylabel "Z-axis [m]";
 set cblabel "Temperature [K]";
@@ -175,7 +175,7 @@ unset cblabel;
 
 set output simTempProfFile;
 set title "Simulated Temperature's Profile";
-set cbrange[290:325];
+set cbrange[290:350];
 set xlabel "{/Symbol Q}-axis [m]";
 set ylabel "Z-axis [m]";
 set cblabel "Temperature [K]";
