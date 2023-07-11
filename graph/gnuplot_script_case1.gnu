@@ -110,7 +110,7 @@ set output heatFluxEvolFile;
 set title "Heat Flux's Evolution";
 set xlabel "Time [s]";
 set ylabel "Heat Flux [W/m^2]";
-plot[:][-10:150] expHeat(x) title "Expected Heat Flux", \
+plot[:][*:*] expHeat(x) title "Expected Heat Flux", \
     heatFluxFile using (St*floor(($1)/(xx*yy))/tt):(50000*($2)) every xx*yy::floor(yy/2)*xx+floor(xx/2) title titleIdName w lp ps 1, \
     heatFluxFile using (St*floor(($1)/(xx*yy))/tt):(50000*($2+1.96*sqrt(abs($3)))) every xx*yy::floor(yy/2)*xx+floor(xx/2) title "95% Confidence" w l lc -1 dt 4, \
     heatFluxFile using (St*floor(($1)/(xx*yy))/tt):(50000*($2-1.96*sqrt(abs($3)))) every xx*yy::floor(yy/2)*xx+floor(xx/2) notitle w l lc -1 dt 4;
@@ -212,7 +212,7 @@ set title "Simulated Heat Flux's Profile";
 set isosample 500;
 set xrange[0:Sx];
 set yrange[0:Sy];
-set cbrange[-10:110];
+set cbrange[*:*];
 set xtics 0,0.2*Sx,Sx;
 set ytics 0,0.2*Sy,Sy;
 set pm3d;
